@@ -1,5 +1,5 @@
 import hre, { ethers } from "hardhat";
-import { OffchainAssetVaultFactory } from "../typechain/OffchainAssetVaultFactory";
+import { OffchainAssetVaultFactory, ConstructionConfigStruct } from "../typechain/OffchainAssetVaultFactory";
 import * as path from "path";
 import * as Util from "./utils/utils";
 
