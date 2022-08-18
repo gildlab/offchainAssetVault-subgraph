@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { offchainAssetVaultFactory, signers } from "./_setup.test";
-import {  } from "../typechain/OffchainAssetVault"
+import { zeroAddress } from "./utils/utils";
+import { ConstructionConfigStruct } from "../typechain/OffchainAssetVault";
 describe("OffchainAssetVaultFactory test", () => {
   before(async () => {});
 
@@ -9,6 +10,12 @@ describe("OffchainAssetVaultFactory test", () => {
   });
 
   it("should deploy offchainAssetVault using factory",async () => {
-    const offchainAssetVault = await offchainAssetVaultFactory.createChildTyped();
+    const constructionConfig: ConstructionConfigStruct = {
+        asset: zeroAddress,
+        name: "EthGild",
+        symbol: "ETHg",
+        uri: "ipfs://bafkreiahuttak2jvjzsd4r62xoxb4e2mhphb66o4cl2ntegnjridtyqnz4",
+    };
+    const offchainAssetVault = await offchainAssetVaultFactory.createChildTyped(constructionConfig);
   });
 });

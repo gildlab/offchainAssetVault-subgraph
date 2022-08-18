@@ -9,6 +9,7 @@
     "build": "graph build",
     "prepare": "npx mustache config/localhost.json subgraph.template.yaml subgraph.yaml",
     "hardhat-node": "npx hardhat node",
+    "graph-node": "docker-compose -f \"docker/docker-compose.yml\" up",
     "deploy-subgraph": "ts-node scripts/index.ts" 
   },
   "repository": {
@@ -54,6 +55,6 @@
   "dependencies": {
     "@graphprotocol/graph-cli": "^0.33.0",
     "@graphprotocol/graph-ts": "^0.27.0",
-    "@vishalkale151071/ethgild": "git+https://github.com/vishalkale151071/ethgild.git"
+    "@Gild-Lab/ethgild": "git+https://github.com/Gild-Lab/ethgild.git"
   }
 }

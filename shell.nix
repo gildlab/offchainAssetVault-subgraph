@@ -160,7 +160,7 @@ let
   '';
 
   init = pkgs.writeShellScriptBin "init" ''
-    mkdir -p contracts && cp -r node_modules/@vishalkale151071/ethgild/contracts .
+    mkdir -p contracts && cp -r node_modules/@Gild-Lab/ethgild/contracts .
     compile
   '';
 in

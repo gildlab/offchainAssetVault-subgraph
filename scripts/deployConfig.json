@@ -1,7 +1,7 @@
 {
   "configPath": "config/localhost.json",
   "subgraphName": "rain-protocol/offchainAssetVault",
-  "versionLabel": "test-v1.0.0",
+  "versionLabel": "1.0.0",
   "endpoint": "http://localhost:8020/",
   "ipfsEndpoint": "http://localhost:5001"
 }
