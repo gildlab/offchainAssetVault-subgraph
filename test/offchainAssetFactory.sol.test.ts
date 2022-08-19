@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { offchainAssetVaultFactory, signers } from "./_setup.test";
 import { zeroAddress } from "./utils/utils";
-import { ConstructionConfigStruct } from "../typechain/OffchainAssetVaultFactory";
+import { OffchainAssetVaultConfigStruct } from "../typechain/OffchainAssetVaultFactory";
 describe("OffchainAssetVaultFactory test", () => {
   before(async () => {});
 
@@ -10,7 +10,7 @@ describe("OffchainAssetVaultFactory test", () => {
   });
 
   it("should deploy offchainAssetVault using factory",async () => {
-    const constructionConfig: ConstructionConfigStruct = {
+    const constructionConfig: OffchainAssetVaultConfigStruct = {
       admin: signers[1].address,
       receiptVaultConfig: {
         asset: zeroAddress,
