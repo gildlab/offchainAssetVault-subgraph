@@ -1,5 +1,8 @@
 import hre, { ethers } from "hardhat";
-import { OffchainAssetVaultFactory, ConstructionConfigStruct } from "../typechain/OffchainAssetVaultFactory";
+import {
+  OffchainAssetVaultFactory,
+  ConstructionConfigStruct,
+} from "../typechain/OffchainAssetVaultFactory";
 import * as path from "path";
 import * as Util from "./utils/utils";
 
@@ -8,11 +11,12 @@ export let signers;
 
 before("Deploy OffchainAssetVault Factory", async () => {
   signers = await ethers.getSigners();
+  
   const OffchainAssetVaultFactory = await ethers.getContractFactory(
     "OffchainAssetVaultFactory"
   );
   offchainAssetVaultFactory =
-    (await OffchainAssetVaultFactory.deploy()) as OffchainAssetVaultFactory;
+  await OffchainAssetVaultFactory.deploy() as OffchainAssetVaultFactory;
   await offchainAssetVaultFactory.deployed();
 
   const pathExampleConfig = path.resolve(
@@ -47,8 +51,8 @@ before("Deploy OffchainAssetVault Factory", async () => {
     __dirname,
     "../scripts/deployConfig.json"
   );
-  
+
   Util.writeFile(deployConfigPath, JSON.stringify(deployConfig, null, 2));
 
-  Util.exec(`npm run deploy-subgraph`);
+  // Util.exec(`npm run deploy-subgraph`);
 });
