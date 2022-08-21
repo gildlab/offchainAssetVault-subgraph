@@ -2,9 +2,10 @@ type OffchainAssetVaultFactory @entity {
   id: ID! #factory address
   "Address of the OffchainAssetVault contract"
   address: Bytes! #factory address
-  implementation: Bytes! #implementation address from Implementation event
+  implementation: Bytes #implementation address from Implementation event
   "Stake addresses deployed by this factory"
-  children: [OffchainAssetVault!] #all the children that were deployed by this factory
+  children: [OffchainAssetVault!] @derivedFrom(field: "factory") #all the children that were deployed by this factory
+  childrenCount: BigInt!
 }
 
 type OffchainAssetVault @entity {
@@ -27,7 +28,7 @@ type OffchainAssetVault @entity {
   "The symbol for the ERC20 token for this OffchainAssetVault"
   symbol: String! # OffchainAssetVaultConstruction.receiptVaultConfig.symbol
   "This OffchainAssetVault as an account including its associated events"
-  asAccount: Account!
+  asAccount: Account
   "The total number of shares for this OffchainAssetVault"
   totalShares: BigInt! # OffchainAssetVault.totalSupply() - update with every mint/burn
   "The uri for the ERC1155 tokens for this OffchainAssetVault"
@@ -35,23 +36,23 @@ type OffchainAssetVault @entity {
   "Share holders for this OffchainAssetVault"
   shareHolders: [Account!] # All Accounts that have a ShareBalance for this OffchainAssetVault
   "Share balances for this OffchainAssetVault"
-  shareBalances: [SharesBalance!]! @derivedFrom(field: "offchainAssetVault")
+  shareBalances: [SharesBalance!] @derivedFrom(field: "offchainAssetVault")
   "Share approvals for this OffchainAssetVault"
-  shareApprovals: [SharesApproval!]! @derivedFrom(field: "offchainAssetVault")
+  shareApprovals: [SharesApproval!] @derivedFrom(field: "offchainAssetVault")
   "Share transfers for this OffchainAssetVault"
-  shareTransfers: [SharesTransfer!]! @derivedFrom(field: "offchainAssetVault")
+  shareTransfers: [SharesTransfer!] @derivedFrom(field: "offchainAssetVault")
 
   "Receipt holders for this OffchainAssetVault"
   receiptHolders: [Account!] # All Accounts that have a ReceiptBalance for an ID for this OffchainAssetVault
   "Receipts for this OffchainAssetVault"
   receipts: [Receipt!]! @derivedFrom(field: "offchainAssetVault")
   "Receipt balances for this OffchainAssetVault"
-  receiptBalances: [ReceiptBalance!]! @derivedFrom(field: "offchainAssetVault")
+  receiptBalances: [ReceiptBalance!] @derivedFrom(field: "offchainAssetVault")
   "Receipt operators for this OffchainAssetVault"
-  receiptOperators: [ReceiptOperator!]!
+  receiptOperators: [ReceiptOperator!]
     @derivedFrom(field: "offchainAssetVault")
   "Receipt transfers for this OffchainAssetVault"
-  receiptTransfers: [ReceiptTransfer!]!
+  receiptTransfers: [ReceiptTransfer!]
     @derivedFrom(field: "offchainAssetVault")
 
   "Deposits for this OffchainAssetVault"
@@ -83,40 +84,41 @@ type OffchainAssetVault @entity {
 
 type Account @entity {
   id: ID!
-  asOffchainAssetVault: OffchainAssetVault
+  offchainAssetVault: OffchainAssetVault!
+  address: Bytes!
 
-  ShareBalances: [SharesBalance!]! @derivedFrom(field: "account")
-  ShareApprovalsOwner: [SharesApproval!]! @derivedFrom(field: "owner")
-  ShareApprovalsSpender: [SharesApproval!]! @derivedFrom(field: "spender")
-  ShareTransferFromEvent: [SharesTransfer!]! @derivedFrom(field: "from")
-  ShareTransferToEvent: [SharesTransfer!]! @derivedFrom(field: "to")
+  shareBalances: [SharesBalance!]! @derivedFrom(field: "account")
+  shareApprovalsOwner: [SharesApproval!]! @derivedFrom(field: "owner")
+  shareApprovalsSpender: [SharesApproval!]! @derivedFrom(field: "spender")
+  shareTransferFromEvent: [SharesTransfer!]! @derivedFrom(field: "from")
+  shareTransferToEvent: [SharesTransfer!]! @derivedFrom(field: "to")
 
-  ReceiptBalances: [ReceiptBalance!]! @derivedFrom(field: "account")
-  ReceiptOperatorOwner: [ReceiptOperator!]! @derivedFrom(field: "owner")
-  ReceiptOperatorOperator: [ReceiptOperator!]! @derivedFrom(field: "operator")
-  ReceiptTransferFromEvent: [ReceiptTransfer!]! @derivedFrom(field: "from")
-  ReceiptTransferToEvent: [ReceiptTransfer!]! @derivedFrom(field: "to")
-  ReceiptTransferOperatorEvent: [ReceiptTransfer!]!
+  receiptBalances: [ReceiptBalance!]! @derivedFrom(field: "account")
+  receiptOperatorOwner: [ReceiptOperator!]! @derivedFrom(field: "owner")
+  receiptOperatorOperator: [ReceiptOperator!]! @derivedFrom(field: "operator")
+  receiptTransferFromEvent: [ReceiptTransfer!]! @derivedFrom(field: "from")
+  receiptTransferToEvent: [ReceiptTransfer!]! @derivedFrom(field: "to")
+  receiptTransferOperatorEvent: [ReceiptTransfer!]!
     @derivedFrom(field: "operator")
 
-  DepositWithReceipts: [DepositWithReceipt!] @derivedFrom(field: "caller")
-  WithdrawWithReceipts: [WithdrawWithReceipt!] @derivedFrom(field: "caller")
+  depositWithReceipts: [DepositWithReceipt!] @derivedFrom(field: "caller")
+  withdrawWithReceipts: [WithdrawWithReceipt!] @derivedFrom(field: "caller")
 
-  ConficateSharesConfiscator: [ConfiscateShares!]!
+  conficateSharesConfiscator: [ConfiscateShares!]!
     @derivedFrom(field: "confiscator")
-  ConficateSharesConfiscatee: [ConfiscateShares!]!
+  conficateSharesConfiscatee: [ConfiscateShares!]!
     @derivedFrom(field: "confiscatee")
 
-  ConficateReceiptConfiscator: [ConfiscateShares!]!
+  conficateReceiptConfiscator: [ConfiscateShares!]!
     @derivedFrom(field: "confiscator")
-  ConficateReceiptConfiscatee: [ConfiscateShares!]!
+  conficateReceiptConfiscatee: [ConfiscateShares!]!
     @derivedFrom(field: "confiscatee")
 
-  Certifies: [Certify!]! @derivedFrom(field: "certifier")
+  certifies: [Certify!]! @derivedFrom(field: "certifier")
 
-  RoleHolders: [RoleHolder!]! @derivedFrom(field: "account")
-  RolesRevoked: [RoleRevoked!] @derivedFrom(field: "account")
-  RolesGranted: [RoleGranted!] @derivedFrom(field: "account")
+  roleHolders: [RoleHolder!]! @derivedFrom(field: "account")
+  rolesRevoked: [RoleRevoked!] @derivedFrom(field: "account")
+  rolesGranted: [RoleGranted!] @derivedFrom(field: "account")
 
   events: [Event!]! @derivedFrom(field: "emitter")
 }
@@ -347,13 +349,13 @@ type ReceiptTransfer implements Event @entity {
 type RoleGranted implements Event @entity {
   id: ID!
   emitter: Account!
+  account: Account!
+  sender: Account!
   transaction: Transaction!
   timestamp: BigInt!
   offchainAssetVault: OffchainAssetVault!
   role: Role!
   roleHolder: RoleHolder!
-  account: Account!
-  sender: Account!
 }
 
 type RoleRevoked implements Event @entity {
@@ -373,9 +375,9 @@ type RoleHolder @entity {
   offchainAssetVault: OffchainAssetVault!
   role: Role!
   account: Account!
-  hasRole: Boolean!
-  roleGrants: [RoleGranted!]! @derivedFrom(field: "roleHolder")
-  roleRevoked: [RoleRevoked!]! @derivedFrom(field: "roleHolder")
+  hasRole: Boolean
+  roleGrants: [RoleGranted!] @derivedFrom(field: "roleHolder")
+  roleRevoked: [RoleRevoked!] @derivedFrom(field: "roleHolder")
 }
 
 type Role @entity {

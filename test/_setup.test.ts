@@ -1,23 +1,22 @@
 import hre, { ethers } from "hardhat";
-import {
-  OffchainAssetVaultFactory,
-  ConstructionConfigStruct,
-} from "../typechain/OffchainAssetVaultFactory";
+import { OffchainAssetVaultFactory } from "../typechain/OffchainAssetVaultFactory";
 import * as path from "path";
 import * as Util from "./utils/utils";
+import { ApolloFetch } from "apollo-fetch";
 
-export let offchainAssetVaultFactory: OffchainAssetVaultFactory;
+export let factory: OffchainAssetVaultFactory;
 export let signers;
-
+export let subgraph: ApolloFetch;
+let subgraphName = "rain-protocol/offchainAssetVault";
 before("Deploy OffchainAssetVault Factory", async () => {
   signers = await ethers.getSigners();
-  
+
   const OffchainAssetVaultFactory = await ethers.getContractFactory(
     "OffchainAssetVaultFactory"
   );
-  offchainAssetVaultFactory =
-  await OffchainAssetVaultFactory.deploy() as OffchainAssetVaultFactory;
-  await offchainAssetVaultFactory.deployed();
+  factory =
+    (await OffchainAssetVaultFactory.deploy()) as OffchainAssetVaultFactory;
+  await factory.deployed();
 
   const pathExampleConfig = path.resolve(
     __dirname,
@@ -26,9 +25,9 @@ before("Deploy OffchainAssetVault Factory", async () => {
   const config = JSON.parse(Util.fetchFile(pathExampleConfig));
 
   config.network = hre.network.name;
-  config.offchainAssetVaultFactory = offchainAssetVaultFactory.address;
+  config.offchainAssetVaultFactory = factory.address;
   config.offchainAssetVaultFactoryBlock =
-    offchainAssetVaultFactory.deployTransaction.blockNumber;
+    factory.deployTransaction.blockNumber;
 
   Util.writeFile(pathExampleConfig, JSON.stringify(config, null, 2));
 
@@ -54,5 +53,8 @@ before("Deploy OffchainAssetVault Factory", async () => {
 
   Util.writeFile(deployConfigPath, JSON.stringify(deployConfig, null, 2));
 
-  // Util.exec(`npm run deploy-subgraph`);
+  Util.exec(`npm run deploy-subgraph`);
+
+  subgraph = Util.fetchSubgraph(subgraphName);
+  
 });
