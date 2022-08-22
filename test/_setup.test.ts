@@ -26,8 +26,7 @@ before("Deploy OffchainAssetVault Factory", async () => {
 
   config.network = hre.network.name;
   config.offchainAssetVaultFactory = factory.address;
-  config.offchainAssetVaultFactoryBlock =
-    factory.deployTransaction.blockNumber;
+  config.offchainAssetVaultFactoryBlock = factory.deployTransaction.blockNumber;
 
   Util.writeFile(pathExampleConfig, JSON.stringify(config, null, 2));
 
@@ -56,5 +55,4 @@ before("Deploy OffchainAssetVault Factory", async () => {
   Util.exec(`npm run deploy-subgraph`);
 
   subgraph = Util.fetchSubgraph(subgraphName);
-  
 });

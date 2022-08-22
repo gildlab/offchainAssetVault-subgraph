@@ -1,6 +1,6 @@
 {
   "network": "localhost",
-  "offchainAssetVaultFactoryBlock": 71,
-  "offchainAssetVaultFactory": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8",
+  "offchainAssetVaultFactoryBlock": 120,
+  "offchainAssetVaultFactory": "0x9d4454B023096f34B160D6B654540c56A1F81688",
   "factory": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"
 }

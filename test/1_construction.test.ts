@@ -29,9 +29,9 @@ import {
   WITHDRAWER,
   WITHDRAWER_ADMIN,
 } from "../src/roles";
-let deployer: SignerWithAddress;
-let admin: SignerWithAddress;
-let offchainAssetVault: OffchainAssetVault;
+export let deployer: SignerWithAddress;
+export let admin: SignerWithAddress;
+export let offchainAssetVault: OffchainAssetVault;
 let deployTrx: ContractTransaction;
 let constructionConfig: OffchainAssetVaultConstructionConfigStruct;
 describe("OffchainAssetVaultFactory test", () => {
@@ -456,7 +456,7 @@ describe("OffchainAssetVaultFactory test", () => {
     }`;
 
     const response = (await subgraph({ query: query })) as FetchResult;
-    
+
     {
       const role = response.data.depositor;
       assert.equal(
