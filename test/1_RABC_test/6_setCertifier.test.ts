@@ -1,33 +1,35 @@
-import { admin, offchainAssetVault } from "./1_construction.test";
+import { admin, offchainAssetVault } from "../1_construction.test";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { signers, subgraph } from "./_setup.test";
-import { waitForSubgraphToBeSynced } from "./utils/utils";
-import { HANDLER } from "../src/roles";
+import { signers, subgraph } from "../_setup.test";
+import { waitForSubgraphToBeSynced } from "../utils/utils";
+import { CERTIFIER } from "../../src/roles";
 import { FetchResult } from "apollo-fetch";
 import { assert, expect } from "chai";
 import { ContractTransaction } from "ethers";
 
-let handler: SignerWithAddress;
+export let certifier: SignerWithAddress;
 let grantRoleTrx: ContractTransaction;
-describe("Set Handler test", () => {
+describe("Set Certifier test", () => {
   before(async () => {
-    handler = signers[8];
+    certifier = signers[7];
     grantRoleTrx = await offchainAssetVault
       .connect(admin)
-      .grantRole(await offchainAssetVault.HANDLER(), handler.address);
+      .grantRole(await offchainAssetVault.CERTIFIER(), certifier.address);
     await waitForSubgraphToBeSynced(1000);
   });
 
-  it("should add RoleHolder entity for handler", async () => {
+  it("should add RoleHolder entity for certifier", async () => {
     const query = `{
-            role(id: "${offchainAssetVault.address.toLowerCase()}-${HANDLER}"){
+            role(id: "${offchainAssetVault.address.toLowerCase()}-${CERTIFIER}"){
                 roleName
                 roleHash
                 roleHolders{
                     account{
                         address
                     }
-                    hasRole
+                    activeRoles{
+                      id
+                    }
                     roleGrants{
                         id
                         sender{
@@ -46,19 +48,23 @@ describe("Set Handler test", () => {
 
     const response = (await subgraph({ query: query })) as FetchResult;
     const role = response.data.role;
-    assert.equal(role.roleName, "HANDLER");
-    assert.equal(role.roleHash, HANDLER);
+    assert.equal(role.roleName, "CERTIFIER");
+    assert.equal(role.roleHash, CERTIFIER);
     expect(role.roleHolders).to.lengthOf(1);
 
     const roleHolders = role.roleHolders[0];
-    assert.equal(roleHolders.account.address, handler.address.toLowerCase());
-    assert.isTrue(roleHolders.hasRole);
+    assert.equal(roleHolders.account.address, certifier.address.toLowerCase());
+    
     expect(roleHolders.roleGrants).to.lengthOf(1);
 
     const roleGrants = roleHolders.roleGrants[0];
     expect(roleGrants).to.deep.includes({ id: grantRoleTrx.hash });
     assert.equal(roleGrants.sender.address, admin.address.toLowerCase());
     assert.equal(roleGrants.emitter.address, admin.address.toLowerCase());
-    assert.equal(roleGrants.account.address, handler.address.toLowerCase());
+    assert.equal(roleGrants.account.address, certifier.address.toLowerCase());
+
+    const activeRoles = roleHolders.activeRoles;
+    expect(activeRoles).to.lengthOf(1)
+    expect(activeRoles).to.deep.includes({id: `${offchainAssetVault.address.toLowerCase()}-${CERTIFIER}`})
   });
 });

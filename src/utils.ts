@@ -50,6 +50,8 @@ export function getRoleHolder(
     roleHolder.account = getAccount(address, offchainAssetVault).id;
     roleHolder.offchainAssetVault = offchainAssetVault;
     roleHolder.role = offchainAssetVault + "-" + role;
+    roleHolder.activeRoles = [];
+
     roleHolder.save();
   }
   return roleHolder as RoleHolder;

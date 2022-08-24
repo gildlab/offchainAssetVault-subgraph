@@ -7,7 +7,7 @@ import { execSync } from "child_process";
 import { createApolloFetch, ApolloFetch } from "apollo-fetch";
 import type { Artifact } from "hardhat/types";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import type {
+import {
   Contract,
   Signer,
   BigNumberish,
@@ -29,6 +29,7 @@ import type {
   ImplementationEvent,
   NewChildEvent,
 } from "../../typechain/Factory";
+import { ERC20PriceOracleVault, TestChainlinkDataFeed, TestErc20, TwoPriceOracle } from "../../typechain";
 
 // Interfaces
 interface SyncedSubgraphType {
@@ -507,3 +508,105 @@ export const getEventArgs = async (
 };
 
 export const wait = 1000;
+
+export const usdDecimals = 8;
+export const xauDecimals = 8;
+
+export const quotePrice = "186051000000";
+export const basePrice = "167917253245";
+
+export const deployERC20PriceOracleVault = async (): Promise<
+  [
+    ERC20PriceOracleVault,
+    TestErc20,
+    TwoPriceOracle,
+    TestChainlinkDataFeed,
+    TestChainlinkDataFeed
+  ]
+> => {
+  const oracleFactory = await ethers.getContractFactory(
+    "TestChainlinkDataFeed"
+  );
+  const basePriceOracle =
+    (await oracleFactory.deploy()) as TestChainlinkDataFeed;
+  await basePriceOracle.deployed();
+  // ETHUSD as of 2022-06-30
+
+  await basePriceOracle.setDecimals(usdDecimals);
+  await basePriceOracle.setRoundData(1, {
+    startedAt: BigNumber.from(Date.now()).div(1000),
+    updatedAt: BigNumber.from(Date.now()).div(1000),
+    answer: basePrice,
+    answeredInRound: 1,
+  });
+
+  const quotePriceOracle =
+    (await oracleFactory.deploy()) as TestChainlinkDataFeed;
+  await quotePriceOracle.deployed();
+  // XAUUSD as of 2022-06-30
+  await quotePriceOracle.setDecimals(xauDecimals);
+  await quotePriceOracle.setRoundData(1, {
+    startedAt: BigNumber.from(Date.now()).div(1000),
+    updatedAt: BigNumber.from(Date.now()).div(1000),
+    answer: quotePrice,
+    answeredInRound: 1,
+  });
+
+  // 1 hour
+  const baseStaleAfter = 60 * 60;
+  // 48 hours
+  const quoteStaleAfter = 48 * 60 * 60;
+
+  const testErc20 = await ethers.getContractFactory("TestErc20");
+  const testErc20Contract = (await testErc20.deploy()) as TestErc20;
+  await testErc20Contract.deployed();
+
+  const chainlinkFeedPriceOracleFactory = await ethers.getContractFactory(
+    "ChainlinkFeedPriceOracle"
+  );
+  const chainlinkFeedPriceOracleBase =
+    await chainlinkFeedPriceOracleFactory.deploy({
+      feed: basePriceOracle.address,
+      staleAfter: baseStaleAfter,
+    });
+  const chainlinkFeedPriceOracleQuote =
+    await chainlinkFeedPriceOracleFactory.deploy({
+      feed: quotePriceOracle.address,
+      staleAfter: quoteStaleAfter,
+    });
+  await chainlinkFeedPriceOracleBase.deployed();
+  await chainlinkFeedPriceOracleQuote.deployed();
+
+  const twoPriceOracleFactory = await ethers.getContractFactory(
+    "TwoPriceOracle"
+  );
+  const twoPriceOracle = (await twoPriceOracleFactory.deploy({
+    base: chainlinkFeedPriceOracleBase.address,
+    quote: chainlinkFeedPriceOracleQuote.address,
+  })) as TwoPriceOracle;
+
+  const constructionConfig = {
+    asset: testErc20Contract.address,
+    name: "EthGild",
+    symbol: "ETHg",
+    uri: "ipfs://bafkreiahuttak2jvjzsd4r62xoxb4e2mhphb66o4cl2ntegnjridtyqnz4",
+  };
+
+  const erc20PriceOracleVaultFactory = await ethers.getContractFactory(
+    "ERC20PriceOracleVault"
+  );
+
+  const erc20PriceOracleVault = (await erc20PriceOracleVaultFactory.deploy({
+    priceOracle: twoPriceOracle.address,
+    receiptVaultConfig: constructionConfig,
+  })) as ERC20PriceOracleVault;
+  await erc20PriceOracleVault.deployed();
+
+  return [
+    erc20PriceOracleVault,
+    testErc20Contract,
+    twoPriceOracle,
+    basePriceOracle,
+    quotePriceOracle,
+  ];
+};

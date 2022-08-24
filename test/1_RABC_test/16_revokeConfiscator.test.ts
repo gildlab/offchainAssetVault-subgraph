@@ -1,20 +1,21 @@
-import { admin, offchainAssetVault } from "./1_construction.test";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { signers, subgraph } from "./_setup.test";
-import { waitForSubgraphToBeSynced } from "./utils/utils";
-import { CONFISCATOR } from "../src/roles";
+import { admin, offchainAssetVault } from "../1_construction.test";
+import { subgraph } from "../_setup.test";
+import { waitForSubgraphToBeSynced } from "../utils/utils";
+import { CONFISCATOR } from "../../src/roles";
 import { FetchResult } from "apollo-fetch";
 import { assert, expect } from "chai";
 import { ContractTransaction } from "ethers";
+import { confiscator } from "./8_setConfiscator.test";
 
-let confiscator: SignerWithAddress;
 let grantRoleTrx: ContractTransaction;
-describe("Set Confiscator test", () => {
+describe("Revoke Confiscator test", () => {
   before(async () => {
-    confiscator = signers[9];
     grantRoleTrx = await offchainAssetVault
-      .connect(admin)
-      .grantRole(await offchainAssetVault.CONFISCATOR(), confiscator.address);
+      .connect( admin)
+      .revokeRole(
+        await offchainAssetVault.CONFISCATOR(),
+        confiscator.address
+      );
     await waitForSubgraphToBeSynced(1000);
   });
 
@@ -27,8 +28,10 @@ describe("Set Confiscator test", () => {
                     account{
                         address
                     }
-                    hasRole
-                    roleGrants{
+                    activeRoles{
+                      id
+                    }
+                    roleRevoked{
                         id
                         sender{
                             address
@@ -55,13 +58,18 @@ describe("Set Confiscator test", () => {
       roleHolders.account.address,
       confiscator.address.toLowerCase()
     );
-    assert.isTrue(roleHolders.hasRole);
-    expect(roleHolders.roleGrants).to.lengthOf(1);
+    expect(roleHolders.roleRevoked).to.lengthOf(1);
 
-    const roleGrants = roleHolders.roleGrants[0];
-    expect(roleGrants).to.deep.includes({ id: grantRoleTrx.hash });
-    assert.equal(roleGrants.sender.address, admin.address.toLowerCase());
-    assert.equal(roleGrants.emitter.address, admin.address.toLowerCase());
-    assert.equal(roleGrants.account.address, confiscator.address.toLowerCase());
+    const roleRevoked = roleHolders.roleRevoked[0];
+    expect(roleRevoked).to.deep.includes({ id: grantRoleTrx.hash });
+    assert.equal(roleRevoked.sender.address, admin.address.toLowerCase());
+    assert.equal(roleRevoked.emitter.address, admin.address.toLowerCase());
+    assert.equal(
+      roleRevoked.account.address,
+      confiscator.address.toLowerCase()
+    );
+
+    const activeRoles = roleHolders.activeRoles;
+    expect(activeRoles).to.lengthOf(0)
   });
 });

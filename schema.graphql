@@ -361,13 +361,13 @@ type RoleGranted implements Event @entity {
 type RoleRevoked implements Event @entity {
   id: ID!
   emitter: Account!
+  account: Account!
+  sender: Account!
   transaction: Transaction!
   timestamp: BigInt!
   offchainAssetVault: OffchainAssetVault!
   role: Role!
   roleHolder: RoleHolder!
-  account: Account!
-  sender: Account!
 }
 
 type RoleHolder @entity {
@@ -375,7 +375,7 @@ type RoleHolder @entity {
   offchainAssetVault: OffchainAssetVault!
   role: Role!
   account: Account!
-  hasRole: Boolean
+  activeRoles: [Role!]
   roleGrants: [RoleGranted!] @derivedFrom(field: "roleHolder")
   roleRevoked: [RoleRevoked!] @derivedFrom(field: "roleHolder")
 }

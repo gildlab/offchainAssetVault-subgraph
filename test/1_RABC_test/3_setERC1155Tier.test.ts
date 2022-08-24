@@ -1,16 +1,16 @@
-import { admin, offchainAssetVault } from "./1_construction.test";
-import { ReadWriteTier } from "../typechain";
+import { admin, offchainAssetVault } from "../1_construction.test";
+import { ReadWriteTier } from "../../typechain";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { signers, subgraph } from "./_setup.test";
-import { waitForSubgraphToBeSynced } from "./utils/utils";
-import { ERC1155TIERER } from "../src/roles";
+import { signers, subgraph } from "../_setup.test";
+import { waitForSubgraphToBeSynced } from "../utils/utils";
+import { ERC1155TIERER } from "../../src/roles";
 import { FetchResult } from "apollo-fetch";
 import { assert, expect } from "chai";
 import { ContractTransaction } from "ethers";
 
 let TierV2TestContract: ReadWriteTier;
-let erc1155Tierer: SignerWithAddress;
+export let erc1155Tierer: SignerWithAddress;
 const minTier = ethers.BigNumber.from(10);
 let grantRoleTrx: ContractTransaction;
 describe("Set ERC1155Tier test", () => {
@@ -43,7 +43,9 @@ describe("Set ERC1155Tier test", () => {
                     account{
                         address
                     }
-                    hasRole
+                    activeRoles{
+                      id
+                    }
                     roleGrants{
                         id
                         sender{
@@ -71,7 +73,7 @@ describe("Set ERC1155Tier test", () => {
       roleHolders.account.address,
       erc1155Tierer.address.toLowerCase()
     );
-    assert.isTrue(roleHolders.hasRole);
+    
     expect(roleHolders.roleGrants).to.lengthOf(1);
 
     const roleGrants = roleHolders.roleGrants[0];
@@ -82,5 +84,9 @@ describe("Set ERC1155Tier test", () => {
       roleGrants.account.address,
       erc1155Tierer.address.toLowerCase()
     );
+
+    const activeRoles = roleHolders.activeRoles;
+    expect(activeRoles).to.lengthOf(1)
+    expect(activeRoles).to.deep.includes({id: `${offchainAssetVault.address.toLowerCase()}-${ERC1155TIERER}`})
   });
 });

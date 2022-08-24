@@ -1,8 +1,10 @@
+import { log } from "@graphprotocol/graph-ts";
 import {
   OffchainAssetVault,
   Role,
   RoleGranted,
   RoleHolder,
+  RoleRevoked,
 } from "../generated/schema";
 import {
   Approval,
@@ -17,7 +19,7 @@ import {
   ReceiptInformation,
   RoleAdminChanged,
   RoleGranted as RoleGrantedEvent,
-  RoleRevoked,
+  RoleRevoked as RoleRevokedEvent,
   SetERC1155Tier,
   SetERC20Tier,
   Snapshot,
@@ -148,7 +150,10 @@ export function handleRoleGranted(event: RoleGrantedEvent): void {
     );
     if (roleHolder) {
       roleGranted.roleHolder = roleHolder.id;
-      roleHolder.hasRole = true;
+
+      let activeRoles = roleHolder.activeRoles;
+      if(activeRoles) activeRoles.push(role.id);
+      roleHolder.activeRoles = activeRoles;
       roleHolder.save();
     }
     roleGranted.save();
@@ -158,7 +163,50 @@ export function handleRoleGranted(event: RoleGrantedEvent): void {
     role.save();
   }
 }
-export function handleRoleRevoked(event: RoleRevoked): void {}
+export function handleRoleRevoked(event: RoleRevokedEvent): void {
+  let offchainAssetVault = OffchainAssetVault.load(event.address.toHex());
+  let role = Role.load(event.address.toHex() + "-" + event.params.role.toHex());
+
+  if (offchainAssetVault && role) {
+    let roleRevoked = new RoleRevoked(event.transaction.hash.toHex());
+    roleRevoked.account = getAccount(
+      event.params.account.toHex(),
+      offchainAssetVault.id
+    ).id;
+    roleRevoked.emitter = getAccount(
+      event.params.sender.toHex(),
+      offchainAssetVault.id
+    ).id;
+    roleRevoked.sender = getAccount(
+      event.params.sender.toHex(),
+      offchainAssetVault.id
+    ).id;
+    roleRevoked.transaction = getTransaction(event.block).id;
+    roleRevoked.timestamp = event.block.timestamp;
+    roleRevoked.offchainAssetVault = offchainAssetVault.id;
+    roleRevoked.role = role.id;
+    let roleHolder = getRoleHolder(
+      event.address.toHex(),
+      event.params.account.toHex(),
+      event.params.role.toHex()
+    );
+    if (roleHolder) {
+      roleRevoked.roleHolder = roleHolder.id;
+
+      let old_activeRoles = roleHolder.activeRoles;
+      let activeRoles: string[] = [];
+      if(old_activeRoles){
+        for(let i=0; i< old_activeRoles.length; i++){
+          if(old_activeRoles[i] != role.id)
+            activeRoles.push(old_activeRoles[i])
+        }
+      }
+      roleHolder.activeRoles = activeRoles;
+      roleHolder.save();
+    }
+    roleRevoked.save();
+  }
+}
 export function handleSetERC1155Tier(event: SetERC1155Tier): void {}
 export function handleSetERC20Tier(event: SetERC20Tier): void {}
 export function handleSnapshot(event: Snapshot): void {}

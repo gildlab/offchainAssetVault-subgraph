@@ -1,16 +1,16 @@
-import { admin, offchainAssetVault } from "./1_construction.test";
-import { ReadWriteTier } from "../typechain";
+import { admin, offchainAssetVault } from "../1_construction.test";
+import { ReadWriteTier } from "../../typechain";
 import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { signers, subgraph } from "./_setup.test";
-import { waitForSubgraphToBeSynced } from "./utils/utils";
-import { ERC20TIERER } from "../src/roles";
+import { signers, subgraph } from "../_setup.test";
+import { waitForSubgraphToBeSynced } from "../utils/utils";
+import { ERC20TIERER } from "../../src/roles";
 import { FetchResult } from "apollo-fetch";
 import { assert, expect } from "chai";
 import { ContractTransaction } from "ethers";
 
 let TierV2TestContract: ReadWriteTier;
-let erc20Tierer: SignerWithAddress;
+export let erc20Tierer: SignerWithAddress;
 const minTier = ethers.BigNumber.from(10);
 let grantRoleTrx: ContractTransaction;
 describe("Set ERC20Tier test", () => {
@@ -40,7 +40,9 @@ describe("Set ERC20Tier test", () => {
                     account{
                         address
                     }
-                    hasRole
+                    activeRoles{
+                      id
+                    }
                     roleGrants{
                         id
                         sender{
@@ -68,7 +70,7 @@ describe("Set ERC20Tier test", () => {
       roleHolders.account.address,
       erc20Tierer.address.toLowerCase()
     );
-    assert.isTrue(roleHolders.hasRole);
+
     expect(roleHolders.roleGrants).to.lengthOf(1);
 
     const roleGrants = roleHolders.roleGrants[0];
@@ -76,5 +78,10 @@ describe("Set ERC20Tier test", () => {
     assert.equal(roleGrants.sender.address, admin.address.toLowerCase());
     assert.equal(roleGrants.emitter.address, admin.address.toLowerCase());
     assert.equal(roleGrants.account.address, erc20Tierer.address.toLowerCase());
+
+    const activeRoles = roleHolders.activeRoles;
+    expect(activeRoles).to.lengthOf(1)
+    expect(activeRoles).to.deep.includes({id: `${offchainAssetVault.address.toLowerCase()}-${ERC20TIERER}`})
+
   });
 });
