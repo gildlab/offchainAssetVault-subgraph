@@ -2,6 +2,7 @@ import { Address, BigInt, ethereum } from "@graphprotocol/graph-ts";
 import {
   Account,
   OffchainAssetVault,
+  Receipt,
   RoleHolder,
   Transaction,
 } from "../generated/schema";
@@ -24,10 +25,10 @@ export function getAccount(
   return account as Account;
 }
 
-export function getTransaction(block: ethereum.Block): Transaction {
-  let transaction = Transaction.load(block.hash.toHex());
+export function getTransaction(block: ethereum.Block, hash:string): Transaction {
+  let transaction = Transaction.load(hash);
   if (!transaction) {
-    transaction = new Transaction(block.hash.toHex());
+    transaction = new Transaction(hash);
     transaction.blockNumber = block.number;
     transaction.timestamp = block.timestamp;
     transaction.save();
@@ -55,4 +56,16 @@ export function getRoleHolder(
     roleHolder.save();
   }
   return roleHolder as RoleHolder;
+}
+
+export function getReceipt(offchainAssetVault: string, receiptId: BigInt): Receipt{
+  let receipt = Receipt.load(offchainAssetVault + "-" + receiptId.toString());
+  if(!receipt){
+    receipt = new Receipt(offchainAssetVault + "-" + receiptId.toString());
+    receipt.offchainAssetVault = offchainAssetVault;
+    receipt.receiptId = receiptId;
+    receipt.shares = ZERO;
+    receipt.save(); 
+  }
+  return receipt as Receipt;
 }

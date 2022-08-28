@@ -136,17 +136,17 @@ type Receipt @entity {
   "Total shares created for this receipt"
   shares: BigInt! # INCREASES with every DepositWithReceipt and DECREASES with every WithdrawWithReceipt
   "Deposits for this receipt"
-  deposits: [DepositWithReceipt!]
+  deposits: [DepositWithReceipt!] @derivedFrom(field: "receipt")
   "Withdraws for this receipt"
-  withdraws: [WithdrawWithReceipt!]!
+  withdraws: [WithdrawWithReceipt!] @derivedFrom(field: "receipt")
   "Holders of this receipt"
-  holders: [Account!]! # All Accounts that have a ReceiptBalance for this receiptId
+  holders: [Account!] # All Accounts that have a ReceiptBalance for this receiptId
   "Balances for this receipt"
-  balances: [ReceiptBalance!]! @derivedFrom(field: "receipt")
+  balances: [ReceiptBalance!] @derivedFrom(field: "receipt")
   "Transfers for this receipt"
-  transfers: [ReceiptTransfer!]! @derivedFrom(field: "token")
+  transfers: [ReceiptTransfer!] @derivedFrom(field: "token")
   "Information for this receipt"
-  receiptInformations: [ReceiptInformation!]! @derivedFrom(field: "receipt")
+  receiptInformations: [ReceiptInformation!] @derivedFrom(field: "receipt")
 }
 
 # Created with every DepositWithReceipt event
@@ -171,7 +171,7 @@ type DepositWithReceipt implements Event @entity {
   "The caller of the transaction"
   caller: Account! # DepositWithReceipt.caller
 }
-
+ 
 # Created with every WithdrawWithReceipt event
 type WithdrawWithReceipt implements Event @entity {
   id: ID!

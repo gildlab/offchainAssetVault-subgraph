@@ -10,7 +10,9 @@
     "prepare": "npx mustache config/localhost.json subgraph.template.yaml subgraph.yaml",
     "hardhat-node": "npx hardhat node",
     "graph-node": "docker-compose -f \"docker/docker-compose.yml\" up",
-    "deploy-subgraph": "ts-node scripts/index.ts"
+    "deploy-subgraph": "ts-node scripts/index.ts",
+    "prepare:mumbai": "npx mustache config/mumbai.json subgraph.template.yaml subgraph.yaml",
+    "deploy:mumbai": "npm run prepare:mumbai && graph deploy --node https://api.thegraph.com/deploy/ Gild-lab/offchainassetvault"
   },
   "repository": {
     "type": "git",

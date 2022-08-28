@@ -6,9 +6,9 @@ dataSources:
     name: OffchainAssetVaultFactory
     network: localhost
     source:
-      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+      address: "0xf4AE7E15B1012edceD8103510eeB560a9343AFd3"
       abi: OffchainAssetVaultFactory
-      startBlock: 1
+      startBlock: 1233
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6

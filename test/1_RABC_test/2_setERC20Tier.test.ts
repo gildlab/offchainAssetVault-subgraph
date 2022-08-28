@@ -9,9 +9,9 @@ import { FetchResult } from "apollo-fetch";
 import { assert, expect } from "chai";
 import { ContractTransaction } from "ethers";
 
-let TierV2TestContract: ReadWriteTier;
+export let TierV2TestContract: ReadWriteTier;
 export let erc20Tierer: SignerWithAddress;
-const minTier = ethers.BigNumber.from(10);
+const minTier = ethers.BigNumber.from(1);
 let grantRoleTrx: ContractTransaction;
 describe("Set ERC20Tier test", () => {
   before(async () => {
