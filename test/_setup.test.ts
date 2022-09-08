@@ -38,7 +38,7 @@ before("Deploy OffchainAssetVault Factory", async () => {
   const deployConfig = JSON.parse(Util.fetchFile(deployConfigExPath));
 
   // Setting all to localhost to test locally
-  deployConfig.subgraphName = "rain-protocol/offchainAssetVault";
+  deployConfig.subgraphName = "gild-lab/ethgild";
   deployConfig.configPath = "config/localhost.json";
   deployConfig.endpoint = "http://localhost:8020/";
   deployConfig.ipfsEndpoint = "http://localhost:5001";

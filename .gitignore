@@ -6,3 +6,4 @@ docker
 generated
 typechain
 build
+.env

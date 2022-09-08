@@ -8,6 +8,7 @@ import {
   RoleGranted,
   RoleRevoked,
   ConfiscateShares,
+  WithdrawWithReceipt
 } from "../generated/schema";
 import {
   Approval,
@@ -31,7 +32,7 @@ import {
   TransferSingle,
   URI,
   Withdraw,
-  WithdrawWithReceipt,
+  WithdrawWithReceipt as WithdrawWithReceiptEvent,
   OffchainAssetVault as OffchainAssetVaultContract
 } from "../generated/templates/OffchainAssetVaultTemplate/OffchainAssetVault";
 import {
@@ -56,6 +57,7 @@ import { getAccount, getReceipt, getRoleHolder, getTransaction } from "./utils";
 
 export function handleApproval(event: Approval): void {}
 export function handleApprovalForAll(event: ApprovalForAll): void {}
+
 export function handleCertify(event: CertifyEvent): void {
   let offchainAssetVault = OffchainAssetVault.load(event.address.toHex());
   if(offchainAssetVault){
@@ -73,8 +75,9 @@ export function handleCertify(event: CertifyEvent): void {
     offchainAssetVault.save();
   }
 }
-export function handleConfiscateReceipt(event: ConfiscateReceipt): void {
-}
+
+export function handleConfiscateReceipt(event: ConfiscateReceipt): void {}
+
 export function handleConfiscateShares(event: ConfiscateSharesEvent): void {
   let offchainAssetVault = OffchainAssetVault.load(event.address.toHex());
   if(offchainAssetVault){
@@ -89,8 +92,10 @@ export function handleConfiscateShares(event: ConfiscateSharesEvent): void {
     confiscateShares.save();
   }
 }
+
 export function handleConstruction(event: Construction): void {}
 export function handleDeposit(event: Deposit): void {}
+
 export function handleDepositWithReceipt(event: DepositWithReceiptEvent): void {
   let offchainAssetVault = OffchainAssetVault.load(event.address.toHex());
   if(offchainAssetVault){
@@ -276,6 +281,7 @@ export function handleRoleRevoked(event: RoleRevokedEvent): void {
 export function handleSetERC1155Tier(event: SetERC1155Tier): void {}
 export function handleSetERC20Tier(event: SetERC20Tier): void {}
 export function handleSnapshot(event: Snapshot): void {}
+
 export function handleTransfer(event: Transfer): void {
   let offchainAssetVault = OffchainAssetVault.load(event.address.toHex());
   let offchainAssetVaultContract = OffchainAssetVaultContract.bind(event.address);
@@ -300,7 +306,41 @@ export function handleTransferSingle(event: TransferSingle): void {
     offchainAssetVault.save();
   }
 }
-export function handleURI(event: URI): void {}
-export function handleWithdraw(event: Withdraw): void {}
-export function handleWithdrawWithReceipt(event: WithdrawWithReceipt): void {}
+
+export function handleURI(event: URI): void {
+  let offchainAssetVault = OffchainAssetVault.load(event.address.toHex());
+  if(offchainAssetVault){
+    offchainAssetVault.uri = event.params.value;
+    offchainAssetVault.save();
+  } 
+}
+export function handleWithdraw(event: Withdraw): void {
+  let offchainAssetVault = OffchainAssetVault.load(event.address.toHex());
+  if(offchainAssetVault){
+
+  }
+}
+
+export function handleWithdrawWithReceipt(event: WithdrawWithReceiptEvent): void {
+  let offchainAssetVault = OffchainAssetVault.load(event.address.toHex());
+  if(offchainAssetVault){
+    let withdrawWithReceipt = new WithdrawWithReceipt(event.params.id.toString());
+    withdrawWithReceipt.amount = event.params.shares;
+    withdrawWithReceipt.caller = getAccount(event.params.caller.toHex(), offchainAssetVault.id).id;
+    withdrawWithReceipt.emitter = getAccount(event.params.caller.toHex(), offchainAssetVault.id).id;
+    withdrawWithReceipt.owner = getAccount(event.params.owner.toHex(), offchainAssetVault.id).id;
+    withdrawWithReceipt.offchainAssetVault = offchainAssetVault.id;
+    withdrawWithReceipt.timestamp = event.block.timestamp;
+    withdrawWithReceipt.transaction = getTransaction(event.block, event.transaction.hash.toHex()).id;
+    
+    let receipt = getReceipt(offchainAssetVault.id, event.params.id);
+    if(receipt){
+      receipt.shares = receipt.shares.minus(event.params.shares);
+      receipt.save();
+      withdrawWithReceipt.receipt = receipt.id;
+    }
+    
+    withdrawWithReceipt.save();
+  }
+}
 

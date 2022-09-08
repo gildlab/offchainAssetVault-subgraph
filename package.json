@@ -52,7 +52,7 @@
     "yargs-parser": ">=13.1.2"
   },
   "dependencies": {
-    "@Gild-Lab/ethgild": "git+https://github.com/Gild-Lab/ethgild.git#4f9374a0d549b852301a1f9760f6ca2cbf5efb31",
+    "@Gild-Lab/ethgild": "git+https://github.com/Gild-Lab/ethgild.git",
     "@graphprotocol/graph-cli": "^0.33.0",
     "@graphprotocol/graph-ts": "^0.27.0"
   }
