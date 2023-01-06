@@ -7,161 +7,32 @@ let
     })
     { };
 
-  local-node = pkgs.writeShellScriptBin "local-node" ''
-    hardhat node
+  codegen = pkgs.writeShellScriptBin "codegen" ''
+    npm run codegen
   '';
 
-  compile = pkgs.writeShellScriptBin "compile" ''
-    hardhat compile
-  '';
-
-  local-fork = pkgs.writeShellScriptBin "local-fork" ''
-    hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/G0Vg_iZFiAuUD6hjXqcVg-Nys-NGiTQy --fork-block-number 11833335
-  '';
-
-  local-test = pkgs.writeShellScriptBin "local-test" ''
-    hardhat test --network localhost
-  '';
-
-  prettier-check = pkgs.writeShellScriptBin "prettier-check" ''
-    prettier --check .
-  '';
-
-  prettier-write = pkgs.writeShellScriptBin "prettier-write" ''
-    prettier --write .
-  '';
-
-  ci-lint = pkgs.writeShellScriptBin "ci-lint" ''
-    flush-all
-    npm install
-    solhint 'contracts/**/*.sol'
-    prettier-check
-    npm run lint
-  '';
-
-  flush-all = pkgs.writeShellScriptBin "flush-all" ''
-    rm -rf artifacts
-    rm -rf cache
-    rm -rf node_modules
-    rm -rf typechain
-    rm -rf bin
-    rm -rf docusaurus/.docusaurus
-    rm -rf docusaurus/build
-    rm -rf docusaurus/node_modules
-    rm -rf docs/api
-  '';
-
-  security-check = pkgs.writeShellScriptBin "security-check" ''
-    flush-all
-    npm install
-
-    # Run slither against all our contracts.
-    # Disable npx as nix-shell already handles availability of what we need.
-    # Dependencies and tests are out of scope.
-    slither . --npx-disable --filter-paths="contracts/test" --exclude-dependencies
-  '';
-
-  solt-the-earth = pkgs.writeShellScriptBin "solt-the-earth" ''
-    mkdir -p solt
-    find contracts -type f -not -path 'contracts/test/*' | xargs -i solt write '{}' --npm --runs 100000
-    for name in solc-* ; do  content=$(jq '.sources |= with_entries(.key |= sub("\\./"; ""))' "''${name}")
-    cat <<< $content > "''${name}"; done
-    mv solc-* solt
-  '';
-
-  cut-dist = pkgs.writeShellScriptBin "cut-dist" ''
-    flush-all
-    npm install
-
-    hardhat compile --force
-    dir=`git rev-parse HEAD`
-    mkdir -p "dist/''${dir}"
-    mv artifacts "dist/''${dir}/"
-    mv typechain "dist/''${dir}/"
-
-    solt-the-earth
-    mv solt "dist/''${dir}/"
-  '';
-
-  ci-test = pkgs.writeShellScriptBin "ci-test" ''
-    flush-all
-    npm install
-    hardhat compile --force
-    hardhat test
-  '';
-
-  docgen = pkgs.writeShellScriptBin "docgen" ''
-    rm -rf docs/api && npm run docgen
-  '';
-
-  docs-dev = pkgs.writeShellScriptBin "docs-dev" ''
-    docgen && npm run start --prefix docusaurus
-  '';
-
-  docs-build = pkgs.writeShellScriptBin "docs-build" ''
-    docgen && npm run build --prefix docusaurus
-  '';
-
-  docs-serve = pkgs.writeShellScriptBin "docs-serve" ''
-    npm run serve --prefix docusaurus
-  '';
-
-  docs-version = pkgs.writeShellScriptBin "docs-version" ''
-    docs-build && npm run docusaurus --prefix docusaurus docs:version ''${GIT_TAG}
-    # build again so docusaurus-search-local can index newly added version
-    npm run build --prefix docusaurus
-  '';
-
-  prepack = pkgs.writeShellScriptBin "prepack" ''
-    set -euo pipefail
-    shopt -s globstar
-
-    flush-all
-
-    npm install
+  build = pkgs.writeShellScriptBin "build" ''
     npm run build
-
-    cp artifacts/contracts/**/*.json artifacts
-    rm -rf artifacts/*.dbg.json
-    rm -rf artifacts/*Test*
-    rm -rf artifacts/*Reentrant*
-    rm -rf artifacts/*ForceSendEther*
-    rm -rf artifacts/*Mock*
   '';
 
-  prepublish = pkgs.writeShellScriptBin "prepublish" ''
-    npm version patch --no-git-tag-version
-    PACKAGE_NAME=$(node -p "require('./package.json').name")
-    PACKAGE_VERSION=$(node -p "require('./package.json').version")
-    cat << EOF
-
-
-    Package version for $PACKAGE_NAME bumped to $PACKAGE_VERSION
-
-    Please manually commit this change, and push up to the GitHub repo:
-
-    $ git commit -am "$PACKAGE_VERSION"
-    $ git push
-
-    Now, you should either:
-    - tag this commit locally and push it up
-    - remotely cut a release on the GitHub repo (if you're having issues tagging the commit locally)
-
-    Locally:
-    $ git tag v$PACKAGE_VERSION -am "$PACKAGE_VERSION"
-    $ git push origin v$PACKAGE_VERSION
-
-    Remotely:
-    Go to Releases -> Draft a new release
-    Select this branch and create a new release with the following tag: v$PACKAGE_VERSION
-
-
-    EOF
+  prepare-mumbai = pkgs.writeShellScriptBin "prepare-mumbai" ''
+    npx mustache config/mumbai.json subgraph.template.yaml subgraph.yaml
+    codegen
+    build
   '';
 
-  init = pkgs.writeShellScriptBin "init" ''
-    mkdir -p contracts && cp -r node_modules/@Gild-Lab/ethgild/contracts .
-    compile
+  prepare-polygon = pkgs.writeShellScriptBin "prepare-polygon" ''
+    npx mustache config/polygon.json subgraph.template.yaml subgraph.yaml
+    codegen
+    build
+  '';
+
+  deploy-mumbai = pkgs.writeShellScriptBin "deploy-mumbai" ''
+    npm run ts-node scripts/index.ts --config config/mumbai.json --subgraphTemplate subgraph.template.yaml --subgraphName gild-lab/offchainassetvault
+  '';
+
+  deploy-polygon = pkgs.writeShellScriptBin "deploy-polygon" ''
+    npm run ts-node scripts/index.ts --config config/polygon.json --subgraphTemplate subgraph.template.yaml --subgraphName gild-lab/offchainassetvault
   '';
 in
 pkgs.stdenv.mkDerivation {
@@ -169,33 +40,17 @@ pkgs.stdenv.mkDerivation {
   buildInputs = [
     pkgs.nixpkgs-fmt
     pkgs.nodejs-16_x
-    pkgs.slither-analyzer
-    compile
-    local-node
-    local-fork
-    local-test
-    prettier-check
-    prettier-write
-    security-check
-    ci-test
-    ci-lint
-    cut-dist
-    docgen
-    docs-dev
-    docs-build
-    docs-serve
-    docs-version
-    prepack
-    prepublish
-    solt-the-earth
-    flush-all
-    init
+    codegen
+    build
+    prepare-mumbai
+    prepare-polygon
+    deploy-mumbai
+    deploy-polygon
   ];
 
   shellHook = ''
     export PATH=$( npm bin ):$PATH
     # keep it fresh
     npm i
-    init
   '';
 }
