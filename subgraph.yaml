@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: OffchainAssetReceiptVaultFactory
-    network: mumbai
+    network: matic
     source:
-      address: "0x0f55e389F7ea2dd04eb2F6fA26448Ce054D8C7F6"
+      address: "0xE9eB36Ceeea68fCBfc0B3723bD6B4966C12E35Eb"
       abi: OffchainAssetReceiptVaultFactory
-      startBlock: 29571898
+      startBlock: 38541238
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -28,7 +28,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: OffchainAssetReceiptVaultTemplate
-    network: mumbai
+    network: matic
     source:
       abi: OffchainAssetReceiptVault
     mapping:
@@ -77,7 +77,7 @@ templates:
       file: ./src/OffchainAssetReceiptVault.ts
   - kind: ethereum/contract
     name: ReceiptTemplate
-    network: mumbai
+    network: matic
     source:
       abi: Receipt
     mapping:
