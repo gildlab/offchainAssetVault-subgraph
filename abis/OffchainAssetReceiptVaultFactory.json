@@ -2,9 +2,21 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "receiptFactory_",
-        "type": "address"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "implementation",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "receiptFactory",
+            "type": "address"
+          }
+        ],
+        "internalType": "struct ReceiptVaultFactoryConfig",
+        "name": "config_",
+        "type": "tuple"
       }
     ],
     "stateMutability": "nonpayable",
@@ -20,6 +32,47 @@
     ],
     "name": "DuplicateChild",
     "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroImplementation",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroReceiptFactory",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "implementation",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "receiptFactory",
+            "type": "address"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct ReceiptVaultFactoryConfig",
+        "name": "config",
+        "type": "tuple"
+      }
+    ],
+    "name": "Construction",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -73,25 +126,6 @@
     "type": "event"
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "caller",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "address",
-        "name": "receiptFactory",
-        "type": "address"
-      }
-    ],
-    "name": "SetReceiptFactory",
-    "type": "event"
-  },
-  {
     "inputs": [
       {
         "internalType": "bytes",
@@ -112,18 +146,6 @@
   },
   {
     "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "string",
-            "name": "uri",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct ReceiptConfig",
-        "name": "receiptConfig_",
-        "type": "tuple"
-      },
       {
         "components": [
           {
@@ -207,7 +229,7 @@
     "name": "receiptFactory",
     "outputs": [
       {
-        "internalType": "address",
+        "internalType": "contract ReceiptFactory",
         "name": "",
         "type": "address"
       }

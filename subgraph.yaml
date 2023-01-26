@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: OffchainAssetReceiptVaultFactory
-    network: matic
+    network: mumbai
     source:
-      address: "0xE9eB36Ceeea68fCBfc0B3723bD6B4966C12E35Eb"
+      address: "0x893B08Fcc6958b7594730Ce5140A92644301d4b8"
       abi: OffchainAssetReceiptVaultFactory
-      startBlock: 38541238
+      startBlock: 31389026
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6
@@ -28,7 +28,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: OffchainAssetReceiptVaultTemplate
-    network: matic
+    network: mumbai
     source:
       abi: OffchainAssetReceiptVault
     mapping:
@@ -54,7 +54,7 @@ templates:
           handler: handleDeposit
         - event: DepositWithReceipt(address,address,uint256,uint256,uint256,bytes)
           handler: handleDepositWithReceipt
-        - event: OffchainAssetVaultInitialized(address,(address,(address,(address,string,string))))
+        - event: OffchainAssetReceiptVaultInitialized(address,(address,(address,(address,string,string))))
           handler: handleOffchainAssetVaultInitialized
         - event: RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32)
           handler: handleRoleAdminChanged
@@ -77,7 +77,7 @@ templates:
       file: ./src/OffchainAssetReceiptVault.ts
   - kind: ethereum/contract
     name: ReceiptTemplate
-    network: matic
+    network: mumbai
     source:
       abi: Receipt
     mapping:

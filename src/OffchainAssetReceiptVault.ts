@@ -30,7 +30,7 @@ import {
   Withdraw,
   WithdrawWithReceipt as WithdrawWithReceiptEvent,
   OffchainAssetReceiptVault as OffchainAssetVaultContract,
-  OffchainAssetVaultInitialized,
+  OffchainAssetReceiptVaultInitialized,
 } from "../generated/templates/OffchainAssetReceiptVaultTemplate/OffchainAssetReceiptVault";
 import {
   CERTIFIER,
@@ -74,13 +74,13 @@ export function handleCertify(event: CertifyEvent): void {
       event.transaction.hash.toHex()
     ).id;
     certify.emitter = getAccount(
-      event.params.caller.toHex(),
+      event.params.sender.toHex(),
       offchainAssetReceiptVault.id
     ).id;
     certify.timestamp = event.block.timestamp;
     certify.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
     certify.certifier = getAccount(
-      event.params.caller.toHex(),
+      event.params.sender.toHex(),
       offchainAssetReceiptVault.id
     ).id;
     certify.certifiedUntil = event.params.certifyUntil;
@@ -108,7 +108,7 @@ export function handleConfiscateShares(event: ConfiscateSharesEvent): void {
     ).id;
     confiscateShares.timestamp = event.block.timestamp;
     confiscateShares.emitter = getAccount(
-      event.params.caller.toHex(),
+      event.params.sender.toHex(),
       offchainAssetReceiptVault.id
     ).id;
     confiscateShares.confiscatee = getAccount(
@@ -116,7 +116,7 @@ export function handleConfiscateShares(event: ConfiscateSharesEvent): void {
       offchainAssetReceiptVault.id
     ).id;
     confiscateShares.confiscator = getAccount(
-      event.params.caller.toHex(),
+      event.params.sender.toHex(),
       offchainAssetReceiptVault.id
     ).id;
     confiscateShares.confiscated = event.params.confiscated;
@@ -220,7 +220,7 @@ export function handleDepositWithReceipt(event: DepositWithReceiptEvent): void {
 }
 
 export function handleOffchainAssetVaultInitialized(
-  event: OffchainAssetVaultInitialized
+  event: OffchainAssetReceiptVaultInitialized
 ): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
     event.address.toHex()

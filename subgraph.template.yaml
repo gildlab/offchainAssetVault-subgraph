@@ -54,7 +54,7 @@ templates:
           handler: handleDeposit
         - event: DepositWithReceipt(address,address,uint256,uint256,uint256,bytes)
           handler: handleDepositWithReceipt
-        - event: OffchainAssetVaultInitialized(address,(address,(address,(address,string,string))))
+        - event: OffchainAssetReceiptVaultInitialized(address,(address,(address,(address,string,string))))
           handler: handleOffchainAssetVaultInitialized
         - event: RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32)
           handler: handleRoleAdminChanged

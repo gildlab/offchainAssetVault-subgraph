@@ -7,9 +7,12 @@
     "test": "npx hardhat test",
     "codegen": "graph codegen",
     "build": "graph build",
-    "hardhat-node": "npx hardhat node",
-    "graph-node": "docker-compose -f \"docker/docker-compose.yml\" up",
-    "deploy-subgraph": "ts-node scripts/index.ts --config config/mumbai.json --subgraphTemplate subgraph.template.yaml --subgraphName gild-lab/offchainassetvault"
+    "deploy-subgraph": "ts-node scripts/index.ts",
+    "deploy-mumbai": "ts-node scripts/index.ts --config config/mumbai.json --subgraphTemplate subgraph.template.yaml --subgraphName gild-lab/offchainassetvault",
+    "deploy-polygon": "ts-node scripts/index.ts --config config/polygon.json --subgraphTemplate subgraph.template.yaml --subgraphName gildlab/offchainassetvault-polygon",
+    "create-local": "graph create --node http://192.168.0.215:8020/ gildlab/offchainassetvault",
+    "remove-local": "graph remove --node http://192.168.0.215:8020/ gildlab/offchainassetvault",
+    "deploy-local": "npx mustache config/mumbai.json subgraph.template.yaml subgraph.yaml && graph deploy --node http://192.168.0.215:8020/ --ipfs http://192.168.0.215:5001 gildlab/offchainassetvault  --version-label 1"
   },
   "repository": {
     "type": "git",

@@ -228,20 +228,7 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "string",
-            "name": "uri",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct ReceiptConfig",
-        "name": "config_",
-        "type": "tuple"
-      }
-    ],
+    "inputs": [],
     "name": "initialize",
     "outputs": [],
     "stateMutability": "nonpayable",
