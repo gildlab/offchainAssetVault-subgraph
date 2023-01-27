@@ -8,7 +8,7 @@
     "codegen": "graph codegen",
     "build": "graph build",
     "deploy-subgraph": "ts-node scripts/index.ts",
-    "deploy-mumbai": "ts-node scripts/index.ts --config config/mumbai.json --subgraphTemplate subgraph.template.yaml --subgraphName gild-lab/offchainassetvault",
+    "deploy-mumbai": "ts-node scripts/index.ts --config config/mumbai.json --subgraphTemplate subgraph.template.yaml --subgraphName gildlab/offchainassetvault-mumbai",
     "deploy-polygon": "ts-node scripts/index.ts --config config/polygon.json --subgraphTemplate subgraph.template.yaml --subgraphName gildlab/offchainassetvault-polygon",
     "create-local": "graph create --node http://192.168.0.215:8020/ gildlab/offchainassetvault",
     "remove-local": "graph remove --node http://192.168.0.215:8020/ gildlab/offchainassetvault",
