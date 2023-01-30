@@ -46,9 +46,9 @@ templates:
           handler: handleApproval
         - event: Certify(address,uint256,uint256,bool,bytes)
           handler: handleCertify
-        - event: ConfiscateReceipt(address,address,uint256,uint256)
+        - event: ConfiscateReceipt(address,address,uint256,uint256,bytes)
           handler: handleConfiscateReceipt
-        - event: ConfiscateShares(address,address,uint256)
+        - event: ConfiscateShares(address,address,uint256,bytes)
           handler: handleConfiscateShares
         - event: Deposit(indexed address,indexed address,uint256,uint256)
           handler: handleDeposit
@@ -58,13 +58,15 @@ templates:
           handler: handleOffchainAssetVaultInitialized
         - event: RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32)
           handler: handleRoleAdminChanged
+        - event: ReceiptVaultInformation(address,bytes)
+          handler: handleReceiptVaultInformation
         - event: RoleGranted(indexed bytes32,indexed address,indexed address)
           handler: handleRoleGranted
         - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
           handler: handleRoleRevoked
-        - event: SetERC1155Tier(address,address,uint256,uint256[])
+        - event: SetERC1155Tier(address,address,uint256,uint256[],bytes)
           handler: handleSetERC1155Tier
-        - event: SetERC20Tier(address,address,uint256,uint256[])
+        - event: SetERC20Tier(address,address,uint256,uint256[],bytes)
           handler: handleSetERC20Tier
         - event: Snapshot(uint256)
           handler: handleSnapshot
@@ -72,7 +74,7 @@ templates:
           handler: handleTransfer
         - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleWithdraw
-        - event: WithdrawWithReceipt(address,address,address,uint256,uint256,uint256)
+        - event: WithdrawWithReceipt(address,address,address,uint256,uint256,uint256,bytes)
           handler: handleWithdrawWithReceipt
       file: ./src/OffchainAssetReceiptVault.ts
   - kind: ethereum/contract

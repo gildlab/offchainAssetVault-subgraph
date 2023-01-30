@@ -123,6 +123,11 @@
   },
   {
     "inputs": [],
+    "name": "ZeroAdmin",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "ZeroAssetsAmount",
     "type": "error"
   },
@@ -240,6 +245,12 @@
         "internalType": "uint256",
         "name": "confiscated",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "justification",
+        "type": "bytes"
       }
     ],
     "name": "ConfiscateReceipt",
@@ -265,6 +276,12 @@
         "internalType": "uint256",
         "name": "confiscated",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "justification",
+        "type": "bytes"
       }
     ],
     "name": "ConfiscateShares",
@@ -421,6 +438,25 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "vaultInformation",
+        "type": "bytes"
+      }
+    ],
+    "name": "ReceiptVaultInformation",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "bytes32",
         "name": "role",
@@ -518,6 +554,12 @@
         "internalType": "uint256[]",
         "name": "context",
         "type": "uint256[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
       }
     ],
     "name": "SetERC1155Tier",
@@ -549,6 +591,12 @@
         "internalType": "uint256[]",
         "name": "context",
         "type": "uint256[]"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
       }
     ],
     "name": "SetERC20Tier",
@@ -565,6 +613,31 @@
       }
     ],
     "name": "Snapshot",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "data",
+        "type": "bytes"
+      }
+    ],
+    "name": "SnapshotWithData",
     "type": "event"
   },
   {
@@ -667,6 +740,12 @@
         "internalType": "uint256",
         "name": "id",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "receiptInformation",
+        "type": "bytes"
       }
     ],
     "name": "WithdrawWithReceipt",
@@ -1054,6 +1133,11 @@
         "internalType": "uint256",
         "name": "id_",
         "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data_",
+        "type": "bytes"
       }
     ],
     "name": "confiscateReceipt",
@@ -1073,6 +1157,11 @@
         "internalType": "address",
         "name": "confiscatee_",
         "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data_",
+        "type": "bytes"
       }
     ],
     "name": "confiscateShares",
@@ -1718,6 +1807,19 @@
   {
     "inputs": [
       {
+        "internalType": "bytes",
+        "name": "vaultInformation_",
+        "type": "bytes"
+      }
+    ],
+    "name": "receiptVaultInformation",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "shares_",
         "type": "uint256"
@@ -1736,6 +1838,11 @@
         "internalType": "uint256",
         "name": "id_",
         "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "receiptInformation_",
+        "type": "bytes"
       }
     ],
     "name": "redeem",
@@ -1864,6 +1971,11 @@
         "internalType": "uint256[]",
         "name": "context_",
         "type": "uint256[]"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data_",
+        "type": "bytes"
       }
     ],
     "name": "setERC1155Tier",
@@ -1887,6 +1999,11 @@
         "internalType": "uint256[]",
         "name": "context_",
         "type": "uint256[]"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data_",
+        "type": "bytes"
       }
     ],
     "name": "setERC20Tier",
@@ -1921,7 +2038,13 @@
     "type": "function"
   },
   {
-    "inputs": [],
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "data_",
+        "type": "bytes"
+      }
+    ],
     "name": "snapshot",
     "outputs": [
       {
@@ -2084,6 +2207,11 @@
         "internalType": "uint256",
         "name": "id_",
         "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "receiptInformation_",
+        "type": "bytes"
       }
     ],
     "name": "withdraw",

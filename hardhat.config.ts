@@ -7,6 +7,21 @@ import "hardhat-gas-reporter";
 
 require("dotenv").config();
 
+function createLocalHostConfig() {
+  const url = "http://192.168.0.215:8545";
+  const mnemonic =
+    "test test test test test test test test test test test junk";
+  return {
+    accounts: {
+      count: 10,
+      initialIndex: 0,
+      mnemonic,
+      path: "m/44'/60'/0'/0",
+    },
+    url,
+  };
+}
+
 const {
   RINKEBY_URL,
   PRIVATE_KEY,
@@ -37,6 +52,7 @@ export const config = {
       accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY}`] : [],
       gasPrice: 53000000000,
     },
+    localhost: createLocalHostConfig()
   },
   solidity: {
     compilers: [

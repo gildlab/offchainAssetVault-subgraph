@@ -1,4 +1,4 @@
-import { DataSourceContext, ethereum, log } from "@graphprotocol/graph-ts";
+import { DataSourceContext } from "@graphprotocol/graph-ts";
 import {
   Certify,
   DepositWithReceipt,
@@ -11,6 +11,7 @@ import {
   Hash,
   User,
   Deployer,
+  ReceiptVaultInformation,
 } from "../generated/schema";
 import { ReceiptTemplate } from "../generated/templates";
 import {
@@ -20,6 +21,7 @@ import {
   ConfiscateShares as ConfiscateSharesEvent,
   Deposit,
   DepositWithReceipt as DepositWithReceiptEvent,
+  ReceiptVaultInformation as ReceiptVaultInformationEvent,
   RoleAdminChanged,
   RoleGranted as RoleGrantedEvent,
   RoleRevoked as RoleRevokedEvent,
@@ -84,7 +86,7 @@ export function handleCertify(event: CertifyEvent): void {
       offchainAssetReceiptVault.id
     ).id;
     certify.certifiedUntil = event.params.certifyUntil;
-    certify.data = event.params.data;
+    certify.data = event.params.data.toString();
     certify.save();
 
     offchainAssetReceiptVault.certifiedUntil = event.params.certifyUntil;
@@ -121,6 +123,7 @@ export function handleConfiscateShares(event: ConfiscateSharesEvent): void {
     ).id;
     confiscateShares.confiscated = event.params.confiscated;
     confiscateShares.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+    confiscateShares.data = event.params.justification.toString();
     confiscateShares.save();
   }
 }
@@ -154,6 +157,7 @@ export function handleDepositWithReceipt(event: DepositWithReceiptEvent): void {
     ).id;
     depositWithReceipt.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
     depositWithReceipt.amount = event.params.shares;
+    depositWithReceipt.data = event.params.receiptInformation.toString();
 
     let receipt = getReceipt(
       offchainAssetReceiptVault.id.toString(),
@@ -191,17 +195,17 @@ export function handleDepositWithReceipt(event: DepositWithReceiptEvent): void {
       event.params.owner.toHex(),
       offchainAssetReceiptVault.id
     );
-    if(account){
+    if (account) {
       account.hashCount = account.hashCount.plus(ONE);
       account.save();
     }
     let user = User.load(event.params.owner.toHex());
-    if(user){
+    if (user) {
       user.hashCount = user.hashCount.plus(ONE);
       user.save();
     }
     let deployer = Deployer.load(offchainAssetReceiptVault.deployer.toHex());
-    if(deployer){
+    if (deployer) {
       deployer.hashCount = deployer.hashCount.plus(ONE);
       deployer.save();
     }
@@ -209,12 +213,14 @@ export function handleDepositWithReceipt(event: DepositWithReceiptEvent): void {
     let hash = new Hash(event.transaction.hash.toHex());
     hash.owner = depositWithReceipt.receiver;
     hash.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-    hash.offchainAssetReceiptVaultDeployer = offchainAssetReceiptVault.deployer.toHex();
+    hash.offchainAssetReceiptVaultDeployer =
+      offchainAssetReceiptVault.deployer.toHex();
     hash.hash = event.params.receiptInformation.toString();
     hash.timestamp = event.block.timestamp;
     hash.save();
 
-    offchainAssetReceiptVault.hashCount = offchainAssetReceiptVault.hashCount.plus(ONE);
+    offchainAssetReceiptVault.hashCount =
+      offchainAssetReceiptVault.hashCount.plus(ONE);
     offchainAssetReceiptVault.save();
   }
 }
@@ -239,6 +245,30 @@ export function handleOffchainAssetVaultInitialized(
     event.params.config.receiptVaultConfig.receipt,
     context
   );
+}
+
+export function handleReceiptVaultInformation(
+  event: ReceiptVaultInformationEvent
+): void {
+  let receiptVaultInformation = new ReceiptVaultInformation(
+    `ReceiptInformation-${event.address}`
+  );
+  receiptVaultInformation.transaction = getTransaction(
+    event.block,
+    event.transaction.hash.toHex()
+  ).id;
+  receiptVaultInformation.timestamp = event.block.timestamp;
+  receiptVaultInformation.offchainAssetReceiptVault = event.address.toHex();
+  receiptVaultInformation.information = event.params.vaultInformation;
+  receiptVaultInformation.caller = getAccount(
+    event.params.sender.toHex(),
+    event.address.toHex()
+  ).id;
+  receiptVaultInformation.emitter = getAccount(
+    event.params.sender.toHex(),
+    event.address.toHex()
+  ).id;
+  receiptVaultInformation.save();
 }
 
 export function handleRoleAdminChanged(event: RoleAdminChanged): void {
@@ -440,6 +470,7 @@ export function handleWithdrawWithReceipt(
       event.block,
       event.transaction.hash.toHex()
     ).id;
+    withdrawWithReceipt.data = event.params.receiptInformation.toString();
 
     let receiptBalance = getReceiptBalance(
       event.address.toHex(),

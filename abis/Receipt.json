@@ -287,6 +287,11 @@
         "internalType": "uint256",
         "name": "amount_",
         "type": "uint256"
+      },
+      {
+        "internalType": "bytes",
+        "name": "data_",
+        "type": "bytes"
       }
     ],
     "name": "ownerBurn",
