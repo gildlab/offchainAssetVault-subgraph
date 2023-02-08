@@ -4,14 +4,14 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: OffchainAssetReceiptVaultFactory
-    network: mumbai
+    network: matic
     source:
-      address: "0x893B08Fcc6958b7594730Ce5140A92644301d4b8"
+      address: "0x9329bf1b69a3CE69eC7694453eDC433800643B73"
       abi: OffchainAssetReceiptVaultFactory
-      startBlock: 31389026
+      startBlock: 38971381
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.6
+      apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
         - VerifyFactory
@@ -22,18 +22,19 @@ dataSources:
       eventHandlers:
         - event: Implementation(address,address)
           handler: handleImplementation
+          receipt: true
         - event: NewChild(address,address)
           handler: handleNewChild
       file: ./src/OffchainAssetReceiptVaultFactory.ts
 templates:
   - kind: ethereum/contract
     name: OffchainAssetReceiptVaultTemplate
-    network: mumbai
+    network: matic
     source:
       abi: OffchainAssetReceiptVault
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.6
+      apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
         - VerifyFactory
@@ -79,12 +80,12 @@ templates:
       file: ./src/OffchainAssetReceiptVault.ts
   - kind: ethereum/contract
     name: ReceiptTemplate
-    network: mumbai
+    network: matic
     source:
       abi: Receipt
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.6
+      apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
         - VerifyFactory

@@ -11,7 +11,7 @@ dataSources:
       startBlock: {{ offchainAssetReceiptVaultFactoryBlock }}
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.6
+      apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
         - VerifyFactory
@@ -22,6 +22,7 @@ dataSources:
       eventHandlers:
         - event: Implementation(address,address)
           handler: handleImplementation
+          receipt: true
         - event: NewChild(address,address)
           handler: handleNewChild
       file: ./src/OffchainAssetReceiptVaultFactory.ts
@@ -33,7 +34,7 @@ templates:
       abi: OffchainAssetReceiptVault
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.6
+      apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
         - VerifyFactory
@@ -84,7 +85,7 @@ templates:
       abi: Receipt
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.6
+      apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
         - VerifyFactory

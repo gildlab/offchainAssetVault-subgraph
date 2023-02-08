@@ -2,8 +2,6 @@ import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "@nomiclabs/hardhat-ethers";
 import "@nomiclabs/hardhat-etherscan";
-import "hardhat-contract-sizer";
-import "hardhat-gas-reporter";
 
 require("dotenv").config();
 
@@ -52,7 +50,7 @@ export const config = {
       accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY}`] : [],
       gasPrice: 53000000000,
     },
-    localhost: createLocalHostConfig()
+    localhost: createLocalHostConfig(),
   },
   solidity: {
     compilers: [

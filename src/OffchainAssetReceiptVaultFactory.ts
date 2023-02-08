@@ -1,3 +1,4 @@
+import { log } from "@graphprotocol/graph-ts";
 import {
   NewChild,
   Implementation,
@@ -16,6 +17,12 @@ export function handleImplementation(event: Implementation): void {
   factory.implementation = event.params.implementation;
   factory.childrenCount = ZERO;
   factory.save();
+
+  let receipt = event.receipt;
+  if(receipt){
+    for(let i=0;i<receipt.logs.length;i++)
+      log.info("receipt : {}", [receipt.logs[i].data.toHexString()])
+  }
 }
 
 export function handleNewChild(event: NewChild): void {

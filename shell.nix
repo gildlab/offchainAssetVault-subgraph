@@ -7,6 +7,10 @@ let
     })
     { };
 
+  compile = pkgs.writeShellScriptBin "compile" ''
+    npx hardhat compile
+  '';
+
   codegen = pkgs.writeShellScriptBin "codegen" ''
     npm run codegen
   '';
@@ -34,6 +38,11 @@ let
   deploy-polygon = pkgs.writeShellScriptBin "deploy-polygon" ''
     npm run ts-node scripts/index.ts --config config/polygon.json --subgraphTemplate subgraph.template.yaml --subgraphName gild-lab/offchainassetvault
   '';
+
+  init = pkgs.writeShellScriptBin "init" ''
+    mkdir -p contracts && cp -r node_modules/@gildlab/ethgild/contracts/* contracts
+    compile
+  '';
 in
 pkgs.stdenv.mkDerivation {
   name = "shell";
@@ -46,6 +55,8 @@ pkgs.stdenv.mkDerivation {
     prepare-polygon
     deploy-mumbai
     deploy-polygon
+    compile
+    init
   ];
 
   shellHook = ''
