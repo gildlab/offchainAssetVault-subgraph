@@ -1,15 +1,22 @@
 import hre, { ethers } from "hardhat";
-import { OffchainAssetReceiptVaultFactory } from "../typechain-types/contracts/vault/offchainAsset/OffchainAssetReceiptVaultFactory";
-import { OffchainAssetReceiptVault } from "../typechain-types/contracts/vault/offchainAsset/OffchainAssetReceiptVault";
-import { ReceiptFactory } from "../typechain-types/contracts/vault/receipt/ReceiptFactory";
-import { exec, fetchFile, fetchSubgraph, waitForSubgraphToBeSynced, writeFile } from "./utils";
+import { OffchainAssetReceiptVaultFactory } from "../typechain/contracts/vault/offchainAsset/OffchainAssetReceiptVaultFactory";
+import { OffchainAssetReceiptVault } from "../typechain/contracts/vault/offchainAsset/OffchainAssetReceiptVault";
+import { ReceiptFactory } from "../typechain/contracts/vault/receipt/ReceiptFactory";
+import {
+  exec,
+  fetchFile,
+  fetchSubgraph,
+  waitForSubgraphToBeSynced,
+  writeFile,
+} from "./utils";
 import * as path from "path";
-import { ApolloFetch } from "apollo-fetch";
+import { ApolloFetch, FetchResult } from "apollo-fetch";
+import { assert } from "chai";
 
 export let subgraph: ApolloFetch;
+export let factory: OffchainAssetReceiptVaultFactory;
 
 describe("Deploy Factory Test", () => {
-  let factory: OffchainAssetReceiptVaultFactory;
   before(async () => {
     const offchainAssetReceiptVaultImplementationFactory =
       await ethers.getContractFactory("OffchainAssetReceiptVault");
@@ -32,18 +39,18 @@ describe("Deploy Factory Test", () => {
     })) as OffchainAssetReceiptVaultFactory;
     await factory.deployed();
 
-    const configPath = path.resolve(__dirname, `../config/${hre.network.name}.json`);
+    const configPath = path.resolve(
+      __dirname,
+      `../config/${hre.network.name}.json`
+    );
     const config = JSON.parse(fetchFile(configPath));
 
     config.network = hre.network.name;
     config.offchainAssetReceiptVaultFactory = factory.address;
-    config.offchainAssetReceiptVaultFactoryBlock = factory.deployTransaction.blockNumber;
+    config.offchainAssetReceiptVaultFactoryBlock =
+      factory.deployTransaction.blockNumber;
 
-    console.log(factory.address);
-    console.log(offchainAssetReceiptVaultImplementation.address);
-    console.log(receiptFactoryContract.address);
-
-    writeFile(configPath, JSON.stringify(config, null, 2))
+    writeFile(configPath, JSON.stringify(config, null, 2));
 
     exec("npm run create-local");
     exec("npm run deploy-local");
@@ -54,7 +61,7 @@ describe("Deploy Factory Test", () => {
 
   it("Should create factory entity", async () => {
     const query = `{
-            offchainAssetReceiptVaultFactory(id:${factory.address.toLowerCase()}){
+            offchainAssetReceiptVaultFactory(id:"${factory.address.toLowerCase()}"){
                 id
                 address
                 implementation
@@ -64,5 +71,14 @@ describe("Deploy Factory Test", () => {
                 }
             }
         }`;
+    const response = (await subgraph({
+      query,
+    })) as FetchResult;
+
+    const factoryData = response.data.offchainAssetReceiptVaultFactory;
+    assert.equal(factory.address.toLowerCase(), factoryData.id, `${factory.address.toLowerCase()} != ${factoryData.id}`);
+    assert.equal(factory.address.toLowerCase(), factoryData.address, `${factory.address.toLowerCase()} != ${factoryData.address}`);
+    assert.equal(0 , factoryData.childrenCount, `${0} != ${factoryData.childrenCount}`);
+    assert.isEmpty(factoryData.children, "children Array not empty");
   });
 });

@@ -29,6 +29,9 @@ const {
 } = process.env;
 
 export const config = {
+  typechain: {
+    outDir: "typechain",
+  },
   networks: {
     hardhat: {
       blockGasLimit: 100000000,

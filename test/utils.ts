@@ -4,6 +4,8 @@ import path from "path";
 import { ApolloFetch, createApolloFetch } from "apollo-fetch";
 import dotenv from "dotenv";
 import fs from "fs";
+import { BigNumber, Contract, ContractTransaction, Event } from "ethers";
+import { Result } from "ethers/lib/utils";
 
 dotenv.config();
 
@@ -175,4 +177,58 @@ export const writeFile = (_path: string, file: any): void => {
   } catch (error) {
     console.log(error);
   }
+};
+
+/// @param tx - transaction where event occurs
+/// @param eventName - name of event
+/// @param contract - contract object holding the address, filters, interface
+/// @returns Event arguments, can be deconstructed by array index or by object key
+export const getEventArgs = async (
+  tx: ContractTransaction,
+  eventName: string,
+  contract: Contract
+): Promise<Result> => {
+  const eventObj = await getEvent(tx, eventName, contract);
+  return await contract.interface.decodeEventLog(
+    eventName,
+    eventObj.data,
+    eventObj.topics
+  );
+};
+
+export const getEvent = async (
+  tx: ContractTransaction,
+  eventName: string,
+  contract: Contract
+): Promise<Event> => {
+  const events = (await tx.wait()).events || [];
+  const filter = (contract.filters[eventName]().topics || [])[0];
+  const eventObj = events.find(
+    (x) => x.topics[0] == filter && x.address == contract.address
+  );
+
+  if (!eventObj) {
+    throw new Error(`Could not find event with name ${eventName}`);
+  }
+
+  return eventObj;
+};
+
+export const eighteenZeros = "000000000000000000";
+
+
+export const ADDRESS_ZERO = ethers.constants.AddressZero;
+export const ONE = ethers.BigNumber.from("1" + eighteenZeros);
+
+export const fixedPointMul = (a: BigNumber, b: BigNumber): BigNumber =>
+  a.mul(b).div(ONE);
+export const fixedPointDiv = (a: BigNumber, b: BigNumber): BigNumber =>
+  a.mul(ONE).div(b);
+export const fixedPointDivRound = (a: BigNumber, b: BigNumber): BigNumber => {
+  let result = a.mul(ONE).div(b);
+
+  if (a.mul(ONE).mod(b).gt(0)) {
+    result = result.add(1);
+  }
+  return result;
 };

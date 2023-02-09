@@ -237,6 +237,10 @@ export function handleOffchainAssetVaultInitialized(
       event.params.config.receiptVaultConfig.vaultConfig.name;
     offchainAssetReceiptVault.symbol =
       event.params.config.receiptVaultConfig.vaultConfig.symbol;
+    offchainAssetReceiptVault.asAccount = getAccount(
+      event.address.toHex(),
+      event.address.toHex()
+    ).id;
     offchainAssetReceiptVault.save();
   }
   let context = new DataSourceContext();

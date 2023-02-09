@@ -1,5 +1,5 @@
 {
   "network": "localhost",
-  "offchainAssetReceiptVaultFactory": "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
-  "offchainAssetReceiptVaultFactoryBlock": 12
+  "offchainAssetReceiptVaultFactory": "0x2625760C4A8e8101801D3a48eE64B2bEA42f1E96",
+  "offchainAssetReceiptVaultFactoryBlock": 214
 }
