@@ -255,8 +255,13 @@ export function handleReceiptVaultInformation(
   event: ReceiptVaultInformationEvent
 ): void {
   let receiptVaultInformation = new ReceiptVaultInformation(
-    `ReceiptInformation-${event.address}`
+    `ReceiptVaultInformation-${event.transaction.hash.toHex()}`
   );
+
+  let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
+      event.address.toHex()
+  );
+
   receiptVaultInformation.transaction = getTransaction(
     event.block,
     event.transaction.hash.toHex()
@@ -273,6 +278,20 @@ export function handleReceiptVaultInformation(
     event.address.toHex()
   ).id;
   receiptVaultInformation.save();
+
+    if (offchainAssetReceiptVault) {
+      let hash = new Hash(event.transaction.hash.toHex());
+      hash.owner = receiptVaultInformation.caller;
+      hash.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+      hash.offchainAssetReceiptVaultDeployer = offchainAssetReceiptVault.deployer.toHex();
+      hash.hash = event.params.vaultInformation.toString();
+      hash.timestamp = event.block.timestamp;
+      hash.save();
+
+      offchainAssetReceiptVault.hashCount =
+          offchainAssetReceiptVault.hashCount.plus(ONE);
+      offchainAssetReceiptVault.save();
+    }
 }
 
 export function handleRoleAdminChanged(event: RoleAdminChanged): void {
