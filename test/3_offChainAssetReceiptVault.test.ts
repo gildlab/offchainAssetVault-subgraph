@@ -2,37 +2,20 @@ import { ReadWriteTier, TestErc20 } from "../typechain";
 import { ethers } from "hardhat";
 
 import {
-  getEventArgs,
-  ADDRESS_ZERO,
   fixedPointMul,
   ONE,
   fixedPointDiv,
-  fixedPointDivRound,
   waitForSubgraphToBeSynced,
 } from "./utils";
 
-import {
-  SetERC20TierEvent,
-  CertifyEvent,
-  SnapshotEvent,
-  ConfiscateSharesEvent,
-  ConfiscateReceiptEvent,
-  SetERC1155TierEvent,
-  SnapshotWithDataEvent,
-} from "../typechain/contracts/vault/offchainAsset/OffchainAssetReceiptVault";
 
-import { DepositWithReceiptEvent } from "../typechain/contracts/vault/receipt/ReceiptVault";
 import { receipt, vault } from "./2_createChild.test";
 import { subgraph } from "./1_factory.test";
 import { FetchResult } from "apollo-fetch";
-import { expect } from "chai";
-import { ReceiptVaultInformationEvent } from "../typechain-types/contracts/vault/receipt/ReceiptVault";
 
 const assert = require("assert");
 
 let TierV2TestContract: ReadWriteTier;
-let expectedName = "OffchainAssetVaul";
-let expectedSymbol = "OAV";
 
 describe("OffChainAssetReceiptVault", async function () {
   beforeEach(async () => {
@@ -73,25 +56,26 @@ describe("OffChainAssetReceiptVault", async function () {
       `wrong assets. expected ${expectedAssets} got ${aliceBalanceAfter}`
     );
   });
-  it("Checks ReceiptVaultInformation event is emitted", async function () {
+  it("Checks ReceiptVaultInformation event data", async function () {
     const signers = await ethers.getSigners();
     const alice = signers[0];
-    const { sender, vaultInformation } = (await getEventArgs(
-        await vault.connect(alice).receiptVaultInformation([1]),
-        "ReceiptVaultInformation",
-        vault
-    )) as ReceiptVaultInformationEvent["args"];
 
-        await vault.connect(alice).receiptVaultInformation([2])
+    await vault.connect(alice).receiptVaultInformation([3]);
 
-    // assert(
-    //     sender === alice.address,
-    //     `Incorrect sender. Expected ${alice.address} got ${sender}`
-    // );
-    //
-    // assert(
-    //     vaultInformation === "0x01",
-    //     `Incorrect sender. Expected 0x01 got ${vaultInformation}`
-    // );
+    const query = `{
+        offchainAssetReceiptVault(id:"${vault.address.toLowerCase()}"){
+          id
+          receiptVaultInformations {
+            information
+          }
+        }
+      }`;
+    await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
+
+    const response = (await subgraph({ query })) as FetchResult;
+    const vaultData = response.data.offchainAssetReceiptVault;
+
+    assert.equal(vaultData.id, vault.address.toLowerCase());
+    assert.equal(vaultData.receiptVaultInformations[0].information, '0x03');
   });
 });
