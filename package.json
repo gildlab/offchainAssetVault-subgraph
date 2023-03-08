@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npx hardhat test",
+    "ci-test": "npx hardhat test --network localhost",
     "codegen": "graph codegen",
     "build": "graph build",
     "deploy-subgraph": "ts-node scripts/index.ts",
