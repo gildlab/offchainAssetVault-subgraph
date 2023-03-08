@@ -41,7 +41,7 @@ describe("Deploy Factory Test", () => {
 
     const configPath = path.resolve(
       __dirname,
-      `../config/${hre.network.name}.json`
+      `../config/localhost.json`
     );
     const config = JSON.parse(fetchFile(configPath));
 
