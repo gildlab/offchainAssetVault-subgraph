@@ -254,9 +254,7 @@ export function handleOffchainAssetVaultInitialized(
 export function handleReceiptVaultInformation(
   event: ReceiptVaultInformationEvent
 ): void {
-  let receiptVaultInformation = new ReceiptVaultInformation(
-    `ReceiptVaultInformation-${event.transaction.hash.toHex()}`
-  );
+  let receiptVaultInformation = new ReceiptVaultInformation(event.transaction.hash.toHex());
 
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
       event.address.toHex()
