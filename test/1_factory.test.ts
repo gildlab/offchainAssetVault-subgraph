@@ -45,7 +45,7 @@ describe("Deploy Factory Test", () => {
     );
     const config = JSON.parse(fetchFile(configPath));
 
-    config.network = hre.network.name;
+    config.network = "localhost";
     config.offchainAssetReceiptVaultFactory = factory.address;
     config.offchainAssetReceiptVaultFactoryBlock =
       factory.deployTransaction.blockNumber;

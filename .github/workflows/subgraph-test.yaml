@@ -28,7 +28,7 @@ jobs:
 
       - name: Run Subgraph tests
         run: |
-          npm run test
+          npm run test --network localhost
 
       - name: Stop containers
         run: docker-compose down

@@ -1,0 +1,112 @@
+
+øðdataSources:
+  - kind: ethereum/contract
+    mapping:
+      abis:
+        - file:
+            /: /ipfs/QmXLYB6ChviC8RZprfdHtBFHEHeFok2yUqB4rmuP9SzeBM
+          name: OffchainAssetReceiptVaultFactory
+      apiVersion: 0.0.7
+      entities:
+        - VerifyFactory
+        - Verify
+      eventHandlers:
+        - event: 'Implementation(address,address)'
+          handler: handleImplementation
+          receipt: true
+        - event: 'NewChild(address,address)'
+          handler: handleNewChild
+      file:
+        /: /ipfs/Qmd84wmikj7A4VSxAbZ9KBSqz4dsBL22KQyp2MQn2ro9tT
+      kind: ethereum/events
+      language: wasm/assemblyscript
+    name: OffchainAssetReceiptVaultFactory
+    network: localhost
+    source:
+      abi: OffchainAssetReceiptVaultFactory
+      address: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0'
+      startBlock: 3
+schema:
+  file:
+    /: /ipfs/QmTXeiXLSmR7Xzf91vYX4HLcbjcn6XUuKpxiw7Tghjdgo3
+specVersion: 0.0.4
+templates:
+  - kind: ethereum/contract
+    mapping:
+      abis:
+        - file:
+            /: /ipfs/QmcELYG7PW7v2J8Nb383DW4PuzEdoAEcpAZJSfxa1FkgJa
+          name: OffchainAssetReceiptVault
+      apiVersion: 0.0.7
+      entities:
+        - VerifyFactory
+        - Verify
+      eventHandlers:
+        - event: 'Approval(indexed address,indexed address,uint256)'
+          handler: handleApproval
+        - event: 'Certify(address,uint256,uint256,bool,bytes)'
+          handler: handleCertify
+        - event: 'ConfiscateReceipt(address,address,uint256,uint256,bytes)'
+          handler: handleConfiscateReceipt
+        - event: 'ConfiscateShares(address,address,uint256,bytes)'
+          handler: handleConfiscateShares
+        - event: 'Deposit(indexed address,indexed address,uint256,uint256)'
+          handler: handleDeposit
+        - event: 'DepositWithReceipt(address,address,uint256,uint256,uint256,bytes)'
+          handler: handleDepositWithReceipt
+        - event: >-
+            OffchainAssetReceiptVaultInitialized(address,(address,(address,(address,string,string))))
+          handler: handleOffchainAssetVaultInitialized
+        - event: 'RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32)'
+          handler: handleRoleAdminChanged
+        - event: 'ReceiptVaultInformation(address,bytes)'
+          handler: handleReceiptVaultInformation
+        - event: 'RoleGranted(indexed bytes32,indexed address,indexed address)'
+          handler: handleRoleGranted
+        - event: 'RoleRevoked(indexed bytes32,indexed address,indexed address)'
+          handler: handleRoleRevoked
+        - event: 'SetERC1155Tier(address,address,uint256,uint256[],bytes)'
+          handler: handleSetERC1155Tier
+        - event: 'SetERC20Tier(address,address,uint256,uint256[],bytes)'
+          handler: handleSetERC20Tier
+        - event: Snapshot(uint256)
+          handler: handleSnapshot
+        - event: 'Transfer(indexed address,indexed address,uint256)'
+          handler: handleTransfer
+        - event: >-
+            Withdraw(indexed address,indexed address,indexed
+            address,uint256,uint256)
+          handler: handleWithdraw
+        - event: >-
+            WithdrawWithReceipt(address,address,address,uint256,uint256,uint256,bytes)
+          handler: handleWithdrawWithReceipt
+      file:
+        /: /ipfs/QmPMyBx99tfxTNAgt3K5QsmYJ19KDEZsydEpjCG2ceTmZx
+      kind: ethereum/events
+      language: wasm/assemblyscript
+    name: OffchainAssetReceiptVaultTemplate
+    network: localhost
+    source:
+      abi: OffchainAssetReceiptVault
+  - kind: ethereum/contract
+    mapping:
+      abis:
+        - file:
+            /: /ipfs/QmayGXgqkFJSYtEigYcGvK7QcwA372tRa1b7oEkVp1Lkzp
+          name: Receipt
+      apiVersion: 0.0.7
+      entities:
+        - VerifyFactory
+        - Verify
+      eventHandlers:
+        - event: 'ReceiptInformation(address,uint256,bytes)'
+          handler: handleReceiptInformation
+      file:
+        /: /ipfs/QmVuicoK3bdPCcvNUdCbDXesP7z7myuCmSinosa4cUT8Xr
+      kind: ethereum/events
+      language: wasm/assemblyscript
+    name: ReceiptTemplate
+    network: localhost
+    source:
+      abi: Receipt
+ð
