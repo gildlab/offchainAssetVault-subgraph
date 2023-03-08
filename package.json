@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "npx hardhat test",
+    "ci-test": "npx hardhat test --network localhost",
     "codegen": "graph codegen",
     "build": "graph build",
     "deploy-subgraph": "ts-node scripts/index.ts",
@@ -14,7 +15,7 @@
     "deploy-mainnet": "ts-node scripts/index.ts --config config/ethereum.json --subgraphTemplate subgraph.template.yaml --subgraphName gildlab/offchainassetvault-ethereum",
     "create-local": "graph create --node http://localhost:8020/ gildlab/offchainassetvault",
     "remove-local": "graph remove --node http://localhost:8020/ gildlab/offchainassetvault",
-    "deploy-local": "npx mustache config/localhost.json subgraph.template.yaml subgraph.yaml && graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 gildlab/offchainassetvault  --version-label 1"
+    "deploy-local": "npx mustache config/localhost.json subgraph.template.yaml subgraph.yaml && npm run codegen && graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 gildlab/offchainassetvault  --version-label 1"
   },
   "repository": {
     "type": "git",
