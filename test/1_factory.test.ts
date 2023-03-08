@@ -41,11 +41,11 @@ describe("Deploy Factory Test", () => {
 
     const configPath = path.resolve(
       __dirname,
-      `../config/${hre.network.name}.json`
+      `../config/localhost.json`
     );
     const config = JSON.parse(fetchFile(configPath));
 
-    config.network = hre.network.name;
+    config.network = "localhost";
     config.offchainAssetReceiptVaultFactory = factory.address;
     config.offchainAssetReceiptVaultFactoryBlock =
       factory.deployTransaction.blockNumber;

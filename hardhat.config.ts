@@ -6,7 +6,7 @@ import "@nomiclabs/hardhat-etherscan";
 require("dotenv").config();
 
 function createLocalHostConfig() {
-  const url = "http://192.168.0.215:8545";
+  const url = "http://localhost:8545";
   const mnemonic =
     "test test test test test test test test test test test junk";
   return {
