@@ -40,4 +40,4 @@ jobs:
         run: npx mustache config/mumbai.json subgraph.template.yaml subgraph.yaml
       
       - name: Graph Deployments
-        run: npx graph deploy --product hosted-service offchainassetvault-mumbai
+        run: npx graph deploy --product hosted-service gildlab/offchainassetvault-mumbai
