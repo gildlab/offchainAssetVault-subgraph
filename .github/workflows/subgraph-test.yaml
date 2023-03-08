@@ -2,7 +2,7 @@ name: flow-subgraph-test
 on: [push, pull_request]
 
 env:
-  GRAPH_TOKEN: ${{ secrets.GRAPH_TOKEN }}
+  GRAPH_TOKEN: ${{ secrets.GRAPH_ACCESS_TOKEN }}
 
 jobs:
   build:
