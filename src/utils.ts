@@ -98,3 +98,20 @@ export function toDecimals(value: BigInt, decimals: number = 18): BigDecimal {
     .toBigDecimal();
   return value.divDecimal(precision);
 }
+
+/**
+ * Prefixes every rain meta document
+ */
+export const RAIN_META_DOCUMENT = BigInt.fromString("0xff0a89c674ee7874");
+/**S
+ * OA Schema
+ */
+export const OA_SCHEMA = BigInt.fromString("0xffa8e8a9b9cf4a31");
+/**
+ * OA Hash list
+ */
+export const OA_HASH_LIST = BigInt.fromString("0xff9fae3cc645f463");
+/**
+ * OA Structure
+ */
+export const OA_STRUCTURE = BigInt.fromString("0xffc47a6299e8a911");
