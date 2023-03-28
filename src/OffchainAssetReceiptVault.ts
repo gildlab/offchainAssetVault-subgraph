@@ -1,4 +1,4 @@
-import { DataSourceContext } from "@graphprotocol/graph-ts";
+import { DataSourceContext, json } from "@graphprotocol/graph-ts";
 import {
   Certify,
   DepositWithReceipt,
@@ -62,6 +62,9 @@ import {
   toDecimals,
   ZERO,
 } from "./utils";
+
+import { CBORDecoder } from "@rainprotocol/assemblyscript-cbor";
+
 
 export function handleApproval(event: Approval): void {}
 
@@ -276,6 +279,18 @@ export function handleReceiptVaultInformation(
     event.address.toHex()
   ).id;
   receiptVaultInformation.save();
+
+  let metaData = event.params.vaultInformation.toHex().slice(18);
+  let data = new CBORDecoder(stringToArrayBuffer(metaData));
+  let jsonData = json.fromString(data.parse().stringify()).toObject();
+
+  receiptVaultInformation.payload = jsonData.mustGet("0").toString();
+  receiptVaultInformation.magicNumber = jsonData.mustGet("1").toBigInt();
+  receiptVaultInformation.contentType = jsonData.mustGet("2").toString();
+  receiptVaultInformation.contentEncoding = jsonData.mustGet("3").toString();
+  receiptVaultInformation.contentLanguage = jsonData.mustGet("4").toString();
+  receiptVaultInformation.schema = jsonData.mustGet(MAGIC_NUMBERS.OA_SCHEMA.toString(16).toLowerCase()).toString();
+
 
     if (offchainAssetReceiptVault) {
       let hash = new Hash(event.transaction.hash.toHex());
@@ -522,3 +537,31 @@ export function handleWithdrawWithReceipt(
     withdrawWithReceipt.save();
   }
 }
+
+function stringToArrayBuffer(val: string): ArrayBuffer {
+  const buff = new ArrayBuffer(val.length / 2);
+  const view = new DataView(buff);
+  for (let i = 0, j = 0; i < val.length; i = i + 2, j++) {
+    view.setUint8(j, u8(Number.parseInt(`${val.at(i)}${val.at(i + 1)}`, 16)));
+  }
+  return buff;
+}
+
+export const MAGIC_NUMBERS = {
+  /**
+   * Prefixes every rain meta document
+   */
+  RAIN_META_DOCUMENT: BigInt(0xff0a89c674ee7874n),
+  /**S
+   * OA Schema
+   */
+  OA_SCHEMA: BigInt(0xffa8e8a9b9cf4a31n),
+  /**
+   * OA Hash list
+   */
+  OA_HASH_LIST: BigInt(0xff9fae3cc645f463n),
+  /**
+   * OA Structure
+   */
+  OA_STRUCTURE: BigInt(0xffc47a6299e8a911n)
+};

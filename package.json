@@ -30,6 +30,7 @@
   "homepage": "https://github.com/vishalkale151071/offchainAssetVault-subgraph#readme",
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.2.2",
+    "@rainprotocol/assemblyscript-cbor": "git+https://github.com/rainprotocol/assemblyscript-cbor.git#03142dcf5de7e796abf325df09b15090483daa00",
     "@typechain/ethers-v5": "^10.2.0",
     "@types/chai": "^4.3.4",
     "@types/mocha": "^10.0.1",
