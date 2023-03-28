@@ -1,10 +1,13 @@
 {
-  "include": ["./scripts", "./test"],
+  "include": ["./src", "./test"],
   "exclude": ["node_modules/*", "./typechain"],
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "es2020",
+    "module": "commonjs",
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
     "resolveJsonModule": true
   },
   "files": ["./hardhat.config.ts"]
