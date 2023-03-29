@@ -279,19 +279,21 @@ export function handleReceiptVaultInformation(
     event.params.sender.toHex(),
     event.address.toHex()
   ).id;
-  receiptVaultInformation.save();
 
   let metaData = event.params.vaultInformation.toHex().slice(18);
   let data = new CBORDecoder(stringToArrayBuffer(metaData));
-  let jsonData = json.fromString(data.parse().stringify()).toObject();
+  let jsonData = (json.fromString(data.parse().stringify())).toObject()
 
-  receiptVaultInformation.payload = jsonData.mustGet("0").toString();
-  receiptVaultInformation.magicNumber = jsonData.mustGet("1").toBigInt();
-  receiptVaultInformation.contentType = jsonData.mustGet("2").toString();
-  receiptVaultInformation.contentEncoding = jsonData.mustGet("3").toString();
-  receiptVaultInformation.contentLanguage = jsonData.mustGet("4").toString();
-  receiptVaultInformation.schema = jsonData.mustGet(OA_SCHEMA.toString().toLowerCase()).toString();
+// if(jsonData){
+//   receiptVaultInformation.payload = data.parse().stringify();
+//   receiptVaultInformation.magicNumber = BigInt.fromString("44"); // = jsonData.mustGet("1").toBigInt();
+//   receiptVaultInformation.contentType = "55"; // = jsonData.mustGet("2").toString();
+//   receiptVaultInformation.contentEncoding = "55"; // = jsonData.mustGet("3").toString();
+//   receiptVaultInformation.contentLanguage = "55"; // = jsonData.mustGet("4").toString();
+//   receiptVaultInformation.schema = "55"; // = jsonData.mustGet(OA_SCHEMA.toString().toLowerCase()).toString();
+// }
 
+    receiptVaultInformation.save()
 
     if (offchainAssetReceiptVault) {
       let hash = new Hash(event.transaction.hash.toHex());
