@@ -232,3 +232,20 @@ export const fixedPointDivRound = (a: BigNumber, b: BigNumber): BigNumber => {
   }
   return result;
 };
+
+/**
+ * Prefixes every rain meta document
+ */
+export const RAIN_META_DOCUMENT = BigInt(0xff0a89c674ee7874n);
+/**S
+ * OA Schema
+ */
+export const OA_SCHEMA = BigInt(0xffa8e8a9b9cf4a31n);
+/**
+ * OA Hash list
+ */
+export const OA_HASH_LIST = BigInt(0xff9fae3cc645f463n);
+/**
+ * OA Structure
+ */
+export const OA_STRUCTURE = BigInt(0xffc47a6299e8a911n);
