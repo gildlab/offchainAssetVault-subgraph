@@ -62,6 +62,7 @@ import {
   ONE,
   toDecimals,
   ZERO,
+  stringToArrayBuffer
 } from "./utils";
 
 import { CBORDecoder } from "@rainprotocol/assemblyscript-cbor";
@@ -539,13 +540,4 @@ export function handleWithdrawWithReceipt(
 
     withdrawWithReceipt.save();
   }
-}
-
-function stringToArrayBuffer(val: string): ArrayBuffer {
-  const buff = new ArrayBuffer(val.length / 2);
-  const view = new DataView(buff);
-  for (let i = 0, j = 0; i < val.length; i = i + 2, j++) {
-    view.setUint8(j, u8(Number.parseInt(`${val.at(i)}${val.at(i + 1)}`, 16)));
-  }
-  return buff;
 }
