@@ -245,7 +245,6 @@ type ReceiptVaultInformation implements Event @entity {
   contentType: String
   contentEncoding: String
   contentLanguage: String
-  schema : String
 }
 
 # Get from event Certify
