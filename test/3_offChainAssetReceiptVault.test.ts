@@ -6,7 +6,7 @@ import {
   ONE,
   fixedPointDiv,
   waitForSubgraphToBeSynced,
-  OA_SCHEMA
+  OA_SCHEMA, OA_STRUCTURE
 } from "./utils";
 
 
@@ -26,7 +26,7 @@ describe("OffChainAssetReceiptVault", async function () {
     await TierV2TestContract.deployed();
   });
 
-  it("Mints with data", async function () {
+  it("Mints", async function () {
     const signers = await ethers.getSigners();
     const alice = signers[0];
 
@@ -46,7 +46,7 @@ describe("OffChainAssetReceiptVault", async function () {
 
     await vault
       .connect(alice)
-      ["mint(uint256,address,uint256,bytes)"](shares, alice.address, ONE, [1]);
+      ["mint(uint256,address,uint256,bytes)"](shares, alice.address, ONE, []);
 
     const expectedAssets = fixedPointDiv(shares, ONE);
     const aliceBalanceAfter = await receipt
@@ -86,5 +86,51 @@ describe("OffChainAssetReceiptVault", async function () {
     assert.equal(vaultData.contentEncoding, "deflate");
     assert.equal(vaultData.contentType, "application/json");
     assert.equal(vaultData.information, meta);
+  });
+  it("Checks ReceiptInformation event data", async function () {
+    const signers = await ethers.getSigners();
+    const alice = signers[0];
+
+    let meta ="0xff0a89c674ee7874a5005854789cab56ca2fca4ccfcc53b252323454d2514acf4c8c2f4a2dc82f2a018a04e64654a696577ab99786161b965704958779e51a973a657a65263a19e7a765a56519e7b947068607ba9847143929d50200f0f31a13011bffc47a6299e8a91102706170706c69636174696f6e2f6a736f6e03676465666c6174651bffa8e8a9b9cf4a31782e516d6575487a625479573753516579576f4d4a6b6e3172384563364134576234384648584c3472707a6d4350594da200586182782e516d58796577794a477555733177785277564a6d337542694a696142336f666a666a336e47595157514437587242782e516d5271734552703651324d5a3263614e724762377461393133717657613256566370653143474879327676616a011bff9fae3cc645f463"
+
+    const testErc20 = await ethers.getContractFactory("TestErc20");
+    const asset = (await testErc20.deploy()) as TestErc20;
+    await asset.deployed();
+
+    await vault
+      .connect(alice)
+      .grantRole(await vault.connect(alice).DEPOSITOR(), alice.address);
+
+    const assets = ethers.BigNumber.from(5000);
+    await asset.transfer(alice.address, assets);
+    await asset.connect(alice).increaseAllowance(vault.address, assets);
+
+
+    const shares = fixedPointMul(assets, ONE).add(1);
+
+    await vault
+      .connect(alice)
+      ["mint(uint256,address,uint256,bytes)"](shares, alice.address, ONE, arrayify(meta));
+
+    const query = `{
+        offchainAssetReceiptVault(id:"${vault.address.toLowerCase()}"){
+          id
+          deposits {
+            receipt {
+              receiptInformations {
+              information
+            }
+      }
+    }
+        }
+      }`;
+    await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
+    const response = (await subgraph({ query })) as FetchResult;
+    const data = response.data.offchainAssetReceiptVault.receiptVaultInformations[0];
+
+    assert.equal(BigInt(data.magicNumber), OA_STRUCTURE);
+    assert.equal(data.contentEncoding, "deflate");
+    assert.equal(data.contentType, "application/json");
+    assert.equal(data.information, meta);
   });
 });

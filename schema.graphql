@@ -223,6 +223,12 @@ type ReceiptInformation implements Event @entity {
   information: Bytes! # ReceiptInformation.data
   "The caller of this receipt information"
   caller: Account! # ReceiptInformation.caller
+  payload : String
+  magicNumber: BigInt
+  contentType: String
+  contentEncoding: String
+  contentLanguage: String
+  schema: String
 }
 
 # Created with every new ReceiptVaultInformation event

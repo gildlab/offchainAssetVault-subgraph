@@ -1,10 +1,11 @@
-import { dataSource, log } from "@graphprotocol/graph-ts";
+import { dataSource, json, log } from "@graphprotocol/graph-ts";
 import {
   OffchainAssetReceiptVault,
   ReceiptInformation,
 } from "../generated/schema";
 import { ReceiptInformation as ReceiptInformationEvent } from "../generated/templates/ReceiptTemplate/Receipt";
-import { getAccount, getReceipt, getTransaction } from "./utils";
+import { getAccount, getReceipt, getTransaction, stringToArrayBuffer } from "./utils";
+import { CBORDecoder } from "@rainprotocol/assemblyscript-cbor";
 
 export function handleReceiptInformation(event: ReceiptInformationEvent): void {
   let context = dataSource.context();
@@ -24,6 +25,22 @@ export function handleReceiptInformation(event: ReceiptInformationEvent): void {
     receiptInformation.timestamp = event.block.timestamp;
     receiptInformation.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
     receiptInformation.information = event.params.information;
+
+    let metaData = event.params.information.toHex().slice(18);
+    let data = new CBORDecoder(stringToArrayBuffer(metaData));
+    let jsonDataArray = json.fromString(data.parse().stringify()).toArray();
+    if ( jsonDataArray.length ) {
+      receiptInformation.payload = jsonDataArray[ 0 ].toObject().mustGet("0").toString();
+      receiptInformation.magicNumber = jsonDataArray[ 0 ].toObject().mustGet("1").toBigInt();
+      receiptInformation.contentType = jsonDataArray[ 0 ].toObject().mustGet("2").toString();
+      receiptInformation.contentEncoding = jsonDataArray[ 0 ].toObject().mustGet("3").toString();
+    //   //todo change key to OA_SCHEMA
+    //   receiptInformation.schema = jsonDataArray[ 0 ].toObject().entries.join();
+    //   //HashList
+    //   // let hashList = jsonDataArray[ 1 ].toObject().mustGet("0").toString();
+    //   receiptInformation.contentLanguage = data.parse().stringify();
+    }
+
     receiptInformation.caller = getAccount(
       event.params.sender.toHex(),
       offchainAssetReceiptVault.id
