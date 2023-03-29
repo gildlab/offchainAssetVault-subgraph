@@ -99,19 +99,36 @@ export function toDecimals(value: BigInt, decimals: number = 18): BigDecimal {
   return value.divDecimal(precision);
 }
 
+export function hexToBigint(hex: string): BigInt {
+  let bigint = BigInt.fromI32(0);
+  let power = BigInt.fromI32(1);
+  for (let i = hex.length - 1; i >= 0; i--) {
+    let char = hex.charCodeAt(i);
+    let value = 0;
+    if (char >= 48 && char <= 57) {
+      value = char - 48;
+    } else if (char >= 65 && char <= 70) {
+      value = char - 55;
+    }
+    bigint = bigint.plus(BigInt.fromI32(value).times(power));
+    power = power.times(BigInt.fromI32(16));
+  }
+  return bigint;
+}
+
 /**
  * Prefixes every rain meta document
  */
-export const RAIN_META_DOCUMENT = BigInt.fromString("0xff0a89c674ee7874");
+export const RAIN_META_DOCUMENT = hexToBigint("0xff0a89c674ee7874");
 /**S
  * OA Schema
  */
-export const OA_SCHEMA = BigInt.fromString("0xffa8e8a9b9cf4a31");
+export const OA_SCHEMA = hexToBigint("0xffa8e8a9b9cf4a31");
 /**
  * OA Hash list
  */
-export const OA_HASH_LIST = BigInt.fromString("0xff9fae3cc645f463");
+export const OA_HASH_LIST = hexToBigint("0xff9fae3cc645f463");
 /**
  * OA Structure
  */
-export const OA_STRUCTURE = BigInt.fromString("0xffc47a6299e8a911");
+export const OA_STRUCTURE = hexToBigint("0xffc47a6299e8a911");
