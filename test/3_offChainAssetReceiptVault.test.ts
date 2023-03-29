@@ -113,20 +113,16 @@ describe("OffChainAssetReceiptVault", async function () {
       ["mint(uint256,address,uint256,bytes)"](shares, alice.address, ONE, arrayify(meta));
 
     const query = `{
-        offchainAssetReceiptVault(id:"${vault.address.toLowerCase()}"){
-          id
-          deposits {
-            receipt {
-              receiptInformations {
-              information
-            }
-      }
-    }
+        receiptInformations(orderDirection: asc) {
+          information
+          contentType
+          magicNumber
+          contentEncoding
         }
       }`;
     await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
     const response = (await subgraph({ query })) as FetchResult;
-    const data = response.data.offchainAssetReceiptVault.receiptVaultInformations[0];
+    const data = response.data.receiptInformations[0];
 
     assert.equal(BigInt(data.magicNumber), OA_STRUCTURE);
     assert.equal(data.contentEncoding, "deflate");
