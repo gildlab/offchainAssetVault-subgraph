@@ -13,11 +13,11 @@ export function handleReceiptInformation(event: ReceiptInformationEvent): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
     context.getString("vault")
   );
-  if (offchainAssetReceiptVault) {
+  if ( offchainAssetReceiptVault ) {
     let receiptInformation = new ReceiptInformation(
       `ReceiptInformation-${
         offchainAssetReceiptVault.id
-      }-${event.params.id.toString()}`
+      }-${ event.params.id.toString() }`
     );
     receiptInformation.transaction = getTransaction(
       event.block,
@@ -39,38 +39,42 @@ export function handleReceiptInformation(event: ReceiptInformationEvent): void {
       event.params.id
     ).id;
     receiptInformation.save();
+    let meta = event.params.information.toHex();
 
-    let metaData = event.params.information.toHex().slice(18);
-    let data = new CBORDecoder(stringToArrayBuffer(metaData));
-    let jsonDataArray = json.fromString(data.parse().stringify()).toArray();
-    if ( jsonDataArray.length ) {
-      receiptInformation.payload = jsonDataArray[ 0 ].toObject().mustGet("0").toString();
-      receiptInformation.magicNumber = jsonDataArray[ 0 ].toObject().mustGet("1").toBigInt();
-      receiptInformation.contentType = jsonDataArray[ 0 ].toObject().mustGet("2").toString();
-      receiptInformation.contentEncoding = jsonDataArray[ 0 ].toObject().mustGet("3").toString();
-      receiptInformation.save();
+    if ( meta.includes("0xff0a89c674ee7874") ) {
+      let metaData = event.params.information.toHex().slice(18);
+      let data = new CBORDecoder(stringToArrayBuffer(metaData));
+      let jsonDataArray = json.fromString(data.parse().stringify()).toArray();
+      if ( jsonDataArray.length ) {
+        receiptInformation.payload = jsonDataArray[ 0 ].toObject().mustGet("0").toString();
+        receiptInformation.magicNumber = jsonDataArray[ 0 ].toObject().mustGet("1").toBigInt();
+        receiptInformation.contentType = jsonDataArray[ 0 ].toObject().mustGet("2").toString();
+        receiptInformation.contentEncoding = jsonDataArray[ 0 ].toObject().mustGet("3").toString();
 
-    //   //todo change key to OA_SCHEMA
-    //   receiptInformation.schema = jsonDataArray[ 0 ].toObject().entries.join();
-      //HashList
-      let hashList = jsonDataArray[ 1 ].toObject().mustGet("0").toString();
+        receiptInformation.save();
 
-      let hashListArray = hashList.split(",");
-      if(hashListArray.length){
-        for (let i = 0; i < hashListArray.length; i++ ){
-          if ( offchainAssetReceiptVault ) {
+        //   //todo change key to OA_SCHEMA
+        //   receiptInformation.schema = jsonDataArray[ 0 ].toObject().entries.join();
+        //HashList
+        let hashList = jsonDataArray[ 1 ].toObject().mustGet("0").toString();
 
-            let hash = new Hash(event.transaction.hash.toHex().toString()+ "-" + i.toString());
-            hash.owner = receiptInformation.caller;
-            hash.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-            hash.offchainAssetReceiptVaultDeployer = offchainAssetReceiptVault.deployer.toHex();
-            hash.hash = hashListArray[i];
-            hash.timestamp = event.block.timestamp;
-            hash.save();
+        let hashListArray = hashList.split(",");
+        if ( hashListArray.length ) {
+          for ( let i = 0; i < hashListArray.length; i++ ) {
+            if ( offchainAssetReceiptVault ) {
 
-            offchainAssetReceiptVault.hashCount =
-              offchainAssetReceiptVault.hashCount.plus(ONE);
-            offchainAssetReceiptVault.save();
+              let hash = new Hash(event.transaction.hash.toHex().toString() + "-" + i.toString());
+              hash.owner = receiptInformation.caller;
+              hash.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+              hash.offchainAssetReceiptVaultDeployer = offchainAssetReceiptVault.deployer.toHex();
+              hash.hash = hashListArray[ i ];
+              hash.timestamp = event.block.timestamp;
+              hash.save();
+
+              offchainAssetReceiptVault.hashCount =
+                offchainAssetReceiptVault.hashCount.plus(ONE);
+              offchainAssetReceiptVault.save();
+            }
           }
         }
       }
