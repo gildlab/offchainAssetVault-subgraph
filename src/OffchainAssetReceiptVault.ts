@@ -214,19 +214,6 @@ export function handleDepositWithReceipt(event: DepositWithReceiptEvent): void {
       deployer.hashCount = deployer.hashCount.plus(ONE);
       deployer.save();
     }
-
-    let hash = new Hash(event.transaction.hash.toHex());
-    hash.owner = depositWithReceipt.receiver;
-    hash.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-    hash.offchainAssetReceiptVaultDeployer =
-      offchainAssetReceiptVault.deployer.toHex();
-    hash.hash = event.params.receiptInformation.toString();
-    hash.timestamp = event.block.timestamp;
-    hash.save();
-
-    offchainAssetReceiptVault.hashCount =
-      offchainAssetReceiptVault.hashCount.plus(ONE);
-    offchainAssetReceiptVault.save();
   }
 }
 
