@@ -290,25 +290,29 @@ export function handleReceiptVaultInformation(
     receiptVaultInformation.contentType = jsonDataArray[ 0 ].toObject().mustGet("2").toString();
     receiptVaultInformation.contentEncoding = jsonDataArray[ 0 ].toObject().mustGet("3").toString();
 
-  //HashList
+    //HashList
     let hashList = jsonDataArray[ 1 ].toObject().mustGet("0").toString();
-    receiptVaultInformation.contentLanguage = hashList;
+    let hashListArray = hashList.split(",");
+    if(hashListArray.length){
+      for (let i = 0; i<hashListArray.length; i++ ){
+        if ( offchainAssetReceiptVault ) {
+          let hash = new Hash(event.transaction.hash.toHex().toString()+ "-" + i.toString());
+          hash.owner = receiptVaultInformation.caller;
+          hash.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+          hash.offchainAssetReceiptVaultDeployer = offchainAssetReceiptVault.deployer.toHex();
+          hash.hash = hashListArray[i];
+          hash.timestamp = event.block.timestamp;
+          hash.save();
+          offchainAssetReceiptVault.hashCount =
+            offchainAssetReceiptVault.hashCount.plus(ONE);
+          offchainAssetReceiptVault.save();
+        }
+      }
+    }
   }
   receiptVaultInformation.save();
 
-  // if ( offchainAssetReceiptVault ) {
-  //   let hash = new Hash(event.transaction.hash.toHex());
-  //   hash.owner = receiptVaultInformation.caller;
-  //   hash.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-  //   hash.offchainAssetReceiptVaultDeployer = offchainAssetReceiptVault.deployer.toHex();
-  //   hash.hash = event.params.vaultInformation.toString();
-  //   hash.timestamp = event.block.timestamp;
-  //   hash.save();
-  //
-  //   offchainAssetReceiptVault.hashCount =
-  //     offchainAssetReceiptVault.hashCount.plus(ONE);
-  //   offchainAssetReceiptVault.save();
-  // }
+
 }
 
 export function handleRoleAdminChanged(event: RoleAdminChanged): void {
