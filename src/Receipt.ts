@@ -5,7 +5,15 @@ import {
   ReceiptInformation
 } from "../generated/schema";
 import { ReceiptInformation as ReceiptInformationEvent } from "../generated/templates/ReceiptTemplate/Receipt";
-import { getAccount, getReceipt, getTransaction, ONE, stringToArrayBuffer } from "./utils";
+import {
+  BigintToHexString,
+  getAccount,
+  getReceipt,
+  getTransaction,
+  ONE,
+  RAIN_META_DOCUMENT,
+  stringToArrayBuffer
+} from "./utils";
 import { CBORDecoder } from "@rainprotocol/assemblyscript-cbor";
 
 export function handleReceiptInformation(event: ReceiptInformationEvent): void {
@@ -16,7 +24,7 @@ export function handleReceiptInformation(event: ReceiptInformationEvent): void {
   if ( offchainAssetReceiptVault ) {
     let meta = event.params.information.toHex();
 
-    if ( meta.includes("0xff0a89c674ee7874") ) {
+    if ( meta.includes(BigintToHexString(RAIN_META_DOCUMENT)) ) {
 
       let metaData = event.params.information.toHex().slice(18);
       let data = new CBORDecoder(stringToArrayBuffer(metaData));

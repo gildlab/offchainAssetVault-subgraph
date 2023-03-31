@@ -1,4 +1,4 @@
-import { DataSourceContext, json } from "@graphprotocol/graph-ts";
+import { Bytes, DataSourceContext, json , BigInt, ByteArray} from "@graphprotocol/graph-ts";
 import {
   Certify,
   DepositWithReceipt,
@@ -58,11 +58,12 @@ import {
   getReceiptBalance,
   getRoleHolder,
   getTransaction,
-  OA_SCHEMA,
   ONE,
   toDecimals,
   ZERO,
-  stringToArrayBuffer
+  stringToArrayBuffer,
+  RAIN_META_DOCUMENT,
+  BigintToHexString
 } from "./utils";
 
 import { CBORDecoder } from "@rainprotocol/assemblyscript-cbor";
@@ -252,7 +253,7 @@ export function handleReceiptVaultInformation(
   );
 
   let meta = event.params.vaultInformation.toHex();
-  if ( meta.includes("0xff0a89c674ee7874") ) {
+  if ( meta.includes( BigintToHexString(RAIN_META_DOCUMENT)) ) {
 
     let metaData = event.params.vaultInformation.toHex().slice(18);
     let data = new CBORDecoder(stringToArrayBuffer(metaData));
@@ -281,7 +282,6 @@ export function handleReceiptVaultInformation(
         receiptVaultInformation.magicNumber = jsonDataArray[ 0 ].toObject().mustGet("1").toBigInt();
         receiptVaultInformation.contentType = jsonDataArray[ 0 ].toObject().mustGet("2").toString();
         receiptVaultInformation.contentEncoding = jsonDataArray[ 0 ].toObject().mustGet("3").toString();
-        receiptVaultInformation.contentLanguage = meta;
         receiptVaultInformation.save();
 
         //HashList

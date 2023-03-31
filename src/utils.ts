@@ -1,4 +1,4 @@
-import { Address, BigDecimal, BigInt, ethereum } from "@graphprotocol/graph-ts";
+import { Address, BigDecimal, BigInt, ByteArray, Bytes, ethereum } from "@graphprotocol/graph-ts";
 import {
   Account,
   OffchainAssetReceiptVault,
@@ -100,20 +100,15 @@ export function toDecimals(value: BigInt, decimals: number = 18): BigDecimal {
 }
 
 export function hexToBigint(hex: string): BigInt {
-  let bigint = BigInt.fromI32(0);
-  let power = BigInt.fromI32(1);
-  for (let i = hex.length - 1; i >= 0; i--) {
-    let char = hex.charCodeAt(i);
-    let value = 0;
-    if (char >= 48 && char <= 57) {
-      value = char - 48;
-    } else if (char >= 65 && char <= 70) {
-      value = char - 55;
-    }
-    bigint = bigint.plus(BigInt.fromI32(value).times(power));
-    power = power.times(BigInt.fromI32(16));
-  }
-  return bigint;
+  // Convert hex string to ByteArray
+  const byteArray = Bytes.fromHexString(hex);
+
+  // Convert ByteArray to BigInt
+  return BigInt.fromUnsignedBytes(byteArray);
+}
+
+export function BigintToHexString(bigint: BigInt): string{
+  return ByteArray.fromBigInt(bigint).toHexString().toString().slice(0,18)
 }
 
 /**
