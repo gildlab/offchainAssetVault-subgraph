@@ -246,31 +246,33 @@ export function handleOffchainAssetVaultInitialized(
 export function handleReceiptVaultInformation(
   event: ReceiptVaultInformationEvent
 ): void {
-  let receiptVaultInformation = new ReceiptVaultInformation(event.transaction.hash.toHex());
 
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
       event.address.toHex()
   );
 
-  receiptVaultInformation.transaction = getTransaction(
-    event.block,
-    event.transaction.hash.toHex()
-  ).id;
-  receiptVaultInformation.timestamp = event.block.timestamp;
-  receiptVaultInformation.offchainAssetReceiptVault = event.address.toHex();
-  receiptVaultInformation.information = event.params.vaultInformation;
-  receiptVaultInformation.caller = getAccount(
-    event.params.sender.toHex(),
-    event.address.toHex()
-  ).id;
-  receiptVaultInformation.emitter = getAccount(
-    event.params.sender.toHex(),
-    event.address.toHex()
-  ).id;
 
   let meta = event.params.vaultInformation.toHex();
 
   if(meta.includes("0xff0a89c674ee7874")){
+    let receiptVaultInformation = new ReceiptVaultInformation(event.transaction.hash.toHex());
+
+    receiptVaultInformation.transaction = getTransaction(
+      event.block,
+      event.transaction.hash.toHex()
+    ).id;
+    receiptVaultInformation.timestamp = event.block.timestamp;
+    receiptVaultInformation.offchainAssetReceiptVault = event.address.toHex();
+    receiptVaultInformation.information = event.params.vaultInformation;
+    receiptVaultInformation.caller = getAccount(
+      event.params.sender.toHex(),
+      event.address.toHex()
+    ).id;
+    receiptVaultInformation.emitter = getAccount(
+      event.params.sender.toHex(),
+      event.address.toHex()
+    ).id;
+
     let metaData = event.params.vaultInformation.toHex().slice(18);
     let data = new CBORDecoder(stringToArrayBuffer(metaData));
     let jsonDataArray = json.fromString(data.parse().stringify()).toArray();

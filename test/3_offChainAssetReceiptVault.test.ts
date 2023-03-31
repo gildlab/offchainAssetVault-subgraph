@@ -87,6 +87,34 @@ describe("OffChainAssetReceiptVault", async function () {
     assert.equal(vaultData.contentType, "application/json");
     assert.equal(vaultData.information, meta);
   });
+  it("Checks ReceiptVaultInformation does not update receiptVaultInformation if data not start with rain mn", async function () {
+    const signers = await ethers.getSigners();
+    const alice = signers[0];
+
+    let meta = [5]
+
+    const query = `{
+          receiptVaultInformations {
+            information
+            payload
+            magicNumber
+            contentEncoding
+            contentType
+        }
+      }`;
+
+    await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
+    const responseBef = (await subgraph({ query })) as FetchResult;
+    const receiptVaultInformationsLengthBef = responseBef.data.receiptVaultInformations.length;
+
+    await vault.connect(alice).receiptVaultInformation(arrayify(meta));
+
+    await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
+    const response = (await subgraph({ query })) as FetchResult;
+    const receiptVaultInformationsLengthAft = response.data.receiptVaultInformations.length;
+
+    assert.equal(receiptVaultInformationsLengthBef, receiptVaultInformationsLengthAft);
+  });
   it("Checks ReceiptInformation event data", async function () {
     const signers = await ethers.getSigners();
     const alice = signers[0];
@@ -128,5 +156,49 @@ describe("OffChainAssetReceiptVault", async function () {
     assert.equal(data.contentEncoding, "deflate");
     assert.equal(data.contentType, "application/json");
     assert.equal(data.information, meta);
+  });
+  it("Checks ReceiptInformation does not update receiptInformation if data not start with rain m", async function () {
+    const signers = await ethers.getSigners();
+    const alice = signers[0];
+
+    let meta = [5]
+
+    const testErc20 = await ethers.getContractFactory("TestErc20");
+    const asset = (await testErc20.deploy()) as TestErc20;
+    await asset.deployed();
+
+    await vault
+      .connect(alice)
+      .grantRole(await vault.connect(alice).DEPOSITOR(), alice.address);
+
+    const assets = ethers.BigNumber.from(5000);
+    await asset.transfer(alice.address, assets);
+    await asset.connect(alice).increaseAllowance(vault.address, assets);
+
+    const query = `{
+        receiptInformations(orderDirection: asc) {
+          information
+          contentType
+          magicNumber
+          contentEncoding
+        }
+      }`;
+
+    const shares = fixedPointMul(assets, ONE).add(1);
+
+    await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
+    const responseBef = (await subgraph({ query })) as FetchResult;
+    const receiptInformationsLengthBef = responseBef.data.receiptInformations.length;
+
+    await vault
+      .connect(alice)
+      ["mint(uint256,address,uint256,bytes)"](shares, alice.address, ONE, arrayify(meta));
+
+
+    await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
+    const response = (await subgraph({ query })) as FetchResult;
+    const receiptInformationsLengthAft = response.data.receiptInformations.length;
+
+    assert.equal(receiptInformationsLengthAft, receiptInformationsLengthBef);
   });
 });

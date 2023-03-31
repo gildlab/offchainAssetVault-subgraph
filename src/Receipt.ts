@@ -14,34 +14,34 @@ export function handleReceiptInformation(event: ReceiptInformationEvent): void {
     context.getString("vault")
   );
   if ( offchainAssetReceiptVault ) {
-    let receiptInformation = new ReceiptInformation(
-      `ReceiptInformation-${
-        offchainAssetReceiptVault.id
-      }-${ event.params.id.toString() }`
-    );
-    receiptInformation.transaction = getTransaction(
-      event.block,
-      event.transaction.hash.toHex()
-    ).id;
-    receiptInformation.timestamp = event.block.timestamp;
-    receiptInformation.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-    receiptInformation.information = event.params.information;
-    receiptInformation.caller = getAccount(
-      event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
-    ).id;
-    receiptInformation.emitter = getAccount(
-      event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
-    ).id;
-    receiptInformation.receipt = getReceipt(
-      offchainAssetReceiptVault.id,
-      event.params.id
-    ).id;
-    receiptInformation.save();
     let meta = event.params.information.toHex();
 
     if ( meta.includes("0xff0a89c674ee7874") ) {
+      let receiptInformation = new ReceiptInformation(
+        `ReceiptInformation-${
+          offchainAssetReceiptVault.id
+        }-${ event.params.id.toString() }`
+      );
+      receiptInformation.transaction = getTransaction(
+        event.block,
+        event.transaction.hash.toHex()
+      ).id;
+      receiptInformation.timestamp = event.block.timestamp;
+      receiptInformation.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+      receiptInformation.information = event.params.information;
+      receiptInformation.caller = getAccount(
+        event.params.sender.toHex(),
+        offchainAssetReceiptVault.id
+      ).id;
+      receiptInformation.emitter = getAccount(
+        event.params.sender.toHex(),
+        offchainAssetReceiptVault.id
+      ).id;
+      receiptInformation.receipt = getReceipt(
+        offchainAssetReceiptVault.id,
+        event.params.id
+      ).id;
+      receiptInformation.save();
       let metaData = event.params.information.toHex().slice(18);
       let data = new CBORDecoder(stringToArrayBuffer(metaData));
       let jsonDataArray = json.fromString(data.parse().stringify()).toArray();
