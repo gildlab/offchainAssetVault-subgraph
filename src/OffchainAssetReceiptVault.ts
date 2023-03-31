@@ -11,7 +11,7 @@ import {
   Hash,
   User,
   Deployer,
-  ReceiptVaultInformation,
+  ReceiptVaultInformation
 } from "../generated/schema";
 import { ReceiptTemplate } from "../generated/templates";
 import {
@@ -32,7 +32,7 @@ import {
   Withdraw,
   WithdrawWithReceipt as WithdrawWithReceiptEvent,
   OffchainAssetReceiptVault as OffchainAssetVaultContract,
-  OffchainAssetReceiptVaultInitialized,
+  OffchainAssetReceiptVaultInitialized
 } from "../generated/templates/OffchainAssetReceiptVaultTemplate/OffchainAssetReceiptVault";
 import {
   CERTIFIER,
@@ -50,7 +50,7 @@ import {
   HANDLER,
   HANDLER_ADMIN,
   WITHDRAWER,
-  WITHDRAWER_ADMIN,
+  WITHDRAWER_ADMIN
 } from "./roles";
 import {
   getAccount,
@@ -186,7 +186,7 @@ export function handleDepositWithReceipt(event: DepositWithReceiptEvent): void {
     ).id;
     receiptBalance.confiscated = ZERO;
 
-    if (receipt) {
+    if ( receipt ) {
       receipt.shares = receipt.shares.plus(event.params.shares);
       receipt.save();
 
@@ -200,17 +200,17 @@ export function handleDepositWithReceipt(event: DepositWithReceiptEvent): void {
       event.params.owner.toHex(),
       offchainAssetReceiptVault.id
     );
-    if (account) {
+    if ( account ) {
       account.hashCount = account.hashCount.plus(ONE);
       account.save();
     }
     let user = User.load(event.params.owner.toHex());
-    if (user) {
+    if ( user ) {
       user.hashCount = user.hashCount.plus(ONE);
       user.save();
     }
     let deployer = Deployer.load(offchainAssetReceiptVault.deployer.toHex());
-    if (deployer) {
+    if ( deployer ) {
       deployer.hashCount = deployer.hashCount.plus(ONE);
       deployer.save();
     }
@@ -223,7 +223,7 @@ export function handleOffchainAssetVaultInitialized(
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
     event.address.toHex()
   );
-  if (offchainAssetReceiptVault) {
+  if ( offchainAssetReceiptVault ) {
     offchainAssetReceiptVault.admin = event.params.config.admin;
     offchainAssetReceiptVault.name =
       event.params.config.receiptVaultConfig.vaultConfig.name;
@@ -251,59 +251,60 @@ export function handleReceiptVaultInformation(
       event.address.toHex()
   );
 
-
   let meta = event.params.vaultInformation.toHex();
-
-  if(meta.includes("0xff0a89c674ee7874")){
-    let receiptVaultInformation = new ReceiptVaultInformation(event.transaction.hash.toHex());
-
-    receiptVaultInformation.transaction = getTransaction(
-      event.block,
-      event.transaction.hash.toHex()
-    ).id;
-    receiptVaultInformation.timestamp = event.block.timestamp;
-    receiptVaultInformation.offchainAssetReceiptVault = event.address.toHex();
-    receiptVaultInformation.information = event.params.vaultInformation;
-    receiptVaultInformation.caller = getAccount(
-      event.params.sender.toHex(),
-      event.address.toHex()
-    ).id;
-    receiptVaultInformation.emitter = getAccount(
-      event.params.sender.toHex(),
-      event.address.toHex()
-    ).id;
+  if ( meta.includes("0xff0a89c674ee7874") ) {
 
     let metaData = event.params.vaultInformation.toHex().slice(18);
     let data = new CBORDecoder(stringToArrayBuffer(metaData));
-    let jsonDataArray = json.fromString(data.parse().stringify()).toArray();
-    if ( jsonDataArray.length ) {
-      receiptVaultInformation.payload = jsonDataArray[ 0 ].toObject().mustGet("0").toString();
-      receiptVaultInformation.magicNumber = jsonDataArray[ 0 ].toObject().mustGet("1").toBigInt();
-      receiptVaultInformation.contentType = jsonDataArray[ 0 ].toObject().mustGet("2").toString();
-      receiptVaultInformation.contentEncoding = jsonDataArray[ 0 ].toObject().mustGet("3").toString();
-      receiptVaultInformation.contentLanguage = meta;
+    let jsonData = json.try_fromString(data.parse().stringify());
+    if ( jsonData.isOk ) {
+      let jsonDataArray = jsonData.value.toArray();
+      if ( jsonDataArray.length ) {
+        let receiptVaultInformation = new ReceiptVaultInformation(event.transaction.hash.toHex());
 
-      //HashList
-      let hashList = jsonDataArray[ 1 ].toObject().mustGet("0").toString();
-      let hashListArray = hashList.split(",");
-      if(hashListArray.length){
-        for (let i = 0; i<hashListArray.length; i++ ){
-          if ( offchainAssetReceiptVault ) {
-            let hash = new Hash(event.transaction.hash.toHex().toString()+ "-" + i.toString());
-            hash.owner = receiptVaultInformation.caller;
-            hash.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-            hash.offchainAssetReceiptVaultDeployer = offchainAssetReceiptVault.deployer.toHex();
-            hash.hash = hashListArray[i];
-            hash.timestamp = event.block.timestamp;
-            hash.save();
-            offchainAssetReceiptVault.hashCount =
-              offchainAssetReceiptVault.hashCount.plus(ONE);
-            offchainAssetReceiptVault.save();
+        receiptVaultInformation.transaction = getTransaction(
+          event.block,
+          event.transaction.hash.toHex()
+        ).id;
+        receiptVaultInformation.timestamp = event.block.timestamp;
+        receiptVaultInformation.offchainAssetReceiptVault = event.address.toHex();
+        receiptVaultInformation.information = event.params.vaultInformation;
+        receiptVaultInformation.caller = getAccount(
+          event.params.sender.toHex(),
+          event.address.toHex()
+        ).id;
+        receiptVaultInformation.emitter = getAccount(
+          event.params.sender.toHex(),
+          event.address.toHex()
+        ).id;
+        receiptVaultInformation.payload = jsonDataArray[ 0 ].toObject().mustGet("0").toString();
+        receiptVaultInformation.magicNumber = jsonDataArray[ 0 ].toObject().mustGet("1").toBigInt();
+        receiptVaultInformation.contentType = jsonDataArray[ 0 ].toObject().mustGet("2").toString();
+        receiptVaultInformation.contentEncoding = jsonDataArray[ 0 ].toObject().mustGet("3").toString();
+        receiptVaultInformation.contentLanguage = meta;
+        receiptVaultInformation.save();
+
+        //HashList
+        let hashList = jsonDataArray[ 1 ].toObject().mustGet("0").toString();
+        let hashListArray = hashList.split(",");
+        if ( hashListArray.length ) {
+          for ( let i = 0; i < hashListArray.length; i++ ) {
+            if ( offchainAssetReceiptVault ) {
+              let hash = new Hash(event.transaction.hash.toHex().toString() + "-" + i.toString());
+              hash.owner = receiptVaultInformation.caller;
+              hash.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+              hash.offchainAssetReceiptVaultDeployer = offchainAssetReceiptVault.deployer.toHex();
+              hash.hash = hashListArray[ i ];
+              hash.timestamp = event.block.timestamp;
+              hash.save();
+              offchainAssetReceiptVault.hashCount =
+                offchainAssetReceiptVault.hashCount.plus(ONE);
+              offchainAssetReceiptVault.save();
+            }
           }
         }
       }
     }
-    receiptVaultInformation.save();
   }
 }
 
@@ -312,38 +313,38 @@ export function handleRoleAdminChanged(event: RoleAdminChanged): void {
     event.address.toHex()
   );
   let role = new Role(event.address.toHex() + "-" + event.params.role.toHex());
-  if (offchainAssetReceiptVault) {
-    if (event.params.role.toHex() == DEPOSITOR) {
+  if ( offchainAssetReceiptVault ) {
+    if ( event.params.role.toHex() == DEPOSITOR ) {
       role.roleName = "DEPOSITOR";
-    } else if (event.params.role.toHex() == DEPOSITOR_ADMIN) {
+    } else if ( event.params.role.toHex() == DEPOSITOR_ADMIN ) {
       role.roleName = "DEPOSITOR_ADMIN";
-    } else if (event.params.role.toHex() == WITHDRAWER_ADMIN) {
+    } else if ( event.params.role.toHex() == WITHDRAWER_ADMIN ) {
       role.roleName = "WITHDRAWER_ADMIN";
-    } else if (event.params.role.toHex() == CERTIFIER_ADMIN) {
+    } else if ( event.params.role.toHex() == CERTIFIER_ADMIN ) {
       role.roleName = "CERTIFIER_ADMIN";
-    } else if (event.params.role.toHex() == HANDLER_ADMIN) {
+    } else if ( event.params.role.toHex() == HANDLER_ADMIN ) {
       role.roleName = "HANDLER_ADMIN";
-    } else if (event.params.role.toHex() == ERC20TIERER_ADMIN) {
+    } else if ( event.params.role.toHex() == ERC20TIERER_ADMIN ) {
       role.roleName = "ERC20TIERER_ADMIN";
-    } else if (event.params.role.toHex() == ERC1155TIERER_ADMIN) {
+    } else if ( event.params.role.toHex() == ERC1155TIERER_ADMIN ) {
       role.roleName = "ERC1155TIERER_ADMIN";
-    } else if (event.params.role.toHex() == ERC20SNAPSHOTTER_ADMIN) {
+    } else if ( event.params.role.toHex() == ERC20SNAPSHOTTER_ADMIN ) {
       role.roleName = "ERC20SNAPSHOTTER_ADMIN";
-    } else if (event.params.role.toHex() == CONFISCATOR_ADMIN) {
+    } else if ( event.params.role.toHex() == CONFISCATOR_ADMIN ) {
       role.roleName = "CONFISCATOR_ADMIN";
-    } else if (event.params.role.toHex() == WITHDRAWER) {
+    } else if ( event.params.role.toHex() == WITHDRAWER ) {
       role.roleName = "WITHDRAWER";
-    } else if (event.params.role.toHex() == CERTIFIER) {
+    } else if ( event.params.role.toHex() == CERTIFIER ) {
       role.roleName = "CERTIFIER";
-    } else if (event.params.role.toHex() == HANDLER) {
+    } else if ( event.params.role.toHex() == HANDLER ) {
       role.roleName = "HANDLER";
-    } else if (event.params.role.toHex() == ERC20TIERER) {
+    } else if ( event.params.role.toHex() == ERC20TIERER ) {
       role.roleName = "ERC20TIERER";
-    } else if (event.params.role.toHex() == ERC1155TIERER) {
+    } else if ( event.params.role.toHex() == ERC1155TIERER ) {
       role.roleName = "ERC1155TIERER";
-    } else if (event.params.role.toHex() == ERC20SNAPSHOTTER) {
+    } else if ( event.params.role.toHex() == ERC20SNAPSHOTTER ) {
       role.roleName = "ERC20SNAPSHOTTER";
-    } else if (event.params.role.toHex() == CONFISCATOR) {
+    } else if ( event.params.role.toHex() == CONFISCATOR ) {
       role.roleName = "CONFISCATOR";
     } else {
       role.roleName = "UNKNOWN";
@@ -360,7 +361,7 @@ export function handleRoleGranted(event: RoleGrantedEvent): void {
   );
   let role = Role.load(event.address.toHex() + "-" + event.params.role.toHex());
 
-  if (offchainAssetReceiptVault && role) {
+  if ( offchainAssetReceiptVault && role ) {
     let roleGranted = new RoleGranted(event.transaction.hash.toHex());
     roleGranted.account = getAccount(
       event.params.account.toHex(),
@@ -386,11 +387,11 @@ export function handleRoleGranted(event: RoleGrantedEvent): void {
       event.params.account.toHex(),
       event.params.role.toHex()
     );
-    if (roleHolder) {
+    if ( roleHolder ) {
       roleGranted.roleHolder = roleHolder.id;
 
       let activeRoles = roleHolder.activeRoles;
-      if (activeRoles) activeRoles.push(role.id);
+      if ( activeRoles ) activeRoles.push(role.id);
       roleHolder.activeRoles = activeRoles;
       roleHolder.save();
     }
@@ -401,13 +402,14 @@ export function handleRoleGranted(event: RoleGrantedEvent): void {
     role.save();
   }
 }
+
 export function handleRoleRevoked(event: RoleRevokedEvent): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
     event.address.toHex()
   );
   let role = Role.load(event.address.toHex() + "-" + event.params.role.toHex());
 
-  if (offchainAssetReceiptVault && role) {
+  if ( offchainAssetReceiptVault && role ) {
     let roleRevoked = new RoleRevoked(event.transaction.hash.toHex());
     roleRevoked.account = getAccount(
       event.params.account.toHex(),
@@ -433,15 +435,15 @@ export function handleRoleRevoked(event: RoleRevokedEvent): void {
       event.params.account.toHex(),
       event.params.role.toHex()
     );
-    if (roleHolder) {
+    if ( roleHolder ) {
       roleRevoked.roleHolder = roleHolder.id;
 
       let old_activeRoles = roleHolder.activeRoles;
       let activeRoles: string[] = [];
-      if (old_activeRoles) {
-        for (let i = 0; i < old_activeRoles.length; i++) {
-          if (old_activeRoles[i] != role.id)
-            activeRoles.push(old_activeRoles[i]);
+      if ( old_activeRoles ) {
+        for ( let i = 0; i < old_activeRoles.length; i++ ) {
+          if ( old_activeRoles[ i ] != role.id )
+            activeRoles.push(old_activeRoles[ i ]);
         }
       }
       roleHolder.activeRoles = activeRoles;
@@ -461,7 +463,7 @@ export function handleTransfer(event: Transfer): void {
   let offchainAssetVaultContract = OffchainAssetVaultContract.bind(
     event.address
   );
-  if (offchainAssetReceiptVault) {
+  if ( offchainAssetReceiptVault ) {
     offchainAssetReceiptVault.totalShares =
       offchainAssetVaultContract.totalSupply();
     offchainAssetReceiptVault.save();
@@ -472,7 +474,7 @@ export function handleWithdraw(event: Withdraw): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
     event.address.toHex()
   );
-  if (offchainAssetReceiptVault) {
+  if ( offchainAssetReceiptVault ) {
   }
 }
 
@@ -482,9 +484,9 @@ export function handleWithdrawWithReceipt(
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
     event.address.toHex()
   );
-  if (offchainAssetReceiptVault) {
+  if ( offchainAssetReceiptVault ) {
     let withdrawWithReceipt = new WithdrawWithReceipt(
-      `WithdrawWithReceipt-${event.transaction.hash.toHex()}-${event.params.id.toString()}`
+      `WithdrawWithReceipt-${ event.transaction.hash.toHex() }-${ event.params.id.toString() }`
     );
     withdrawWithReceipt.amount = event.params.shares;
     withdrawWithReceipt.caller = getAccount(
@@ -528,7 +530,7 @@ export function handleWithdrawWithReceipt(
     receiptBalance.save();
 
     let receipt = getReceipt(offchainAssetReceiptVault.id, event.params.id);
-    if (receipt) {
+    if ( receipt ) {
       receipt.shares = receipt.shares.minus(event.params.shares);
       receipt.save();
       withdrawWithReceipt.receipt = receipt.id;
