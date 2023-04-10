@@ -60,6 +60,7 @@ export function handleReceiptInformation(event: ReceiptInformationEvent): void {
           receiptInformation.magicNumber = jsonDataArray[ 0 ].toObject().mustGet("1").toBigInt();
           receiptInformation.contentType = jsonDataArray[ 0 ].toObject().mustGet("2").toString();
           receiptInformation.contentEncoding = jsonDataArray[ 0 ].toObject().mustGet("3").toString();
+          receiptInformation.schema = jsonDataArray[ 0 ].toObject().mustGet("18422230091423500849").toString()
 
           receiptInformation.save();
 
