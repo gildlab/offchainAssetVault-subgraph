@@ -92,6 +92,7 @@ export function handleCertify(event: CertifyEvent): void {
       offchainAssetReceiptVault.id
     ).id;
     certify.certifiedUntil = event.params.certifyUntil;
+    certify.totalShares = offchainAssetReceiptVault.totalShares;
     certify.data = event.params.data.toString();
     certify.save();
 
