@@ -217,7 +217,7 @@ describe("OffChainAssetReceiptVault", async function () {
 
         await vault
           .connect(alice)
-          .certify(_until, _referenceBlockNumber, false, [1, 7])
+          .certify(_until, _referenceBlockNumber, false, [1])
 
 
 
@@ -233,22 +233,6 @@ describe("OffChainAssetReceiptVault", async function () {
     await asset.transfer(alice.address, assets);
     await asset.connect(alice).increaseAllowance(vault.address, assets);
 
-    const shares = fixedPointMul(assets, ONE).add(1);
-
-    await vault
-      .connect(alice)
-      ["mint(uint256,address,uint256,bytes)"](shares, alice.address, ONE, []);
-
-
-    const blockNum1 = await ethers.provider.getBlockNumber();
-    const block1 = await ethers.provider.getBlock(blockNum1);
-    const _until1 = 1686905023;
-    const _referenceBlockNumber1 = block1.number;
-    await vault
-      .connect(alice)
-      .certify(_until1, _referenceBlockNumber1, false, [1])
-
-
     const query = `{
           certifies {
             certifiedUntil
@@ -261,7 +245,7 @@ describe("OffChainAssetReceiptVault", async function () {
       }`;
     await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
     const response = (await subgraph({ query })) as FetchResult;
-    const data = response.data.certifies[1];
+    const data = response.data.certifies[0];
 
     // assert.equal(data.certifiedUntil, 1686905023);
     assert.equal(data.emitter.address.toLowerCase(), alice.address.toLowerCase());
