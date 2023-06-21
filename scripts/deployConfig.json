@@ -1,7 +1,7 @@
 {
-  "configPath": "config/localhost.json",
-  "subgraphName": "rain-protocol/offchainAssetVault",
-  "versionLabel": "1.0.0",
-  "endpoint": "http://localhost:8020/",
-  "ipfsEndpoint": "http://localhost:5001"
+  "configPath": "config/mumbai.json",
+  "subgraphName": "vishalkale151071/drop-sale-ticket",
+  "versionLabel": "default",
+  "endpoint": "default",
+  "ipfsEndpoint": "default"
 }

@@ -3,87 +3,97 @@ schema:
   file: ./schema.graphql 
 dataSources:
   - kind: ethereum/contract
-    name: OffchainAssetVaultFactory
-    network: mumbai
+    name: OffchainAssetReceiptVaultFactory
+    network: localhost
     source:
-      address: "0xa40dD833D65a039668291A9BfADF74ca643f4E95"
-      abi: OffchainAssetVaultFactory
-      startBlock: 27728074
+      address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0"
+      abi: OffchainAssetReceiptVaultFactory
+      startBlock: 3
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.6
+      apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
         - VerifyFactory
         - Verify
       abis:
-        - name: OffchainAssetVaultFactory
-          file: ./abis/OffchainAssetVaultFactory.json
+        - name: OffchainAssetReceiptVaultFactory
+          file: ./abis/OffchainAssetReceiptVaultFactory.json
       eventHandlers:
-        - event: NewChild(address,address)
-          handler: handleNewChild
         - event: Implementation(address,address)
           handler: handleImplementation
-      file: ./src/OffchainAssetVaultFactory.ts
+          receipt: true
+        - event: NewChild(address,address)
+          handler: handleNewChild
+      file: ./src/OffchainAssetReceiptVaultFactory.ts
 templates:
   - kind: ethereum/contract
-    name: OffchainAssetVaultTemplate
-    network: mumbai
+    name: OffchainAssetReceiptVaultTemplate
+    network: localhost
     source:
-      abi: OffchainAssetVault
+      abi: OffchainAssetReceiptVault
     mapping:
       kind: ethereum/events
-      apiVersion: 0.0.6
+      apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
         - VerifyFactory
         - Verify
       abis:
-        - name: OffchainAssetVault
-          file: ./abis/OffchainAssetVault.json
+        - name: OffchainAssetReceiptVault
+          file: ./abis/OffchainAssetReceiptVault.json
       eventHandlers:
         - event: Approval(indexed address,indexed address,uint256)
           handler: handleApproval
-        - event: ApprovalForAll(indexed address,indexed address,bool)
-          handler: handleApprovalForAll
-        - event: Certify(address,uint256,bytes)
+        - event: Certify(address,uint256,uint256,bool,bytes)
           handler: handleCertify
-        - event: ConfiscateReceipt(address,address,uint256,uint256)
+        - event: ConfiscateReceipt(address,address,uint256,uint256,bytes)
           handler: handleConfiscateReceipt
-        - event: ConfiscateShares(address,address,uint256)
+        - event: ConfiscateShares(address,address,uint256,bytes)
           handler: handleConfiscateShares
-        - event: Construction(address,(address,string,string,string))
-          handler: handleConstruction
         - event: Deposit(indexed address,indexed address,uint256,uint256)
           handler: handleDeposit
         - event: DepositWithReceipt(address,address,uint256,uint256,uint256,bytes)
           handler: handleDepositWithReceipt
-        - event: OffchainAssetVaultConstruction(address,(address,(address,string,string,string)))
-          handler: handleOffchainAssetVaultConstruction
-        - event: ReceiptInformation(address,uint256,bytes)
-          handler: handleReceiptInformation
+        - event: OffchainAssetReceiptVaultInitialized(address,(address,(address,(address,string,string))))
+          handler: handleOffchainAssetVaultInitialized
         - event: RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32)
           handler: handleRoleAdminChanged
+        - event: ReceiptVaultInformation(address,bytes)
+          handler: handleReceiptVaultInformation
         - event: RoleGranted(indexed bytes32,indexed address,indexed address)
           handler: handleRoleGranted
         - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
           handler: handleRoleRevoked
-        - event: SetERC1155Tier(address,address,uint256,uint256[])
+        - event: SetERC1155Tier(address,address,uint256,uint256[],bytes)
           handler: handleSetERC1155Tier
-        - event: SetERC20Tier(address,address,uint256,uint256[])
+        - event: SetERC20Tier(address,address,uint256,uint256[],bytes)
           handler: handleSetERC20Tier
         - event: Snapshot(uint256)
           handler: handleSnapshot
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
-        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
-          handler: handleTransferBatch
-        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
-          handler: handleTransferSingle
-        - event: URI(string,indexed uint256)
-          handler: handleURI
         - event: Withdraw(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleWithdraw
-        - event: WithdrawWithReceipt(address,address,address,uint256,uint256,uint256)
+        - event: WithdrawWithReceipt(address,address,address,uint256,uint256,uint256,bytes)
           handler: handleWithdrawWithReceipt
-      file: ./src/OffchainAssetVault.ts
+      file: ./src/OffchainAssetReceiptVault.ts
+  - kind: ethereum/contract
+    name: ReceiptTemplate
+    network: localhost
+    source:
+      abi: Receipt
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - VerifyFactory
+        - Verify
+      abis:
+        - name: Receipt
+          file: ./abis/Receipt.json
+      eventHandlers:
+        - event: ReceiptInformation(address,uint256,bytes)
+          handler: handleReceiptInformation
+      file: ./src/Receipt.ts

@@ -1,0 +1,5 @@
+{
+    "network": "goerli",
+    "offchainAssetReceiptVaultFactoryBlock": 8904942,
+    "offchainAssetReceiptVaultFactory": "0x6DB9F75C0B79E0351B09311c4856F556b09F67a5"
+  }

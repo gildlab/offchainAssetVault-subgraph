@@ -1,5 +1,5 @@
 {
     "network": "mumbai",
-    "offchainAssetVaultFactoryBlock": 27728074,
-    "offchainAssetVaultFactory": "0xa40dD833D65a039668291A9BfADF74ca643f4E95"
+    "offchainAssetReceiptVaultFactoryBlock": 32253649,
+    "offchainAssetReceiptVaultFactory": "0x94927792b88d518f9a429572dd3d40400b8be906"
   }

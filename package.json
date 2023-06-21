@@ -5,14 +5,17 @@
   "main": "index.js",
   "scripts": {
     "test": "npx hardhat test",
+    "ci-test": "npx hardhat test --network localhost",
     "codegen": "graph codegen",
     "build": "graph build",
-    "prepare": "npx mustache config/localhost.json subgraph.template.yaml subgraph.yaml",
-    "hardhat-node": "npx hardhat node",
-    "graph-node": "docker-compose -f \"docker/docker-compose.yml\" up",
     "deploy-subgraph": "ts-node scripts/index.ts",
-    "prepare:mumbai": "npx mustache config/mumbai.json subgraph.template.yaml subgraph.yaml",
-    "deploy:mumbai": "npm run prepare:mumbai && graph deploy --node https://api.thegraph.com/deploy/ Gild-lab/offchainassetvault"
+    "deploy-mumbai": "ts-node scripts/index.ts --config config/mumbai.json --subgraphTemplate subgraph.template.yaml --subgraphName gildlab/offchainassetvault-mumbai",
+    "deploy-polygon": "ts-node scripts/index.ts --config config/polygon.json --subgraphTemplate subgraph.template.yaml --subgraphName gildlab/offchainassetvault-polygon",
+    "deploy-goerli": "ts-node scripts/index.ts --config config/goerli.json --subgraphTemplate subgraph.template.yaml --subgraphName gildlab/offchainassetvault-goerli",
+    "deploy-mainnet": "ts-node scripts/index.ts --config config/ethereum.json --subgraphTemplate subgraph.template.yaml --subgraphName gildlab/offchainassetvault-ethereum",
+    "create-local": "graph create --node http://localhost:8020/ gildlab/offchainassetvault",
+    "remove-local": "graph remove --node http://localhost:8020/ gildlab/offchainassetvault",
+    "deploy-local": "npx mustache config/localhost.json subgraph.template.yaml subgraph.yaml && npm run codegen && graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 gildlab/offchainassetvault  --version-label 1"
   },
   "repository": {
     "type": "git",
@@ -26,34 +29,24 @@
   },
   "homepage": "https://github.com/vishalkale151071/offchainAssetVault-subgraph#readme",
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.0.2",
-    "@nomiclabs/hardhat-waffle": "^2.0.1",
-    "@typechain/ethers-v5": "^8.0.5",
-    "@typechain/hardhat": "^3.1.0",
-    "@types/chai": "^4.2.21",
-    "@types/mocha": "^9.0.0",
-    "@types/node": "^17.0.21",
+    "@nomiclabs/hardhat-ethers": "^2.2.2",
+    "@typechain/ethers-v5": "^10.2.0",
+    "@types/chai": "^4.3.4",
+    "@types/mocha": "^10.0.1",
     "apollo-fetch": "^0.7.0",
-    "chai": "^4.3.4",
-    "dotenv": "^16.0.1",
-    "ethereum-waffle": "^3.3.0",
-    "ethers": "^5.3.1",
-    "hardhat": "^2.8.3",
-    "hardhat-contract-sizer": "^2.0.3",
-    "hardhat-gas-reporter": "^1.0.4",
-    "mem": ">=4.0.0",
-    "prettier": "^2.6.2",
-    "prettier-plugin-solidity": "^1.0.0-beta.19",
-    "solhint": "^3.3.6",
-    "ts-generator": "^0.1.1",
-    "ts-node": "^10.0.0",
-    "typechain": "^6.1.0",
-    "typescript": "^4.3.2",
-    "yargs-parser": ">=13.1.2"
+    "commander": "^9.4.1",
+    "ethers": "^5.7.2",
+    "typescript": "^4.3.2"
   },
   "dependencies": {
-    "@Gild-Lab/ethgild": "git+https://github.com/Gild-Lab/ethgild.git",
+    "@gildlab/ethgild": "git://github.com/gildlab/ethgild.git#30454f49857ab188698c9a8d0f928d7cce99044a",
     "@graphprotocol/graph-cli": "^0.33.0",
-    "@graphprotocol/graph-ts": "^0.27.0"
+    "@graphprotocol/graph-ts": "^0.27.0",
+    "@nomiclabs/hardhat-etherscan": "^3.1.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.3",
+    "@rainprotocol/assemblyscript-cbor": "^0.0.2",
+    "@typechain/hardhat": "^6.1.5",
+    "dotenv": "^16.0.3",
+    "mustache": "^4.2.0"
   }
 }
