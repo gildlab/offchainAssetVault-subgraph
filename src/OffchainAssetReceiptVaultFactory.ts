@@ -33,6 +33,7 @@ export function handleNewChild(event: NewChild): void {
   child.totalShares = ZERO;
   child.certifiedUntil = ZERO;
   child.hashCount = ZERO;
+  child.shareHoldersCount = ZERO;
 
   child.save();
 
@@ -46,6 +47,7 @@ export function handleNewChild(event: NewChild): void {
   if(!deployer){
     deployer = new Deployer(event.params.sender.toHex());
     deployer.hashCount = ZERO;
+    child.shareHoldersCount = ZERO;
     deployer.save();
   }
 

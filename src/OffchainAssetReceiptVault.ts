@@ -1,4 +1,4 @@
-import { Bytes, DataSourceContext, json , BigInt, ByteArray} from "@graphprotocol/graph-ts";
+import { DataSourceContext, json } from "@graphprotocol/graph-ts";
 import {
   Certify,
   DepositWithReceipt,
@@ -250,7 +250,7 @@ export function handleReceiptVaultInformation(
 ): void {
 
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
-      event.address.toHex()
+    event.address.toHex()
   );
 
   let meta = event.params.vaultInformation.toHex();
@@ -467,6 +467,27 @@ export function handleTransfer(event: Transfer): void {
   if ( offchainAssetReceiptVault ) {
     offchainAssetReceiptVault.totalShares =
       offchainAssetVaultContract.totalSupply();
+
+    let fromAccount = getAccount(
+      event.params.from.toHex(),
+      offchainAssetReceiptVault.id
+    );
+
+    let toAccount = getAccount(
+      event.params.to.toHex(),
+      offchainAssetReceiptVault.id
+    );
+
+    // Check if the 'from' address is not 0x0 (burn event)
+    if (fromAccount.address.toString() !== ZERO.toString() && offchainAssetReceiptVault.shareHoldersCount !== ZERO ) {
+      offchainAssetReceiptVault.shareHoldersCount = offchainAssetReceiptVault.shareHoldersCount.minus(ONE)
+    }
+
+    if (toAccount.address.toString() !== ZERO.toString()) {
+      offchainAssetReceiptVault.shareHoldersCount = offchainAssetReceiptVault.shareHoldersCount.plus(ONE)
+    }
+
+
     offchainAssetReceiptVault.save();
   }
 }
