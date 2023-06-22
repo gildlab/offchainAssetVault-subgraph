@@ -89,6 +89,8 @@ type OffchainAssetReceiptVault @entity {
   rolesGranted: [RoleGranted!] @derivedFrom(field: "offchainAssetReceiptVault")
   hashes: [Hash!] @derivedFrom(field: "offchainAssetReceiptVault")
   hashCount: BigInt!
+  "Token holders"
+  tokenHolders: [TokenHolder!] @derivedFrom(field: "offchainAssetReceiptVault")
 }
 
 type Account @entity {
@@ -469,4 +471,10 @@ type Deployer @entity {
   id: ID!
   hashCount: BigInt!
   hashes: [Hash!] @derivedFrom(field: "offchainAssetReceiptVaultDeployer")
+}
+
+type TokenHolder @entity {
+  id: ID!
+  account: Account!
+  offchainAssetReceiptVault: OffchainAssetReceiptVault!
 }
