@@ -481,35 +481,20 @@ export function handleTransfer(event: Transfer): void {
     let from = event.params.from;
     let to = event.params.to;
 
-
-    if (from.equals(Address.zero()) || to.equals(Address.zero())) {
+    if ( from.equals(Address.zero()) || to.equals(Address.zero()) ) {
       // Skip adding the zero address to the token holder list
-      return
+      return;
     }
 
-    // Update sender's token holder record
-    let fromHolder = getTokenHolder(
-      offchainAssetReceiptVault.address.toHex(),
-      event.params.from.toHex());
-
-    if ( fromHolder == null ) {
-      fromHolder = new TokenHolder(from.toHex());
-      fromHolder.account = from.toString();
+    if ( from.toHex() == "0x0000000000000000000000000000000000000000" ) {
+      offchainAssetReceiptVault.shareHoldersCount = offchainAssetReceiptVault.shareHoldersCount.minus(ONE);
     }
 
-    fromHolder.save();
+    // If the to address becomes nonzero, increment the token holder count.
+    if ( to.toHex() != "0x0000000000000000000000000000000000000000" ) {
+      offchainAssetReceiptVault.shareHoldersCount = offchainAssetReceiptVault.shareHoldersCount.plus(ONE);
 
-    // Update receiver's token holder record
-
-    let toHolder = getTokenHolder(
-      offchainAssetReceiptVault.address.toHex(),
-      event.params.to.toHex());
-
-    if ( toHolder == null ) {
-      toHolder = new TokenHolder(to.toHex());
-      toHolder.account = to.toString();
     }
-    toHolder.save();
 
     offchainAssetReceiptVault.save();
   }
