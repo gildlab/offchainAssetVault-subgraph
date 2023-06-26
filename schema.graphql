@@ -475,6 +475,7 @@ type Deployer @entity {
 
 type TokenHolder @entity {
   id: ID!
-  account: Account!
+  address: Bytes!
   offchainAssetReceiptVault: OffchainAssetReceiptVault!
+  balance: BigInt!
 }

@@ -64,7 +64,8 @@ import {
   ZERO,
   stringToArrayBuffer,
   RAIN_META_DOCUMENT,
-  BigintToHexString, getTokenHolder
+  BigintToHexString,
+  ZERO_ADDRESS
 } from "./utils";
 
 import { CBORDecoder } from "@rainprotocol/assemblyscript-cbor";
@@ -480,20 +481,66 @@ export function handleTransfer(event: Transfer): void {
 
     let from = event.params.from;
     let to = event.params.to;
+    let holders = offchainAssetReceiptVault.tokenHolders;
 
-    if ( from.equals(Address.zero()) || to.equals(Address.zero()) ) {
-      // Skip adding the zero address to the token holder list
-      return;
+    // Check if Sender is Zero address. Does not take as holder when contract mint
+    if ( from.toHex() != ZERO_ADDRESS ) {
+      // Load the Sender's Holder entity
+      let sender = TokenHolder.load(
+        event.address.toHex() + " - " + from.toHex()
+      );
+
+      // Create a new Holders entity if Sender doesnot exists
+      if ( !sender ) {
+        sender = new TokenHolder(
+          event.address.toHex() + " - " + from.toHex()
+        );
+        // Set the Sender's balance
+        sender.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+
+        sender.balance = ZERO;
+      }
+
+      // Update the sender's balance
+      // Set the sender's balance
+      sender.balance = offchainAssetVaultContract.balanceOf(from);
+      sender.address = from;
+      sender.save();
+
+      // Add the sender in Holders if not already exists
+      if ( holders && !holders.includes(sender.id) ) {
+        holders.push(sender.id);
+        offchainAssetReceiptVault.tokenHolders = holders;
+      }
     }
+    if ( to.toHex() != ZERO_ADDRESS ) {
+      // Load the Receiver's Holder entity
+      let receiver = TokenHolder.load(
+        event.address.toHex() + " - " + to.toHex()
+      );
 
-    if ( from.toHex() == "0x0000000000000000000000000000000000000000" ) {
-      offchainAssetReceiptVault.shareHoldersCount = offchainAssetReceiptVault.shareHoldersCount.minus(ONE);
-    }
+      // Create a new Holders entity if Receiver doesnot exists
+      if ( !receiver ) {
+        receiver = new TokenHolder(
+          event.address.toHex() + " - " + to.toHex()
+        );
+        // Set the Reciver's balance
+        receiver.balance = ZERO;
+      }
 
-    // If the to address becomes nonzero, increment the token holder count.
-    if ( to.toHex() != "0x0000000000000000000000000000000000000000" ) {
-      offchainAssetReceiptVault.shareHoldersCount = offchainAssetReceiptVault.shareHoldersCount.plus(ONE);
+      // Update the Receiver balance
+      // Set the Receiver's balance
+      receiver.balance = offchainAssetVaultContract.balanceOf(to);
+      receiver.address = to;
+      receiver.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
 
+      receiver.save();
+
+      // Add the Receiver in Holders if not already exists
+      if ( holders && !holders.includes(receiver.id) ) {
+        holders.push(receiver.id);
+        offchainAssetReceiptVault.tokenHolders = holders;
+      }
     }
 
     offchainAssetReceiptVault.save();
