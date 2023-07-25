@@ -251,63 +251,66 @@ describe("OffChainAssetReceiptVault", async function () {
     assert.equal(data.emitter.address.toLowerCase(), alice.address.toLowerCase());
     assert.equal(data.data, '\u0001');
   });
-//   it("Transfers", async function () {
-//     const signers = await ethers.getSigners();
-//     const alice = signers[0];
-//     const bob = signers[1];
-//
-//     //get block timestamp and add 100 to get _until
-//     const blockNum = await ethers.provider.getBlockNumber();
-//     const block = await ethers.provider.getBlock(blockNum);
-//     const _until = block.timestamp + 100;
-//     const _referenceBlockNumber = block.number;
-//
-//     await vault
-//       .connect(alice)
-//       .grantRole(await vault.connect(alice).CERTIFIER(), alice.address);
-//
-//         await vault
-//           .connect(alice)
-//           .certify(_until, _referenceBlockNumber, false, [])
-//
-//
-//
-//     const testErc20 = await ethers.getContractFactory("TestErc20");
-//     const asset = (await testErc20.deploy()) as TestErc20;
-//     await asset.deployed();
-//
-//     await vault
-//       .connect(alice)
-//       .grantRole(await vault.connect(alice).DEPOSITOR(), alice.address);
-//
-//     const assets = ethers.BigNumber.from(5000);
-//     await asset.transfer(alice.address, assets);
-//     await asset.connect(alice).increaseAllowance(vault.address, assets);
-//
-//     const shares = fixedPointMul(assets, ONE).add(1);
-//
-//     await vault
-//       .connect(alice)
-//       ["mint(uint256,address,uint256,bytes)"](shares, alice.address, ONE, []);
-//
-// await vault.connect(alice).transfer(bob.address, assets.div(2))
-//
-//     // const query = `{
-//     //       certifies {
-//     //         certifiedUntil
-//     //         data
-//     //         timestamp
-//     //         emitter {
-//     //           address
-//     //         }
-//     //       }
-//     //   }`;
-//     // await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
-//     // const response = (await subgraph({ query })) as FetchResult;
-//     // const data = response.data.certifies[1];
-//     //
-//     // assert.equal(data.certifiedUntil, 1686905023);
-//     // assert.equal(data.emitter.address.toLowerCase(), alice.address.toLowerCase());
-//     // assert.equal(data.data, '\u0001');
-//   });
+  it("Transfers and get the correct token holders", async function () {
+    const signers = await ethers.getSigners();
+    const alice = signers[0];
+    const bob = signers[1];
+    const john = signers[2];
+    const bull = signers[3];
+
+    //get block timestamp and add 100 to get _until
+    const blockNum = await ethers.provider.getBlockNumber();
+    const block = await ethers.provider.getBlock(blockNum);
+    const _until = block.timestamp + 100;
+    const _referenceBlockNumber = block.number;
+
+    await vault
+      .connect(alice)
+      .grantRole(await vault.connect(alice).CERTIFIER(), alice.address);
+
+        await vault
+          .connect(alice)
+          .certify(_until, _referenceBlockNumber, false, [])
+
+
+
+    const testErc20 = await ethers.getContractFactory("TestErc20");
+    const asset = (await testErc20.deploy()) as TestErc20;
+    await asset.deployed();
+
+    await vault
+      .connect(alice)
+      .grantRole(await vault.connect(alice).DEPOSITOR(), alice.address);
+
+    const assets = ethers.BigNumber.from(5000);
+    await asset.transfer(alice.address, assets);
+    await asset.connect(alice).increaseAllowance(vault.address, assets);
+
+    const shares = fixedPointMul(assets, ONE).add(1);
+
+    await vault
+      .connect(alice)
+      ["mint(uint256,address,uint256,bytes)"](shares, alice.address, ONE, []);
+
+    await vault.connect(alice).transfer(bob.address, assets.div(2))
+    await vault.connect(alice).transfer(john.address, assets.div(2))
+    await vault.connect(alice).transfer(bob.address, assets.div(2))
+    await vault.connect(alice).transfer(bull.address, assets.div(2))
+
+    const query =
+      `{
+        offchainAssetReceiptVault(id:"${vault.address.toLowerCase()}"){
+           tokenHolders {
+               address
+               balance
+           }
+        }
+      }`;
+
+    await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
+    const response = (await subgraph({ query })) as FetchResult;
+    const data = response.data.offchainAssetReceiptVault;
+
+    assert.equal(data.tokenHolders.length,4 );
+  });
 });
