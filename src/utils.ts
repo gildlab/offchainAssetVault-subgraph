@@ -4,14 +4,16 @@ import {
   OffchainAssetReceiptVault,
   Receipt,
   ReceiptBalance,
-  RoleHolder,
+  RoleHolder, TokenHolder,
   Transaction,
-  User,
+  User
 } from "../generated/schema";
 
 export const ZERO = BigInt.fromI32(0);
 export const ONE = BigInt.fromI32(1);
 export const ZERO_BD = BigDecimal.fromString("0");
+export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
 
 export function getAccount(
   address: string,
@@ -67,6 +69,25 @@ export function getRoleHolder(
     roleHolder.save();
   }
   return roleHolder as RoleHolder;
+}
+
+export function getTokenHolder(
+  offchainAssetReceiptVault: string,
+  address: string
+): TokenHolder {
+  let tokenHolder = TokenHolder.load(
+    offchainAssetReceiptVault + "-" + address
+  );
+  if (!tokenHolder) {
+    tokenHolder = new TokenHolder(
+      offchainAssetReceiptVault + "-" + address
+    );
+    tokenHolder.account = getAccount(address, offchainAssetReceiptVault).id;
+    tokenHolder.offchainAssetReceiptVault = offchainAssetReceiptVault;
+
+    tokenHolder.save();
+  }
+  return tokenHolder as TokenHolder;
 }
 
 export function getReceipt(offchainAssetReceiptVault: string, receiptId: BigInt): Receipt{

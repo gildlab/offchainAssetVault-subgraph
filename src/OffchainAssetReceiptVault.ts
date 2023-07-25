@@ -1,4 +1,4 @@
-import { Bytes, DataSourceContext, json , BigInt, ByteArray} from "@graphprotocol/graph-ts";
+import { Address, DataSourceContext, json } from "@graphprotocol/graph-ts";
 import {
   Certify,
   DepositWithReceipt,
@@ -11,7 +11,8 @@ import {
   Hash,
   User,
   Deployer,
-  ReceiptVaultInformation
+  ReceiptVaultInformation,
+  TokenHolder
 } from "../generated/schema";
 import { ReceiptTemplate } from "../generated/templates";
 import {
@@ -63,20 +64,22 @@ import {
   ZERO,
   stringToArrayBuffer,
   RAIN_META_DOCUMENT,
-  BigintToHexString
+  BigintToHexString,
+  ZERO_ADDRESS
 } from "./utils";
 
 import { CBORDecoder } from "@rainprotocol/assemblyscript-cbor";
 
 
-export function handleApproval(event: Approval): void {}
+export function handleApproval(event: Approval): void {
+}
 
 export function handleCertify(event: CertifyEvent): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
     event.address.toHex()
   );
-  if (offchainAssetReceiptVault) {
-    let certify = new Certify(`Certify-${event.transaction.hash.toHex()}`);
+  if ( offchainAssetReceiptVault ) {
+    let certify = new Certify(`Certify-${ event.transaction.hash.toHex() }`);
     certify.transaction = getTransaction(
       event.block,
       event.transaction.hash.toHex()
@@ -101,15 +104,16 @@ export function handleCertify(event: CertifyEvent): void {
   }
 }
 
-export function handleConfiscateReceipt(event: ConfiscateReceipt): void {}
+export function handleConfiscateReceipt(event: ConfiscateReceipt): void {
+}
 
 export function handleConfiscateShares(event: ConfiscateSharesEvent): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
     event.address.toHex()
   );
-  if (offchainAssetReceiptVault) {
+  if ( offchainAssetReceiptVault ) {
     let confiscateShares = new ConfiscateShares(
-      `ConfiscateShares-${event.transaction.hash.toHex()}`
+      `ConfiscateShares-${ event.transaction.hash.toHex() }`
     );
     confiscateShares.transaction = getTransaction(
       event.block,
@@ -135,15 +139,16 @@ export function handleConfiscateShares(event: ConfiscateSharesEvent): void {
   }
 }
 
-export function handleDeposit(event: Deposit): void {}
+export function handleDeposit(event: Deposit): void {
+}
 
 export function handleDepositWithReceipt(event: DepositWithReceiptEvent): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
     event.address.toHex()
   );
-  if (offchainAssetReceiptVault) {
+  if ( offchainAssetReceiptVault ) {
     let depositWithReceipt = new DepositWithReceipt(
-      `DepositWithReceipt-${event.transaction.hash.toHex()}-${event.params.id.toString()}`
+      `DepositWithReceipt-${ event.transaction.hash.toHex() }-${ event.params.id.toString() }`
     );
     depositWithReceipt.timestamp = event.block.timestamp;
     depositWithReceipt.transaction = getTransaction(
@@ -252,11 +257,11 @@ export function handleReceiptVaultInformation(
 ): void {
 
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
-      event.address.toHex()
+    event.address.toHex()
   );
 
   let meta = event.params.vaultInformation.toHex();
-  if ( meta.includes( BigintToHexString(RAIN_META_DOCUMENT)) ) {
+  if ( meta.includes(BigintToHexString(RAIN_META_DOCUMENT)) ) {
 
     let metaData = event.params.vaultInformation.toHex().slice(18);
     let data = new CBORDecoder(stringToArrayBuffer(metaData));
@@ -455,9 +460,15 @@ export function handleRoleRevoked(event: RoleRevokedEvent): void {
     roleRevoked.save();
   }
 }
-export function handleSetERC1155Tier(event: SetERC1155Tier): void {}
-export function handleSetERC20Tier(event: SetERC20Tier): void {}
-export function handleSnapshot(event: Snapshot): void {}
+
+export function handleSetERC1155Tier(event: SetERC1155Tier): void {
+}
+
+export function handleSetERC20Tier(event: SetERC20Tier): void {
+}
+
+export function handleSnapshot(event: Snapshot): void {
+}
 
 export function handleTransfer(event: Transfer): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
@@ -469,6 +480,71 @@ export function handleTransfer(event: Transfer): void {
   if ( offchainAssetReceiptVault ) {
     offchainAssetReceiptVault.totalShares =
       offchainAssetVaultContract.totalSupply();
+
+    let from = event.params.from;
+    let to = event.params.to;
+    let holders = offchainAssetReceiptVault.tokenHolders;
+
+    // Check if Sender is Zero address. Does not take as holder when contract mint
+    if ( from.toHex() != ZERO_ADDRESS ) {
+      // Load the Sender's Holder entity
+      let sender = TokenHolder.load(
+        event.address.toHex() + " - " + from.toHex()
+      );
+
+      // Create a new Holders entity if Sender doesnot exists
+      if ( !sender ) {
+        sender = new TokenHolder(
+          event.address.toHex() + " - " + from.toHex()
+        );
+        // Set the Sender's balance
+        sender.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+
+        sender.balance = ZERO;
+      }
+
+      // Update the sender's balance
+      // Set the sender's balance
+      sender.balance = offchainAssetVaultContract.balanceOf(from);
+      sender.address = from;
+      sender.save();
+
+      // Add the sender in Holders if not already exists
+      if ( holders && !holders.includes(sender.id) ) {
+        holders.push(sender.id);
+        offchainAssetReceiptVault.tokenHolders = holders;
+      }
+    }
+    if ( to.toHex() != ZERO_ADDRESS ) {
+      // Load the Receiver's Holder entity
+      let receiver = TokenHolder.load(
+        event.address.toHex() + " - " + to.toHex()
+      );
+
+      // Create a new Holders entity if Receiver doesnot exists
+      if ( !receiver ) {
+        receiver = new TokenHolder(
+          event.address.toHex() + " - " + to.toHex()
+        );
+        // Set the Reciver's balance
+        receiver.balance = ZERO;
+      }
+
+      // Update the Receiver balance
+      // Set the Receiver's balance
+      receiver.balance = offchainAssetVaultContract.balanceOf(to);
+      receiver.address = to;
+      receiver.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+
+      receiver.save();
+
+      // Add the Receiver in Holders if not already exists
+      if ( holders && !holders.includes(receiver.id) ) {
+        holders.push(receiver.id);
+        offchainAssetReceiptVault.tokenHolders = holders;
+      }
+    }
+
     offchainAssetReceiptVault.save();
   }
 }

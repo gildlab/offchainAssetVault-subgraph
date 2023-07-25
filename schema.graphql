@@ -35,6 +35,8 @@ type OffchainAssetReceiptVault @entity {
   totalShares: BigInt! # OffchainAssetReceiptVault.totalSupply() - update with every mint/burn
   "Share holders for this OffchainAssetReceiptVault"
   shareHolders: [Account!] # All Accounts that have a ShareBalance for this OffchainAssetReceiptVault
+  "Number of share holders for this OffchainAssetReceiptVault"
+  shareHoldersCount: BigInt! # Number of All Accounts that have a ShareBalance for this OffchainAssetReceiptVault
   "Share balances for this OffchainAssetReceiptVault"
   shareBalances: [SharesBalance!]
     @derivedFrom(field: "offchainAssetReceiptVault")
@@ -89,6 +91,8 @@ type OffchainAssetReceiptVault @entity {
   rolesGranted: [RoleGranted!] @derivedFrom(field: "offchainAssetReceiptVault")
   hashes: [Hash!] @derivedFrom(field: "offchainAssetReceiptVault")
   hashCount: BigInt!
+  "Token holders"
+  tokenHolders: [TokenHolder!] @derivedFrom(field: "offchainAssetReceiptVault")
 }
 
 type Account @entity {
@@ -469,4 +473,11 @@ type Deployer @entity {
   id: ID!
   hashCount: BigInt!
   hashes: [Hash!] @derivedFrom(field: "offchainAssetReceiptVaultDeployer")
+}
+
+type TokenHolder @entity {
+  id: ID!
+  address: Bytes!
+  offchainAssetReceiptVault: OffchainAssetReceiptVault!
+  balance: BigInt!
 }
