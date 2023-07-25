@@ -14,7 +14,7 @@ type OffchainAssetReceiptVault @entity {
   "Address of this OffchainAssetReceiptVault contract"
   address: Bytes! #OffchainAssetReceiptVault contract address
   "Address of this OffchainAssetReceiptVault receipt contract"
-  receiptContractAddress: Bytes! #OffchainAssetReceiptVault receipt contract address
+  receiptContractAddress: Bytes #OffchainAssetReceiptVault receipt contract address
   "Block number of contract deployment"
   deployBlock: BigInt! #the block the contract was deployed
   "Timestamp of contract deployment"
