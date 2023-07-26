@@ -35,7 +35,7 @@ export function handleReceiptInformation(event: ReceiptInformationEvent): void {
           let receiptInformation = new ReceiptInformation(
             `ReceiptInformation-${
               offchainAssetReceiptVault.id
-            }-${ event.params.id.toString() }`
+            }-${ event.params.id.toString() }-${event.transaction.hash.toHex()}`
           );
           receiptInformation.transaction = getTransaction(
             event.block,

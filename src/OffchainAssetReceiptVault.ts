@@ -236,6 +236,8 @@ export function handleOffchainAssetVaultInitialized(
       event.params.config.receiptVaultConfig.vaultConfig.name;
     offchainAssetReceiptVault.symbol =
       event.params.config.receiptVaultConfig.vaultConfig.symbol;
+    offchainAssetReceiptVault.receiptContractAddress =
+      event.params.config.receiptVaultConfig.receipt;
     offchainAssetReceiptVault.asAccount = getAccount(
       event.address.toHex(),
       event.address.toHex()
