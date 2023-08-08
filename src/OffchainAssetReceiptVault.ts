@@ -7,6 +7,7 @@ import {
   RoleGranted,
   RoleRevoked,
   ConfiscateShares,
+  ConfiscateReceipt,
   WithdrawWithReceipt,
   Hash,
   User,
@@ -18,8 +19,8 @@ import { ReceiptTemplate } from "../generated/templates";
 import {
   Approval,
   Certify as CertifyEvent,
-  ConfiscateReceipt,
   ConfiscateShares as ConfiscateSharesEvent,
+  ConfiscateReceipt as ConfiscateReceiptEvent,
   Deposit,
   DepositWithReceipt as DepositWithReceiptEvent,
   ReceiptVaultInformation as ReceiptVaultInformationEvent,
@@ -104,7 +105,46 @@ export function handleCertify(event: CertifyEvent): void {
   }
 }
 
-export function handleConfiscateReceipt(event: ConfiscateReceipt): void {
+export function handleConfiscateReceipt(event: ConfiscateReceiptEvent): void {
+  let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
+    event.address.toHex()
+  );
+  if ( offchainAssetReceiptVault ) {
+    let confiscateReceipts = new ConfiscateReceipt(
+      `ConfiscateReceipt-${ event.transaction.hash.toHex() }`
+    );
+    confiscateReceipts.transaction = getTransaction(
+      event.block,
+      event.transaction.hash.toHex()
+    ).id;
+    confiscateReceipts.timestamp = event.block.timestamp;
+    confiscateReceipts.emitter = getAccount(
+      event.params.sender.toHex(),
+      offchainAssetReceiptVault.id
+    ).id;
+    confiscateReceipts.confiscatee = getAccount(
+      event.params.confiscatee.toHex(),
+      offchainAssetReceiptVault.id
+    ).id;
+    confiscateReceipts.confiscator = getAccount(
+      event.params.sender.toHex(),
+      offchainAssetReceiptVault.id
+    ).id;
+
+    let receipt = getReceipt(
+      offchainAssetReceiptVault.id.toString(),
+      event.params.id
+    );
+
+    if ( receipt ) {
+      confiscateReceipts.receipt = receipt.id;
+    }
+
+    confiscateReceipts.confiscated = event.params.confiscated;
+    confiscateReceipts.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+    confiscateReceipts.data = event.params.justification.toString();
+    confiscateReceipts.save();
+  }
 }
 
 export function handleConfiscateShares(event: ConfiscateSharesEvent): void {
