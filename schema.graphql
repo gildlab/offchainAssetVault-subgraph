@@ -278,6 +278,8 @@ type Certify implements Event @entity {
   data: String! # Certify.data
   "Total shares of offchainAssetReceiptVault while certify"
   totalShares: BigInt! # OffchainAssetReceiptVault.totalSupply()
+  "The information"
+  information: Bytes! # Certify.data
 }
 
 # Get from event ConfiscateShares

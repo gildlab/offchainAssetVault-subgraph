@@ -217,22 +217,12 @@ describe("OffChainAssetReceiptVault", async function() {
 
     await vault
       .connect(alice)
-      .certify(_until, _referenceBlockNumber, false, [1]);
-
-
-    const testErc20 = await ethers.getContractFactory("TestErc20");
-    const asset = ( await testErc20.deploy() ) as TestErc20;
-    await asset.deployed();
-
-    await vault
-      .connect(alice)
-      .grantRole(await vault.connect(alice).DEPOSITOR(), alice.address);
-
-    const assets = ethers.BigNumber.from(5000);
-    await asset.transfer(alice.address, assets);
-    await asset.connect(alice).increaseAllowance(vault.address, assets);
+      .certify(_until, _referenceBlockNumber, false, []);
 
     const query = `{
+          offchainAssetReceiptVaults {
+            certifiedUntil
+          }
           certifies {
             certifiedUntil
             data
@@ -245,10 +235,12 @@ describe("OffChainAssetReceiptVault", async function() {
     await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
     const response = ( await subgraph({ query }) ) as FetchResult;
     const data = response.data.certifies[ 0 ];
+    const vaultCertifiedUntil = response.data.offchainAssetReceiptVaults[0].certifiedUntil;
 
     // assert.equal(data.certifiedUntil, 1686905023);
     assert.equal(data.emitter.address.toLowerCase(), alice.address.toLowerCase());
-    assert.equal(data.data, "\u0001");
+    assert.equal(data.data, "");
+    assert.equal(data.certifiedUntil, vaultCertifiedUntil);
   });
   it("Transfers and get the correct token holders", async function() {
     const signers = await ethers.getSigners();
@@ -288,12 +280,12 @@ describe("OffChainAssetReceiptVault", async function() {
 
     await vault
       .connect(alice)
-      ["mint(uint256,address,uint256,bytes)"](shares, alice.address, ONE, []);
+      [ "mint(uint256,address,uint256,bytes)" ](shares, alice.address, ONE, []);
 
-    await vault.connect(alice).transfer(bob.address, assets.div(2))
-    await vault.connect(alice).transfer(john.address, assets.div(2))
-    await vault.connect(alice).transfer(bob.address, assets.div(2))
-    await vault.connect(alice).transfer(bull.address, assets.div(2))
+    await vault.connect(alice).transfer(bob.address, assets.div(2));
+    await vault.connect(alice).transfer(john.address, assets.div(2));
+    await vault.connect(alice).transfer(bob.address, assets.div(2));
+    await vault.connect(alice).transfer(bull.address, assets.div(2));
 
     const query =
       `{
@@ -377,10 +369,137 @@ describe("OffChainAssetReceiptVault", async function() {
 
     await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
     const response = ( await subgraph({ query }) ) as FetchResult;
-    const data = response.data.offchainAssetReceiptVault.receiptConfiscations[0];
+    const data = response.data.offchainAssetReceiptVault.receiptConfiscations[ 0 ];
 
     assert.equal(data.confiscated, "5001");
     assert.equal(data.confiscatee.address, bob.address.toLowerCase());
     assert.equal(data.confiscator.address, alice.address.toLowerCase());
   });
+  it("Certifies with data", async function() {
+    const signers = await ethers.getSigners();
+    const alice = signers[ 0 ];
+
+    //get block timestamp and add 100 to get _until
+    const blockNum = await ethers.provider.getBlockNumber();
+    const block = await ethers.provider.getBlock(blockNum);
+    const _until = block.timestamp + 100;
+    const _referenceBlockNumber = block.number;
+
+    await vault
+      .connect(alice)
+      .grantRole(await vault.connect(alice).CERTIFIER(), alice.address);
+
+    await vault
+      .connect(alice)
+      .certify(_until, _referenceBlockNumber, false, [1]);
+
+    const query = `{
+          certifies(orderBy: timestamp, orderDirection: desc) {
+            certifiedUntil
+            information
+            timestamp
+            emitter {
+              address
+            }
+          }
+      }`;
+    await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
+    const response = ( await subgraph({ query }) ) as FetchResult;
+    const data = response.data.certifies[ 0 ];
+
+    assert.equal(data.emitter.address.toLowerCase(), alice.address.toLowerCase());
+    assert.equal(data.information, '0x01');
+  });
+  it("Certifies with forceuntil true", async function() {
+    const signers = await ethers.getSigners();
+    const alice = signers[ 0 ];
+
+    //get block timestamp and add 100 to get _until
+    const blockNum = await ethers.provider.getBlockNumber();
+    const block = await ethers.provider.getBlock(blockNum);
+    const _until = block.timestamp + 100;
+    const _referenceBlockNumber = block.number;
+
+    await vault
+      .connect(alice)
+      .grantRole(await vault.connect(alice).CERTIFIER(), alice.address);
+
+    await vault
+      .connect(alice)
+      .certify(block.timestamp + 200, _referenceBlockNumber, false, []);
+
+    await vault
+      .connect(alice)
+      .certify(_until, _referenceBlockNumber, true, []);
+
+    const query = `{
+          offchainAssetReceiptVaults {
+            certifiedUntil
+          }
+          certifies(orderBy: timestamp, orderDirection: desc) {
+            certifiedUntil
+            data
+            timestamp
+            emitter {
+              address
+            }
+          }
+      }`;
+    await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
+    const response = ( await subgraph({ query }) ) as FetchResult;
+    const data = response.data.certifies[ 0 ];
+    const vaultCertifiedUntil = response.data.offchainAssetReceiptVaults[0].certifiedUntil;
+
+    // assert.equal(data.certifiedUntil, 1686905023);
+    assert.equal(data.emitter.address.toLowerCase(), alice.address.toLowerCase());
+    assert.equal(data.data, "");
+    assert.equal(data.certifiedUntil, vaultCertifiedUntil);
+
+  });
+  it("Not change CertifyUntil with forceuntil false", async function() {
+    const signers = await ethers.getSigners();
+    const alice = signers[ 0 ];
+
+    //get block timestamp and add 100 to get _until
+    const blockNum = await ethers.provider.getBlockNumber();
+    const block = await ethers.provider.getBlock(blockNum);
+    const _until = block.timestamp + 100;
+    const _referenceBlockNumber = block.number;
+
+    await vault
+      .connect(alice)
+      .grantRole(await vault.connect(alice).CERTIFIER(), alice.address);
+
+    await vault
+      .connect(alice)
+      .certify(block.timestamp + 200, _referenceBlockNumber, false, []);
+
+    await vault
+      .connect(alice)
+      .certify(_until, _referenceBlockNumber, false, []);
+
+    const query = `{
+          offchainAssetReceiptVaults {
+            certifiedUntil
+          }
+          certifies(orderBy: timestamp, orderDirection: desc) {
+            certifiedUntil
+            data
+            timestamp
+            emitter {
+              address
+            }
+          }
+      }`;
+    await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
+    const response = ( await subgraph({ query }) ) as FetchResult;
+    const data = response.data.certifies[ 0 ];
+    const vaultCertifiedUntil = response.data.offchainAssetReceiptVaults[0].certifiedUntil;
+
+    assert.equal(data.emitter.address.toLowerCase(), alice.address.toLowerCase());
+    assert.equal(data.data, "");
+    assert.equal(block.timestamp + 200, vaultCertifiedUntil);
+
+  });
+
 });

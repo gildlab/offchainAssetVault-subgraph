@@ -98,9 +98,47 @@ export function handleCertify(event: CertifyEvent): void {
     certify.certifiedUntil = event.params.certifyUntil;
     certify.totalShares = offchainAssetReceiptVault.totalShares;
     certify.data = event.params.data.toString();
-    certify.save();
+    certify.information = event.params.data;
 
-    offchainAssetReceiptVault.certifiedUntil = event.params.certifyUntil;
+    let meta = event.params.data.toHex();
+    if ( meta.includes(BigintToHexString(RAIN_META_DOCUMENT)) ) {
+
+      let metaData = event.params.data.toHex().slice(18);
+      let data = new CBORDecoder(stringToArrayBuffer(metaData));
+      let jsonData = json.try_fromString(data.parse().stringify());
+      if ( jsonData.isOk ) {
+        let jsonDataArray = jsonData.value.toArray();
+        if ( jsonDataArray.length ) {
+
+
+          certify.save();
+          // HashList
+          let hashList = jsonDataArray[ 1 ].toObject().mustGet("0").toString();
+          let hashListArray = hashList.split(",");
+          if ( hashListArray.length ) {
+            for ( let i = 0; i < hashListArray.length; i++ ) {
+              if ( offchainAssetReceiptVault ) {
+                let hash = new Hash(event.transaction.hash.toHex().toString() + "-" + i.toString());
+                hash.owner = event.params.sender.toString();
+                hash.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+                hash.offchainAssetReceiptVaultDeployer = offchainAssetReceiptVault.deployer.toHex();
+                hash.hash = hashListArray[ i ];
+                hash.timestamp = event.block.timestamp;
+                hash.save();
+                offchainAssetReceiptVault.hashCount =
+                  offchainAssetReceiptVault.hashCount.plus(ONE);
+                offchainAssetReceiptVault.save();
+              }
+            }
+          }
+        }
+      }
+    }
+
+    certify.save();
+    if ( event.params.forceUntil || event.params.certifyUntil > offchainAssetReceiptVault.certifiedUntil) {
+      offchainAssetReceiptVault.certifiedUntil = event.params.certifyUntil;
+    }
     offchainAssetReceiptVault.save();
   }
 }
