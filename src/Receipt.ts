@@ -35,7 +35,7 @@ export function handleReceiptInformation(event: ReceiptInformationEvent): void {
           let receiptInformation = new ReceiptInformation(
             `ReceiptInformation-${
               offchainAssetReceiptVault.id
-            }-${ event.params.id.toString() }-${event.transaction.hash.toHex()}`
+            }-${ event.params.id.toString() }-${ event.transaction.hash.toHex() }`
           );
           receiptInformation.transaction = getTransaction(
             event.block,
@@ -56,11 +56,17 @@ export function handleReceiptInformation(event: ReceiptInformationEvent): void {
             offchainAssetReceiptVault.id,
             event.params.id
           ).id;
-          receiptInformation.payload = jsonDataArray[ 0 ].toObject().mustGet("0").toString();
-          receiptInformation.magicNumber = jsonDataArray[ 0 ].toObject().mustGet("1").toBigInt();
-          receiptInformation.contentType = jsonDataArray[ 0 ].toObject().mustGet("2").toString();
-          receiptInformation.contentEncoding = jsonDataArray[ 0 ].toObject().mustGet("3").toString();
-          receiptInformation.schema = jsonDataArray[ 0 ].toObject().mustGet("18422230091423500849").toString()
+          if ( jsonDataArray[ 0 ].toObject().get("0") )
+            receiptInformation.payload = jsonDataArray[ 0 ].toObject().mustGet("0").toString();
+          if ( jsonDataArray[ 0 ].toObject().get("1") )
+            receiptInformation.magicNumber = jsonDataArray[ 0 ].toObject().mustGet("1").toBigInt();
+          if ( jsonDataArray[ 0 ].toObject().get("2") )
+            receiptInformation.contentType = jsonDataArray[ 0 ].toObject().mustGet("2").toString();
+          if ( jsonDataArray[ 0 ].toObject().get("3") )
+            receiptInformation.contentEncoding = jsonDataArray[ 0 ].toObject().mustGet("3").toString();
+          // Access the value and set it to receiptInformation.schema
+          if ( jsonDataArray[ 0 ].toObject().get("18422230091423500849") )
+            receiptInformation.schema = jsonDataArray[ 0 ].toObject().mustGet("18422230091423500849").toString();
 
           receiptInformation.save();
 
