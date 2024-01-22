@@ -13,7 +13,7 @@ import {
   User,
   Deployer,
   ReceiptVaultInformation,
-  TokenHolder
+  TokenHolder, SharesTransfer
 } from "../generated/schema";
 import { ReceiptTemplate } from "../generated/templates";
 import {
@@ -555,6 +555,9 @@ export function handleTransfer(event: Transfer): void {
   let offchainAssetVaultContract = OffchainAssetVaultContract.bind(
     event.address
   );
+  let sharesTransfer =  new SharesTransfer(event.transaction.hash.toHex());
+
+
   if ( offchainAssetReceiptVault ) {
     offchainAssetReceiptVault.totalShares =
       offchainAssetVaultContract.totalSupply();
@@ -622,6 +625,39 @@ export function handleTransfer(event: Transfer): void {
         offchainAssetReceiptVault.tokenHolders = holders;
       }
     }
+
+    sharesTransfer.emitter = getAccount(
+      event.params.from.toHex(),
+      offchainAssetReceiptVault.id
+    ).id;
+
+    sharesTransfer.from = getAccount(
+      event.params.from.toHex(),
+      offchainAssetReceiptVault.id
+    ).id;
+    sharesTransfer.fromBalance = offchainAssetVaultContract.balanceOf(from).toString();
+
+    sharesTransfer.to = getAccount(
+      event.params.to.toHex(),
+      offchainAssetReceiptVault.id
+    ).id;
+
+    sharesTransfer.toBalance = offchainAssetVaultContract.balanceOf(to).toString();
+
+    sharesTransfer.valueExact = event.params.value;
+    sharesTransfer.value = toDecimals(
+      event.params.value,
+      18
+    );
+
+    sharesTransfer.transaction = getTransaction(
+      event.block,
+      event.transaction.hash.toHex()
+    ).id;
+    sharesTransfer.timestamp = event.block.timestamp;
+    sharesTransfer.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+
+    sharesTransfer.save()
 
     offchainAssetReceiptVault.save();
   }
