@@ -594,41 +594,42 @@ export function handleTransfer(event: Transfer): void {
         holders.push(sender.id);
         offchainAssetReceiptVault.tokenHolders = holders;
       }
+      if ( to.toHex() != ZERO_ADDRESS ) {
+        //add sharestransfer
+        let sharesTransfer = new SharesTransfer(event.transaction.hash.toHex());
 
-      //add sharestransfer
-      let sharesTransfer =  new SharesTransfer(event.transaction.hash.toHex());
+        sharesTransfer.emitter = getAccount(
+          event.params.from.toHex(),
+          offchainAssetReceiptVault.id
+        ).id;
 
-      sharesTransfer.emitter = getAccount(
-        event.params.from.toHex(),
-        offchainAssetReceiptVault.id
-      ).id;
+        sharesTransfer.from = getAccount(
+          event.params.from.toHex(),
+          offchainAssetReceiptVault.id
+        ).id;
+        sharesTransfer.fromBalance = offchainAssetVaultContract.balanceOf(from).toString();
 
-      sharesTransfer.from = getAccount(
-        event.params.from.toHex(),
-        offchainAssetReceiptVault.id
-      ).id;
-      sharesTransfer.fromBalance = offchainAssetVaultContract.balanceOf(from).toString();
+        sharesTransfer.to = getAccount(
+          event.params.to.toHex(),
+          offchainAssetReceiptVault.id
+        ).id;
 
-      sharesTransfer.to = getAccount(
-        event.params.to.toHex(),
-        offchainAssetReceiptVault.id
-      ).id;
+        sharesTransfer.toBalance = offchainAssetVaultContract.balanceOf(to).toString();
 
-      sharesTransfer.toBalance = offchainAssetVaultContract.balanceOf(to).toString();
+        sharesTransfer.valueExact = event.params.value;
+        sharesTransfer.value = toDecimals(
+          event.params.value,
+          18
+        );
 
-      sharesTransfer.valueExact = event.params.value;
-      sharesTransfer.value = toDecimals(
-        event.params.value,
-        18
-      );
-
-      sharesTransfer.transaction = getTransaction(
-        event.block,
-        event.transaction.hash.toHex()
-      ).id;
-      sharesTransfer.timestamp = event.block.timestamp;
-      sharesTransfer.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-      sharesTransfer.save()
+        sharesTransfer.transaction = getTransaction(
+          event.block,
+          event.transaction.hash.toHex()
+        ).id;
+        sharesTransfer.timestamp = event.block.timestamp;
+        sharesTransfer.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+        sharesTransfer.save();
+      }
 
     }
     if ( to.toHex() != ZERO_ADDRESS ) {
