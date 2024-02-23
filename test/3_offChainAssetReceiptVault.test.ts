@@ -235,7 +235,7 @@ describe("OffChainAssetReceiptVault", async function() {
     await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
     const response = ( await subgraph({ query }) ) as FetchResult;
     const data = response.data.certifies[ 0 ];
-    const vaultCertifiedUntil = response.data.offchainAssetReceiptVaults[0].certifiedUntil;
+    const vaultCertifiedUntil = response.data.offchainAssetReceiptVaults[ 0 ].certifiedUntil;
 
     // assert.equal(data.certifiedUntil, 1686905023);
     assert.equal(data.emitter.address.toLowerCase(), alice.address.toLowerCase());
@@ -408,7 +408,7 @@ describe("OffChainAssetReceiptVault", async function() {
     const data = response.data.certifies[ 0 ];
 
     assert.equal(data.emitter.address.toLowerCase(), alice.address.toLowerCase());
-    assert.equal(data.information, '0x01');
+    assert.equal(data.information, "0x01");
   });
   it("Certifies with forceuntil true", async function() {
     const signers = await ethers.getSigners();
@@ -448,7 +448,7 @@ describe("OffChainAssetReceiptVault", async function() {
     await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
     const response = ( await subgraph({ query }) ) as FetchResult;
     const data = response.data.certifies[ 0 ];
-    const vaultCertifiedUntil = response.data.offchainAssetReceiptVaults[0].certifiedUntil;
+    const vaultCertifiedUntil = response.data.offchainAssetReceiptVaults[ 0 ].certifiedUntil;
 
     // assert.equal(data.certifiedUntil, 1686905023);
     assert.equal(data.emitter.address.toLowerCase(), alice.address.toLowerCase());
@@ -494,12 +494,35 @@ describe("OffChainAssetReceiptVault", async function() {
     await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
     const response = ( await subgraph({ query }) ) as FetchResult;
     const data = response.data.certifies[ 0 ];
-    const vaultCertifiedUntil = response.data.offchainAssetReceiptVaults[0].certifiedUntil;
+    const vaultCertifiedUntil = response.data.offchainAssetReceiptVaults[ 0 ].certifiedUntil;
 
     assert.equal(data.emitter.address.toLowerCase(), alice.address.toLowerCase());
     assert.equal(data.data, "");
     assert.equal(block.timestamp + 200, vaultCertifiedUntil);
 
   });
+  it("Revoke role", async function() {
+    const signers = await ethers.getSigners();
+    const alice = signers[ 0 ];
 
+    await vault
+      .connect(alice)
+      .grantRole(await vault.connect(alice).ERC20SNAPSHOTTER(), alice.address);
+    await vault
+      .connect(alice)
+      .revokeRole(await vault.connect(alice).ERC20SNAPSHOTTER(), alice.address);
+    const query = `{
+        roleHolders {
+           role {
+              roleName
+           }
+        }
+      }`
+    await waitForSubgraphToBeSynced(1000, 1, 60, "gildlab/offchainassetvault");
+    const response = ( await subgraph({ query }) ) as FetchResult;
+    const data = response.data.roleHolders;
+    let search = data.find(d => d.role.roleName === "ERC20SNAPSHOTTER");
+    assert.equal(search, undefined);
+
+  });
 });
