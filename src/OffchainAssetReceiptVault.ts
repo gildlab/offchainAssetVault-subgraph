@@ -448,7 +448,7 @@ export function handleRoleGranted(event: RoleGrantedEvent): void {
   let role = Role.load(event.address.toHex() + "-" + event.params.role.toHex());
 
   if ( offchainAssetReceiptVault && role ) {
-    let roleGranted = new RoleGranted(event.transaction.hash.toHex());
+    let roleGranted = new RoleGranted(event.transaction.hash.toHex()+ "-" + role.roleName );
     roleGranted.account = getAccount(
       event.params.account.toHex(),
       offchainAssetReceiptVault.id
