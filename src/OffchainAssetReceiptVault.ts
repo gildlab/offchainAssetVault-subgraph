@@ -68,7 +68,7 @@ import {
   BigintToHexString,
   ZERO_ADDRESS
 } from "./utils";
-
+import { store } from '@graphprotocol/graph-ts'
 import { CBORDecoder } from "@rainprotocol/assemblyscript-cbor";
 
 
@@ -136,7 +136,7 @@ export function handleCertify(event: CertifyEvent): void {
     }
 
     certify.save();
-    if ( event.params.forceUntil || event.params.certifyUntil > offchainAssetReceiptVault.certifiedUntil) {
+    if ( event.params.forceUntil || event.params.certifyUntil > offchainAssetReceiptVault.certifiedUntil ) {
       offchainAssetReceiptVault.certifiedUntil = event.params.certifyUntil;
     }
     offchainAssetReceiptVault.save();
@@ -523,17 +523,7 @@ export function handleRoleRevoked(event: RoleRevokedEvent): void {
     );
     if ( roleHolder ) {
       roleRevoked.roleHolder = roleHolder.id;
-
-      let old_activeRoles = roleHolder.activeRoles;
-      let activeRoles: string[] = [];
-      if ( old_activeRoles ) {
-        for ( let i = 0; i < old_activeRoles.length; i++ ) {
-          if ( old_activeRoles[ i ] != role.id )
-            activeRoles.push(old_activeRoles[ i ]);
-        }
-      }
-      roleHolder.activeRoles = activeRoles;
-      roleHolder.save();
+      store.remove("RoleHolder", roleHolder.id);
     }
     roleRevoked.save();
   }

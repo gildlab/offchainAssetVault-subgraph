@@ -422,7 +422,7 @@ type RoleRevoked implements Event @entity {
   timestamp: BigInt!
   offchainAssetReceiptVault: OffchainAssetReceiptVault!
   role: Role!
-  roleHolder: RoleHolder!
+  roleHolder: RoleHolder
 }
 
 type RoleHolder @entity {
