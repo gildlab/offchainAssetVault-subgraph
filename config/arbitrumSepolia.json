@@ -1,0 +1,5 @@
+{
+  "network": "arbitrum-sepolia",
+  "offchainAssetReceiptVaultFactoryBlock": 16483227,
+  "offchainAssetReceiptVaultFactory": "0xf1A14e96977E8dE295Ba9612691D127B157d1371"
+}
