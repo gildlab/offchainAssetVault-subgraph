@@ -248,7 +248,7 @@ export function handleDepositWithReceipt(event: DepositWithReceiptEvent): void {
     depositWithReceipt.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
     depositWithReceipt.amount = event.params.shares;
     depositWithReceipt.data = event.params.receiptInformation.toString();
-    depositWithReceipt.erc20TokenId = event.params.id.toString();
+    depositWithReceipt.erc1155TokenId = event.params.id.toString();
 
     let receipt = getReceipt(
       offchainAssetReceiptVault.id.toString(),
@@ -697,6 +697,8 @@ export function handleWithdrawWithReceipt(
       event.transaction.hash.toHex()
     ).id;
     withdrawWithReceipt.data = event.params.receiptInformation.toString();
+    withdrawWithReceipt.erc1155TokenId = event.params.id.toString();
+
 
     let receiptBalance = getReceiptBalance(
       event.address.toHex(),

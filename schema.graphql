@@ -187,8 +187,8 @@ type DepositWithReceipt implements Event @entity {
   caller: Account! # DepositWithReceipt.caller
   "data"
   data: String!
-  "erc20TokenId"
-   erc20TokenId: String!
+  "erc1155TokenId"
+   erc1155TokenId: String!
 }
 
 # Created with every WithdrawWithReceipt event
@@ -212,6 +212,8 @@ type WithdrawWithReceipt implements Event @entity {
   caller: Account! # WithdrawWithReceipt.caller
   "data"
   data: String!
+  "erc1155TokenId"
+  erc1155TokenId: String!
 }
 
 # Created with every new ReceiptInformation event
