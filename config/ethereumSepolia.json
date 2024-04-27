@@ -1,0 +1,5 @@
+{
+  "network": "ethereum_sepolia",
+  "offchainAssetReceiptVaultFactoryBlock": 5790771,
+  "offchainAssetReceiptVaultFactory": "0xD13c3B470989C3666A7b4994951582bA101C1EF8"
+}

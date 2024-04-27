@@ -25,6 +25,7 @@ const {
   PRIVATE_KEY,
   POLYGON_URL,
   MUMBAI_URL,
+  ETHEREUM_SEPOLIA_URL,
   POLYGONSCAN_API_KEY,
 } = process.env;
 
@@ -52,6 +53,11 @@ export const config = {
       url: MUMBAI_URL || "https://rpc-mumbai.maticvigil.com",
       accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY}`] : [],
       gasPrice: 53000000000,
+    },
+    ethereum_sepolia: {
+      url: ETHEREUM_SEPOLIA_URL || "",
+      accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY}`] : [],
+      gasPrice: 10000000000,
     },
     localhost: createLocalHostConfig(),
   },
