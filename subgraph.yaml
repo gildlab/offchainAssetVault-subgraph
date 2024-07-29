@@ -3,12 +3,12 @@ schema:
   file: ./schema.graphql 
 dataSources:
   - kind: ethereum/contract
-    name: OffchainAssetReceiptVaultFactory
-    network: matic
+    name: CloneFactory
+    network: base
     source:
-      address: "0xFE259001e141A41f3bcCDBc315A8F0D23Ef84b0b"
-      abi: OffchainAssetReceiptVaultFactory
-      startBlock: 39549051
+      address: "0x017F5651eB8fa4048BBc17433149c6c035d391A6"
+      abi: CloneFactory
+      startBlock: 17569305
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -17,19 +17,16 @@ dataSources:
         - VerifyFactory
         - Verify
       abis:
-        - name: OffchainAssetReceiptVaultFactory
-          file: ./abis/OffchainAssetReceiptVaultFactory.json
+        - name: CloneFactory
+          file: ./abis/CloneFactory.json
       eventHandlers:
-        - event: Implementation(address,address)
-          handler: handleImplementation
-          receipt: true
-        - event: NewChild(address,address)
-          handler: handleNewChild
-      file: ./src/OffchainAssetReceiptVaultFactory.ts
+        - event: NewClone(address,address,address)
+          handler: handleNewClone
+      file: ./src/CloneFactory.ts
 templates:
   - kind: ethereum/contract
     name: OffchainAssetReceiptVaultTemplate
-    network: matic
+    network: base
     source:
       abi: OffchainAssetReceiptVault
     mapping:
@@ -80,7 +77,7 @@ templates:
       file: ./src/OffchainAssetReceiptVault.ts
   - kind: ethereum/contract
     name: ReceiptTemplate
-    network: matic
+    network: base
     source:
       abi: Receipt
     mapping:
