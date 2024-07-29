@@ -27,6 +27,7 @@ const {
   MUMBAI_URL,
   ETHEREUM_SEPOLIA_URL,
   POLYGONSCAN_API_KEY,
+  POLYGON_AMOY_URL
 } = process.env;
 
 export const config = {
@@ -54,10 +55,16 @@ export const config = {
       accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY}`] : [],
       gasPrice: 53000000000,
     },
-    ethereum_sepolia: {
+    sepolia: {
       url: ETHEREUM_SEPOLIA_URL || "",
       accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY}`] : [],
       gasPrice: 10000000000,
+    },
+    "polygon-amoy" : {
+      chainId: 80002,
+      url: POLYGON_AMOY_URL || "",
+      accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY}`] : [],
+      gasPrice: 22000000000,
     },
     localhost: createLocalHostConfig(),
   },
