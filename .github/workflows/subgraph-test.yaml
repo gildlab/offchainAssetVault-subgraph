@@ -56,9 +56,6 @@ jobs:
       - name: Stop containers
         run: docker-compose down
 
-      - name: Graph Authentication
-        run: npx graph auth --product hosted-service $GRAPH_TOKEN
-
       - name: Prepare subgraph manifest
         run: npx mustache config/mumbai.json subgraph.template.yaml subgraph.yaml
 
