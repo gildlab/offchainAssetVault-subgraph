@@ -44,8 +44,8 @@
   },
   "dependencies": {
     "@gildlab/ethgild": "git://github.com/gildlab/ethgild.git#30454f49857ab188698c9a8d0f928d7cce99044a",
-    "@graphprotocol/graph-cli": "^0.33.0",
-    "@graphprotocol/graph-ts": "^0.27.0",
+    "@graphprotocol/graph-cli": "=0.81.0",
+    "@graphprotocol/graph-ts": "=0.35.1",
     "@nomiclabs/hardhat-etherscan": "^3.1.2",
     "@nomiclabs/hardhat-waffle": "^2.0.3",
     "@rainprotocol/assemblyscript-cbor": "^0.0.2",
