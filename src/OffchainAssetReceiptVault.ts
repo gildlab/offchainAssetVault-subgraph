@@ -339,6 +339,7 @@ export function handleReceiptVaultInformation(
     event.address.toHex()
   );
 
+
   let meta = event.params.vaultInformation.toHex();
   if ( meta.includes(BigintToHexString(RAIN_META_DOCUMENT)) ) {
 
@@ -581,9 +582,17 @@ export function handleTransfer(event: Transfer): void {
       sender.save();
 
       // Add the sender in Holders if not already exists
-      if ( holders && !holders.includes(sender.id) ) {
-        holders.push(sender.id);
-        offchainAssetReceiptVault.tokenHolders = holders;
+      if ( holders ) {
+        let specificHolder = TokenHolder.load(sender.id);
+        if ( !specificHolder ) {
+          let newHolder = new TokenHolder(sender.id);
+          newHolder.address = sender.address
+          newHolder.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+          newHolder.balance = ZERO
+          newHolder.save();
+
+        }
+
       }
       if ( to.toHex() != ZERO_ADDRESS ) {
         //add sharestransfer
@@ -647,9 +656,17 @@ export function handleTransfer(event: Transfer): void {
       receiver.save();
 
       // Add the Receiver in Holders if not already exists
-      if ( holders && !holders.includes(receiver.id) ) {
-        holders.push(receiver.id);
-        offchainAssetReceiptVault.tokenHolders = holders;
+
+      if ( holders ) {
+        let specificHolder = TokenHolder.load(receiver.id);
+        if ( !specificHolder ) {
+          let newHolder = new TokenHolder(receiver.id);
+          newHolder.address = receiver.address
+          newHolder.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+          newHolder.balance = ZERO
+          newHolder.save();
+        }
+
       }
     }
 

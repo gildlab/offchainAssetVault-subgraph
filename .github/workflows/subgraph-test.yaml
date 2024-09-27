@@ -17,6 +17,29 @@ jobs:
         with:
           node-version: 16
 
+      - name: Install Docker
+        run: |
+          # Install dependencies for Docker installation
+          sudo apt-get update
+          sudo apt-get install -y \
+            ca-certificates \
+            curl \
+            gnupg \
+            lsb-release
+
+          # Add Docker’s official GPG key
+          echo "deb [arch=$(dpkg --print-architecture) ] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+          
+          # Update the package database and install Docker
+          sudo apt-get update
+          sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
       - name: Install dependencies
         run: |
           npm ci
@@ -32,12 +55,3 @@ jobs:
 
       - name: Stop containers
         run: docker-compose down
-
-      - name: Graph Authentication
-        run: npx graph auth --product hosted-service $GRAPH_TOKEN
-
-      - name: Prepare subgraph manifest
-        run: npx mustache config/mumbai.json subgraph.template.yaml subgraph.yaml
-      
-      - name: Graph Deployments
-        run: npx graph deploy --product hosted-service gildlab/offchainassetvault-mumbai

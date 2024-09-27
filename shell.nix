@@ -1,9 +1,8 @@
 let
   pkgs = import
     (builtins.fetchTarball {
-      name = "nixos-unstable-2021-10-01";
-      url = "https://github.com/nixos/nixpkgs/archive/d3d2c44a26b693293e8c79da0c3e3227fc212882.tar.gz";
-      sha256 = "0vi4r7sxzfdaxzlhpmdkvkn3fjg533fcwsy3yrcj5fiyqip2p3kl";
+      name = "0-unstable-2024-09-13";
+      url = "https://github.com/nixos/nixpkgs/archive/247cebfe0bb628849a8781be40f193bf622b877b.tar.gz";
     })
     { };
 
@@ -48,7 +47,7 @@ pkgs.stdenv.mkDerivation {
   name = "shell";
   buildInputs = [
     pkgs.nixpkgs-fmt
-    pkgs.nodejs-16_x
+    pkgs.nodejs-18_x
     codegen
     build
     prepare-mumbai
