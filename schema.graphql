@@ -68,7 +68,11 @@ type OffchainAssetReceiptVault @entity {
   "Withdraws for this OffchainAssetReceiptVault"
   withdraws: [WithdrawWithReceipt!]
     @derivedFrom(field: "offchainAssetReceiptVault")
-
+  "Current active authorizer for this OffchainAssetReceiptVault"
+  activeAuthorizer: Authorizer
+  "All authorizers (historical) for this OffchainAssetReceiptVault"
+  authorizers: [Authorizer!] @derivedFrom(field: "offchainAssetReceiptVault")
+  
   "The timestamp that this OffchainAssetReceiptVault is certified until"
   certifiedUntil: BigInt! # Updated with each new Certify event
   "Certifications for this OffchainAssetReceiptVault"
@@ -81,18 +85,25 @@ type OffchainAssetReceiptVault @entity {
   receiptConfiscations: [ConfiscateReceipt!]
     @derivedFrom(field: "offchainAssetReceiptVault")
 
-  "Role holders"
-  roleHolders: [RoleHolder!] @derivedFrom(field: "offchainAssetReceiptVault")
-  "Roles"
-  roles: [Role!] @derivedFrom(field: "offchainAssetReceiptVault")
-  "Role revoke events"
-  roleRevokes: [RoleRevoked!] @derivedFrom(field: "offchainAssetReceiptVault")
-  "Role granted events"
-  rolesGranted: [RoleGranted!] @derivedFrom(field: "offchainAssetReceiptVault")
   hashes: [Hash!] @derivedFrom(field: "offchainAssetReceiptVault")
   hashCount: BigInt!
   "Token holders"
   tokenHolders: [TokenHolder!] @derivedFrom(field: "offchainAssetReceiptVault")
+}
+
+type Authorizer @entity {
+  id: ID!
+  address: Bytes!
+  offchainAssetReceiptVault: OffchainAssetReceiptVault
+  isActive: Boolean!
+  "Role holders"
+  roleHolders: [RoleHolder!] @derivedFrom(field: "authorizer")
+  "Roles"
+  roles: [Role!] @derivedFrom(field: "authorizer")
+  "Role revoke events"
+  roleRevokes: [RoleRevoked!] @derivedFrom(field: "authorizer")
+  "Role granted events"
+  rolesGranted: [RoleGranted!] @derivedFrom(field: "authorizer")
 }
 
 type Account @entity {
@@ -412,7 +423,7 @@ type RoleGranted implements Event @entity {
   sender: Account!
   transaction: Transaction!
   timestamp: BigInt!
-  offchainAssetReceiptVault: OffchainAssetReceiptVault!
+  authorizer: Authorizer!
   role: Role!
   roleHolder: RoleHolder!
 }
@@ -424,14 +435,14 @@ type RoleRevoked implements Event @entity {
   sender: Account!
   transaction: Transaction!
   timestamp: BigInt!
-  offchainAssetReceiptVault: OffchainAssetReceiptVault!
+  authorizer: Authorizer!
   role: Role!
   roleHolder: RoleHolder
 }
 
 type RoleHolder @entity {
   id: ID!
-  offchainAssetReceiptVault: OffchainAssetReceiptVault!
+  authorizer: Authorizer!
   role: Role!
   account: Account!
   activeRoles: [Role!]
@@ -441,7 +452,7 @@ type RoleHolder @entity {
 
 type Role @entity {
   id: ID!
-  offchainAssetReceiptVault: OffchainAssetReceiptVault!
+  authorizer: Authorizer!
   roleHash: Bytes!
   roleName: String! # match the hash to the roles in roles.sol
   roleHolders: [RoleHolder!]! @derivedFrom(field: "role")

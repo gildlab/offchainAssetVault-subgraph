@@ -13,9 +13,10 @@ import {
   User,
   Deployer,
   ReceiptVaultInformation,
-  TokenHolder, SharesTransfer
+  TokenHolder, SharesTransfer,
+  Authorizer
 } from "../generated/schema";
-import { ReceiptTemplate } from "../generated/templates";
+import { ReceiptTemplate, OffchainAssetReceiptVaultAuthorizerV1Template } from "../generated/templates";
 import {
   Approval,
   Certify as CertifyEvent,
@@ -34,7 +35,8 @@ import {
   Withdraw,
   // WithdrawWithReceipt as WithdrawWithReceiptEvent,
   OffchainAssetReceiptVault as OffchainAssetVaultContract,
-  OffchainAssetReceiptVaultInitializedV2
+  OffchainAssetReceiptVaultInitializedV2,
+  AuthorizerSet
 } from "../generated/templates/OffchainAssetReceiptVaultTemplate/OffchainAssetReceiptVault";
 import {
   CERTIFY_ADMIN,
@@ -57,11 +59,58 @@ import {
   BigintToHexString,
   ZERO_ADDRESS
 } from "./utils";
-import { store } from '@graphprotocol/graph-ts'
+import { store, Entity, Value, ValueKind } from '@graphprotocol/graph-ts'
 import { CBORDecoder } from "@rainprotocol/assemblyscript-cbor";
+import { log } from '@graphprotocol/graph-ts';
 
-
-export function handleApproval(event: Approval): void {
+export function handleAuthorizerSet(event: AuthorizerSet): void {
+  log.info("AuthorizerSet event detected for vault: {}", [event.address.toHex()]);
+  log.info("Authorizer address: {}", [event.params.authorizer.toHex()]);
+  
+  let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
+    event.address.toHex()
+  );
+  if (offchainAssetReceiptVault) {
+    // First, deactivate the previous authorizer if one exists
+    if (offchainAssetReceiptVault.activeAuthorizer != null) {
+      let previousAuthorizerId = offchainAssetReceiptVault.activeAuthorizer as string;
+      let previousAuthorizer = Authorizer.load(previousAuthorizerId);
+      if (previousAuthorizer && previousAuthorizer.id != event.params.authorizer.toHex()) {
+        log.info("Deactivating previous authorizer: {}", [previousAuthorizer.id]);
+        previousAuthorizer.isActive = false;
+        previousAuthorizer.save();
+      }
+    }
+    
+    // Create or update the new authorizer
+    let authorizer = Authorizer.load(event.params.authorizer.toHex());
+    if (!authorizer) {
+      log.info("Creating new authorizer entity: {}", [event.params.authorizer.toHex()]);
+      authorizer = new Authorizer(event.params.authorizer.toHex());
+      authorizer.address = event.params.authorizer;
+      
+      // Create the template for this authorizer if it hasn't been created yet
+      log.info("Creating template for authorizer from vault: {}", [event.params.authorizer.toHex()]);
+      OffchainAssetReceiptVaultAuthorizerV1Template.create(event.params.authorizer);
+    } else {
+      log.info("Updating existing authorizer: {}", [authorizer.id]);
+    }
+    
+    // Always set the new authorizer as active
+    authorizer.isActive = true;
+    
+    // Update the authorizer with the vault reference
+    authorizer.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+    authorizer.save();
+    
+    // Set the active authorizer directly on the vault using store.set to bypass type checking
+    let entity = new Entity();
+    entity.set('id', Value.fromString(offchainAssetReceiptVault.id));
+    entity.set('activeAuthorizer', Value.fromString(authorizer.id));
+    store.set('OffchainAssetReceiptVault', offchainAssetReceiptVault.id, entity);
+    
+    log.info("Vault {} now has active authorizer: {}", [offchainAssetReceiptVault.id, authorizer.id]);
+  }
 }
 
 export function handleCertify(event: CertifyEvent): void {

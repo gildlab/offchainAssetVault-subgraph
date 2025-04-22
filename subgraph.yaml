@@ -8,7 +8,7 @@ dataSources:
     source:
       address: "0x8F61d274aaB5D8CFD82dc266529EAe33020386a9"
       abi: CloneFactory
-      startBlock: 20220545
+      startBlock: 20725715
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -52,6 +52,8 @@ templates:
           handler: handleDeposit
         - event: OffchainAssetReceiptVaultInitializedV2(address,(address,(address,(address,string,string)))) #dont change
           handler: handleOffchainAssetVaultInitializedV2
+        - event: AuthorizerSet(address,address)
+          handler: handleAuthorizerSet
         # - event: RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32) #dont change but check the implementation switch case
         #   handler: handleRoleAdminChanged
         - event: ReceiptVaultInformation(address,bytes) #dont change
@@ -71,6 +73,30 @@ templates:
         - event: Withdraw(address,address,address,uint256,uint256,uint256,bytes) #dont change
           handler: handleWithdraw
       file: ./src/OffchainAssetReceiptVault.ts
+  - kind: ethereum/contract
+    name: OffchainAssetReceiptVaultAuthorizerV1Template
+    network: polygon-amoy
+    source:
+      abi: OffchainAssetReceiptVaultAuthorizerV1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Authorizer
+        - Role
+        - RoleHolder
+      abis:
+        - name: OffchainAssetReceiptVaultAuthorizerV1
+          file: ./abis/OffchainAssetReceiptVaultAuthorizerV1.json
+      eventHandlers:
+        - event: RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32)
+          handler: handleRoleAdminChanged
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
+      file: ./src/OffchainAssetReceiptVaultAuthorizerV1.ts
   - kind: ethereum/contract
     name: ReceiptTemplate
     network: polygon-amoy
