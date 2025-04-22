@@ -1,11 +1,8 @@
-import { Address, DataSourceContext, json } from "@graphprotocol/graph-ts";
+import { DataSourceContext, json } from "@graphprotocol/graph-ts";
 import {
   Certify,
   DepositWithReceipt,
   OffchainAssetReceiptVault,
-  Role,
-  RoleGranted,
-  RoleRevoked,
   ConfiscateShares,
   ConfiscateReceipt,
   WithdrawWithReceipt,
@@ -18,38 +15,21 @@ import {
 } from "../generated/schema";
 import { ReceiptTemplate, OffchainAssetReceiptVaultAuthorizerV1Template } from "../generated/templates";
 import {
-  Approval,
   Certify as CertifyEvent,
   ConfiscateShares as ConfiscateSharesEvent,
   ConfiscateReceipt as ConfiscateReceiptEvent,
   Deposit,
-  // DepositWithReceipt as DepositWithReceiptEvent,
-  ReceiptVaultInformation as ReceiptVaultInformationEvent,
-  // RoleAdminChanged,
-  // RoleGranted as RoleGrantedEvent,
-  // RoleRevoked as RoleRevokedEvent,
-  // SetERC1155Tier,
-  // SetERC20Tier,
-  // Snapshot, 
+  ReceiptVaultInformation as ReceiptVaultInformationEvent, 
   Transfer,
   Withdraw,
-  // WithdrawWithReceipt as WithdrawWithReceiptEvent,
   OffchainAssetReceiptVault as OffchainAssetVaultContract,
   OffchainAssetReceiptVaultInitializedV2,
   AuthorizerSet
 } from "../generated/templates/OffchainAssetReceiptVaultTemplate/OffchainAssetReceiptVault";
 import {
-  CERTIFY_ADMIN,
-  CONFISCATE_RECEIPT_ADMIN,
-  CONFISCATE_SHARES_ADMIN,
-  DEPOSIT_ADMIN,
-  WITHDRAW_ADMIN
-} from "./roles";
-import {
   getAccount,
   getReceipt,
   getReceiptBalance,
-  getRoleHolder,
   getTransaction,
   ONE,
   toDecimals,
@@ -59,13 +39,10 @@ import {
   BigintToHexString,
   ZERO_ADDRESS
 } from "./utils";
-import { store, Entity, Value, ValueKind } from '@graphprotocol/graph-ts'
+import { store, Entity, Value } from '@graphprotocol/graph-ts'
 import { CBORDecoder } from "@rainprotocol/assemblyscript-cbor";
-import { log } from '@graphprotocol/graph-ts';
 
 export function handleAuthorizerSet(event: AuthorizerSet): void {
-  log.info("AuthorizerSet event detected for vault: {}", [event.address.toHex()]);
-  log.info("Authorizer address: {}", [event.params.authorizer.toHex()]);
   
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
     event.address.toHex()
@@ -76,7 +53,6 @@ export function handleAuthorizerSet(event: AuthorizerSet): void {
       let previousAuthorizerId = offchainAssetReceiptVault.activeAuthorizer as string;
       let previousAuthorizer = Authorizer.load(previousAuthorizerId);
       if (previousAuthorizer && previousAuthorizer.id != event.params.authorizer.toHex()) {
-        log.info("Deactivating previous authorizer: {}", [previousAuthorizer.id]);
         previousAuthorizer.isActive = false;
         previousAuthorizer.save();
       }
@@ -85,15 +61,9 @@ export function handleAuthorizerSet(event: AuthorizerSet): void {
     // Create or update the new authorizer
     let authorizer = Authorizer.load(event.params.authorizer.toHex());
     if (!authorizer) {
-      log.info("Creating new authorizer entity: {}", [event.params.authorizer.toHex()]);
       authorizer = new Authorizer(event.params.authorizer.toHex());
       authorizer.address = event.params.authorizer;
-      
-      // Create the template for this authorizer if it hasn't been created yet
-      log.info("Creating template for authorizer from vault: {}", [event.params.authorizer.toHex()]);
       OffchainAssetReceiptVaultAuthorizerV1Template.create(event.params.authorizer);
-    } else {
-      log.info("Updating existing authorizer: {}", [authorizer.id]);
     }
     
     // Always set the new authorizer as active
@@ -108,8 +78,6 @@ export function handleAuthorizerSet(event: AuthorizerSet): void {
     entity.set('id', Value.fromString(offchainAssetReceiptVault.id));
     entity.set('activeAuthorizer', Value.fromString(authorizer.id));
     store.set('OffchainAssetReceiptVault', offchainAssetReceiptVault.id, entity);
-    
-    log.info("Vault {} now has active authorizer: {}", [offchainAssetReceiptVault.id, authorizer.id]);
   }
 }
 

@@ -32,16 +32,11 @@ import {
   getTransaction
 } from "./utils";
 
-import { store, log } from "@graphprotocol/graph-ts";
+import { log, store } from "@graphprotocol/graph-ts";
 
 export function handleRoleAdminChanged(event: RoleAdminChanged): void {
-  log.info("RoleAdminChanged event detected for authorizer: {}", [event.address.toHex()]);
-  log.info("Role: {}", [event.params.role.toHex()]);
   
-  // Always create the role regardless of authorizer
   let roleId = event.address.toHex() + "-" + event.params.role.toHex();
-  log.info("Creating role with ID: {}", [roleId]);
-  
   let role = new Role(roleId);
   
   // Set role name based on known roles
@@ -78,37 +73,25 @@ export function handleRoleAdminChanged(event: RoleAdminChanged): void {
   // Check if authorizer exists
   let authorizer = Authorizer.load(event.address.toHex());
   if (authorizer) {
-    log.info("Found authorizer: {}", [authorizer.id]);
     role.authorizer = authorizer.id;
   } else {
-    log.warning("No authorizer found for address: {}", [event.address.toHex()]);
     // Create a minimal authorizer if it doesn't exist yet
     authorizer = new Authorizer(event.address.toHex());
     authorizer.address = event.address;
     authorizer.isActive = true;
     authorizer.save();
     role.authorizer = authorizer.id;
-    log.info("Created new authorizer: {}", [authorizer.id]);
   }
-  
-  log.info("Saving role: {} with name: {}", [role.id, role.roleName]);
+
   role.save();
 }
 
 export function handleRoleGranted(event: RoleGrantedEvent): void {
-  log.info("RoleGranted event detected for authorizer: {}", [event.address.toHex()]);
-  log.info("Role: {}, Account: {}, Sender: {}", [
-    event.params.role.toHex(), 
-    event.params.account.toHex(),
-    event.params.sender.toHex()
-  ]);
-
   let roleId = event.address.toHex() + "-" + event.params.role.toHex();
   
   // Check if role exists, create it if it doesn't
   let role = Role.load(roleId);
   if (!role) {
-    log.info("Role not found, creating new role: {}", [roleId]);
     role = new Role(roleId);
     
     // Set role name based on known roles (simplified check)
@@ -145,7 +128,6 @@ export function handleRoleGranted(event: RoleGrantedEvent): void {
   // Check if authorizer exists, create it if it doesn't
   let authorizer = Authorizer.load(event.address.toHex());
   if (!authorizer) {
-    log.warning("No authorizer found, creating new authorizer: {}", [event.address.toHex()]);
     authorizer = new Authorizer(event.address.toHex());
     authorizer.address = event.address;
     authorizer.isActive = true;
@@ -158,16 +140,12 @@ export function handleRoleGranted(event: RoleGrantedEvent): void {
   
   // Generate a unique ID for this grant
   let roleGrantedId = event.transaction.hash.toHex() + "-" + role.roleName;
-  log.info("Creating RoleGranted with ID: {}", [roleGrantedId]);
   let roleGranted = new RoleGranted(roleGrantedId);
 
   // Determine vault ID for account creation, with fallback
   let vaultId = event.address.toHex();
   if (authorizer.offchainAssetReceiptVault != null) {
     vaultId = authorizer.offchainAssetReceiptVault as string;
-    log.info("Using vault ID from authorizer: {}", [vaultId]);
-  } else {
-    log.info("No vault ID found, using authorizer address as fallback: {}", [vaultId]);
   }
   
   // Create accounts safely
@@ -202,29 +180,17 @@ export function handleRoleGranted(event: RoleGrantedEvent): void {
     }
     
     roleHolder.save();
-    log.info("Updated roleHolder: {}", [roleHolder.id]);
-  } else {
-    log.warning("No roleHolder found for account: {}", [event.params.account.toHex()]);
   }
   
   roleGranted.save();
-  log.info("Successfully saved RoleGranted entity: {}", [roleGranted.id]);
 }
 
 export function handleRoleRevoked(event: RoleRevokedEvent): void {
-  log.info("RoleRevoked event detected for authorizer: {}", [event.address.toHex()]);
-  log.info("Role: {}, Account: {}, Sender: {}", [
-    event.params.role.toHex(), 
-    event.params.account.toHex(),
-    event.params.sender.toHex()
-  ]);
-
   let roleId = event.address.toHex() + "-" + event.params.role.toHex();
   
   // Check if role exists, create it if it doesn't
   let role = Role.load(roleId);
   if (!role) {
-    log.info("Role not found, creating new role: {}", [roleId]);
     role = new Role(roleId);
     role.roleName = "UNKNOWN_" + event.params.role.toHex().substr(0, 8);
     role.roleHash = event.params.role;
@@ -233,7 +199,6 @@ export function handleRoleRevoked(event: RoleRevokedEvent): void {
   // Check if authorizer exists, create it if it doesn't
   let authorizer = Authorizer.load(event.address.toHex());
   if (!authorizer) {
-    log.warning("No authorizer found, creating new authorizer: {}", [event.address.toHex()]);
     authorizer = new Authorizer(event.address.toHex());
     authorizer.address = event.address;
     authorizer.isActive = true;
@@ -246,16 +211,12 @@ export function handleRoleRevoked(event: RoleRevokedEvent): void {
   
   // Generate a unique ID for this revocation
   let roleRevokedId = event.transaction.hash.toHex() + "-" + role.roleName;
-  log.info("Creating RoleRevoked with ID: {}", [roleRevokedId]);
   let roleRevoked = new RoleRevoked(roleRevokedId);
 
   // Determine vault ID for account creation, with fallback
   let vaultId = event.address.toHex();
   if (authorizer.offchainAssetReceiptVault != null) {
     vaultId = authorizer.offchainAssetReceiptVault as string;
-    log.info("Using vault ID from authorizer: {}", [vaultId]);
-  } else {
-    log.info("No vault ID found, using authorizer address as fallback: {}", [vaultId]);
   }
   
   // Create accounts safely
@@ -279,12 +240,8 @@ export function handleRoleRevoked(event: RoleRevokedEvent): void {
   
   if (roleHolder) {
     roleRevoked.roleHolder = roleHolder.id;
-    log.info("Found roleHolder to remove: {}", [roleHolder.id]);
     store.remove("RoleHolder", roleHolder.id);
-  } else {
-    log.warning("No roleHolder found for account: {}", [event.params.account.toHex()]);
   }
   
   roleRevoked.save();
-  log.info("Successfully saved RoleRevoked entity: {}", [roleRevoked.id]);
 }

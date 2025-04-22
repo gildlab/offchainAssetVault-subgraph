@@ -1,6 +1,6 @@
 {
   "include": ["./src", "./test"],
-  "exclude": ["node_modules/*", "./typechain"],
+  "exclude": ["node_modules/*"],
   "compilerOptions": {
     "target": "es2020",
     "module": "commonjs",
@@ -9,6 +9,5 @@
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true
-  },
-  "files": ["./hardhat.config.ts"]
+  }
 }
