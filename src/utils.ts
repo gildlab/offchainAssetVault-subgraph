@@ -52,7 +52,6 @@ export function getAccount(
       newVault.shareHoldersCount = ZERO;
       newVault.certifiedUntil = ZERO;
       // Set required fields based on schema
-      newVault.factory = offchainAssetReceiptVault; // Self-reference as fallback
       newVault.admin = Address.fromHexString(address);
       newVault.name = "Reference Vault";
       newVault.symbol = "REF";

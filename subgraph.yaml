@@ -2,7 +2,7 @@ specVersion: 0.0.4
 schema:
   file: ./schema.graphql 
 dataSources:
-  - kind: ethereum/contract #as is
+  - kind: ethereum/contract
     name: CloneFactory
     network: polygon-amoy
     source:
@@ -40,37 +40,25 @@ templates:
         - name: OffchainAssetReceiptVault
           file: ./abis/OffchainAssetReceiptVault.json
       eventHandlers:
-        - event: Approval(indexed address,indexed address,uint256) # Nothing to change
+        - event: Approval(indexed address,indexed address,uint256) 
           handler: handleApproval
-        - event: Certify(address,uint256,bool,bytes) # Changed this --done
+        - event: Certify(address,uint256,bool,bytes) 
           handler: handleCertify
-        - event: ConfiscateReceipt(address,address,uint256,uint256,uint256,bytes) # Changed this --done
+        - event: ConfiscateReceipt(address,address,uint256,uint256,uint256,bytes) 
           handler: handleConfiscateReceipt
-        - event: ConfiscateShares(address,address,uint256,uint256,bytes) # Changed this --done
+        - event: ConfiscateShares(address,address,uint256,uint256,bytes) 
           handler: handleConfiscateShares
         - event: Deposit(address,address,uint256,uint256,uint256,bytes)
           handler: handleDeposit
-        - event: OffchainAssetReceiptVaultInitializedV2(address,(address,(address,(address,string,string)))) #dont change
+        - event: OffchainAssetReceiptVaultInitializedV2(address,(address,(address,(address,string,string)))) 
           handler: handleOffchainAssetVaultInitializedV2
         - event: AuthorizerSet(address,address)
           handler: handleAuthorizerSet
-        # - event: RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32) #dont change but check the implementation switch case
-        #   handler: handleRoleAdminChanged
-        - event: ReceiptVaultInformation(address,bytes) #dont change
+        - event: ReceiptVaultInformation(address,bytes)
           handler: handleReceiptVaultInformation 
-        # - event: RoleGranted(indexed bytes32,indexed address,indexed address) #dont change but check the implementation
-        #   handler: handleRoleGranted
-        # - event: RoleRevoked(indexed bytes32,indexed address,indexed address) #dont change but check the implementation
-        #   handler: handleRoleRevoked
-        # - event: SetERC1155Tier(address,address,uint256,uint256[],bytes) #dont change
-        #   handler: handleSetERC1155Tier
-        # - event: SetERC20Tier(address,address,uint256,uint256[],bytes) #dont change
-        #   handler: handleSetERC20Tier
-        # - event: Snapshot(uint256) #dont change
-        #   handler: handleSnapshot 
-        - event: Transfer(indexed address,indexed address,uint256) #dont change
+        - event: Transfer(indexed address,indexed address,uint256) 
           handler: handleTransfer
-        - event: Withdraw(address,address,address,uint256,uint256,uint256,bytes) #dont change
+        - event: Withdraw(address,address,address,uint256,uint256,uint256,bytes)
           handler: handleWithdraw
       file: ./src/OffchainAssetReceiptVault.ts
   - kind: ethereum/contract

@@ -1,12 +1,8 @@
 import {
-  Deployer,
-  OffchainAssetReceiptVault,
-  OffchainAssetReceiptVaultFactory,
   Authorizer,
   Role,
   RoleGranted,
   RoleRevoked,
-  RoleHolder
 } from "../generated/schema";
 
 import {
@@ -36,7 +32,7 @@ import {
   getTransaction
 } from "./utils";
 
-import { store, DataSourceContext, log } from "@graphprotocol/graph-ts";
+import { store, log } from "@graphprotocol/graph-ts";
 
 export function handleRoleAdminChanged(event: RoleAdminChanged): void {
   log.info("RoleAdminChanged event detected for authorizer: {}", [event.address.toHex()]);
