@@ -22,7 +22,7 @@ jobs:
       - uses: DeterminateSystems/flakehub-cache-action@main
 
       - name: Build subgraph
-        run: nix develop -c subgraph-build
+        run: nix develop -c offchain-assets-subgraph-build
 
       - name: Matchstick tests
-        run: nix develop -c subgraph-test
+        run: nix develop -c offchain-assets-subgraph-test
