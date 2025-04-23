@@ -48,36 +48,22 @@ export function handleAuthorizerSet(event: AuthorizerSet): void {
     event.address.toHex()
   );
   if (offchainAssetReceiptVault) {
-    // First, deactivate the previous authorizer if one exists
-    if (offchainAssetReceiptVault.activeAuthorizer != null) {
-      let previousAuthorizerId = offchainAssetReceiptVault.activeAuthorizer as string;
-      let previousAuthorizer = Authorizer.load(previousAuthorizerId);
-      if (previousAuthorizer && previousAuthorizer.id != event.params.authorizer.toHex()) {
-        previousAuthorizer.isActive = false;
-        previousAuthorizer.save();
-      }
+    let previousAuthorizer = Authorizer.load(offchainAssetReceiptVault.activeAuthorizer);
+    if (previousAuthorizer && previousAuthorizer.id != event.params.authorizer.toHex()) {
+      previousAuthorizer.isActive = false;
+      previousAuthorizer.save();
     }
     
-    // Create or update the new authorizer
     let authorizer = Authorizer.load(event.params.authorizer.toHex());
-    if (!authorizer) {
-      authorizer = new Authorizer(event.params.authorizer.toHex());
-      authorizer.address = event.params.authorizer;
-      OffchainAssetReceiptVaultAuthorizerV1Template.create(event.params.authorizer);
+    if (authorizer) {
+      authorizer.isActive = true;
+      authorizer.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+      authorizer.save();
+
+      // Set Active Authorizer
+      offchainAssetReceiptVault.activeAuthorizer = authorizer.id;
+      offchainAssetReceiptVault.save();
     }
-    
-    // Always set the new authorizer as active
-    authorizer.isActive = true;
-    
-    // Update the authorizer with the vault reference
-    authorizer.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-    authorizer.save();
-    
-    // Set the active authorizer directly on the vault using store.set to bypass type checking
-    let entity = new Entity();
-    entity.set('id', Value.fromString(offchainAssetReceiptVault.id));
-    entity.set('activeAuthorizer', Value.fromString(authorizer.id));
-    store.set('OffchainAssetReceiptVault', offchainAssetReceiptVault.id, entity);
   }
 }
 

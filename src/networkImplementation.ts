@@ -1,39 +1,46 @@
 import { dataSource } from '@graphprotocol/graph-ts';
 
-// Network-specific configuration values
-export class NetworkImplemenation {
+// Authorizer Implementation Addresses
+export const AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0xB8a96Df657B8b921dfaaFFe44C9B47699e650945";
+export const POLYGON_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
+export const MAINNET_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
+
+// Vault Implementation Addresses
+export const AMOY_VAULT_IMPLEMENTATION_ADDRESS = "0x7e9434d67F0e00cc9ac02822b5F600bF2Fb207E5";
+export const POLYGON_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
+export const MAINNET_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
+
+export class NetworkImplementation {
   // Authorizer implementation addresses by network
   public authorizerImplementations: string[];
   
   // Vault implementation addresses by network
   public vaultImplementations: string[];
   
-  constructor() {
+  constructor(network: string) {
     this.authorizerImplementations = [];
     this.vaultImplementations = [];
-    
-    const network = dataSource.network();
-    
+  
     if (network == 'mainnet') {
       this.authorizerImplementations = [
-        "0x1234567890123456789012345678901234567890"
+        MAINNET_AUTHORIZER_IMPLEMENTATION_ADDRESS 
       ];
       this.vaultImplementations = [
-        "0x0987654321098765432109876543210987654321"
+        MAINNET_VAULT_IMPLEMENTATION_ADDRESS
       ];
     } else if (network == 'polygon') {
       this.authorizerImplementations = [
-        "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+        POLYGON_AUTHORIZER_IMPLEMENTATION_ADDRESS
       ];
       this.vaultImplementations = [
-        "0xfedcbafedcbafedcbafedcbafedcbafedcbafedcba"
+        POLYGON_VAULT_IMPLEMENTATION_ADDRESS
       ];
     } else if (network == 'polygon-amoy') {
       this.authorizerImplementations = [
-        "0xB8a96Df657B8b921dfaaFFe44C9B47699e650945"
+        AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS
       ];
       this.vaultImplementations = [
-        "0x7e9434d67F0e00cc9ac02822b5F600bF2Fb207E5"
+        AMOY_VAULT_IMPLEMENTATION_ADDRESS
       ];
     } else {
       this.authorizerImplementations = [];
@@ -59,5 +66,3 @@ export class NetworkImplemenation {
     return !this.isAuthorizerImplementation(address);
   }
 }
-
-export const networkImplementation = new NetworkImplemenation(); 

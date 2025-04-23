@@ -57,7 +57,7 @@ type OffchainAssetReceiptVault @entity {
   withdraws: [WithdrawWithReceipt!]
     @derivedFrom(field: "offchainAssetReceiptVault")
   "Current active authorizer for this OffchainAssetReceiptVault"
-  activeAuthorizer: Authorizer
+  activeAuthorizer: Authorizer!
   "All authorizers (historical) for this OffchainAssetReceiptVault"
   authorizers: [Authorizer!] @derivedFrom(field: "offchainAssetReceiptVault")
   

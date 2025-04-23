@@ -4,10 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npx hardhat test",
-    "ci-test": "npx hardhat test --network localhost",
-    "codegen": "graph codegen",
-    "build": "graph build"
+    "test": "graph test -d"
   },
   "repository": {
     "type": "git",
@@ -35,6 +32,7 @@
     "@graphprotocol/graph-ts": "=0.35.1",
     "@rainprotocol/assemblyscript-cbor": "=0.0.2",
     "dotenv": "=16.0.3",
-    "mustache": "=4.2.0"
+    "mustache": "=4.2.0",
+    "matchstick-as": "^0.6.0"
   }
 }

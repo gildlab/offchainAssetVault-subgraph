@@ -7,14 +7,14 @@ import {
   OffchainAssetReceiptVault
 } from "../generated/schema";
 import { OffchainAssetReceiptVaultTemplate, OffchainAssetReceiptVaultAuthorizerV1Template } from "../generated/templates";
-import { ZERO } from "./utils";
-import { networkImplementation } from "./networkImplementation";
+import { ZERO, ZERO_ADDRESS } from "./utils";
+import { NetworkImplementation } from "./networkImplementation";
+import { dataSource } from "@graphprotocol/graph-ts";
 
-
-export function handleNewClone(event: NewClone): void {
-  
-  // Check if this is an authorizer implementation using our network config
+export function handleNewClone(event: NewClone): void {  
   let implementationAddress = event.params.implementation.toHex();
+
+  let networkImplementation = new NetworkImplementation(dataSource.network());
   
   if (networkImplementation.isAuthorizerImplementation(implementationAddress)) {
     // Handle as an authorizer
@@ -39,6 +39,14 @@ export function handleNewClone(event: NewClone): void {
     child.certifiedUntil = ZERO;
     child.hashCount = ZERO;
     child.shareHoldersCount = ZERO;
+    child.activeAuthorizer = ZERO_ADDRESS;
+
+    let authorizer = new Authorizer(event.params.clone.toHex());
+    authorizer.address = event.params.clone;
+    authorizer.isActive = true;
+    authorizer.save();
+    child.activeAuthorizer = authorizer.id;
+    
     child.save();
   
     let deployer = Deployer.load(event.params.sender.toHex());
