@@ -3,3 +3,5 @@ services:
     image: rainprotocol/matchstick:main
     volumes:
       - .:/matchstick
+    working_dir: /matchstick
+    command: "${ARGS:-}"
