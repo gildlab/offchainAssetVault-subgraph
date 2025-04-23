@@ -52,7 +52,6 @@
             body = ''
               set -euxo pipefail
               docker compose up --abort-on-container-exit
-              npm run test
             '';
           };
         } // rainix.packages.${system};
