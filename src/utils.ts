@@ -1,6 +1,7 @@
 import { Address, BigDecimal, BigInt, ByteArray, Bytes, ethereum, log } from "@graphprotocol/graph-ts";
 import {
   Account,
+  Authorizer,
   OffchainAssetReceiptVault,
   Receipt,
   ReceiptBalance,
@@ -19,47 +20,17 @@ export function getAccount(
   address: string,
   offchainAssetReceiptVault: string
 ): Account {
+  
   let accountId = offchainAssetReceiptVault + "-" + address;
   let account = Account.load(accountId);
-  
+  let vault = OffchainAssetReceiptVault.load(offchainAssetReceiptVault);
+ 
   // First check if account exists
-  if (!account) {
+  if (!account && vault) {
     account = new Account(accountId);
+    account.offchainAssetReceiptVault = vault.id;
     account.address = Address.fromHexString(address);
-    account.hashCount = ZERO;
-    
-    // Try to load the vault
-    let vault = OffchainAssetReceiptVault.load(offchainAssetReceiptVault);
-    
-    if (vault) {
-      // Vault exists, use it
-      account.offchainAssetReceiptVault = vault.id;
-    } else {
-      // Create a minimal vault entity if it doesn't exist
-      // This is a fallback mechanism
-      log.warning(
-        "Vault not found when creating account. Creating reference vault: {}",
-        [offchainAssetReceiptVault]
-      );
-      
-      let newVault = new OffchainAssetReceiptVault(offchainAssetReceiptVault);
-      newVault.address = Address.fromHexString(offchainAssetReceiptVault);
-      newVault.deployer = Address.fromHexString(address); // Use account address as fallback
-      newVault.deployBlock = ZERO;
-      newVault.deployTimestamp = ZERO;
-      newVault.totalShares = ZERO;
-      newVault.hashCount = ZERO;
-      newVault.shareHoldersCount = ZERO;
-      newVault.certifiedUntil = ZERO;
-      // Set required fields based on schema
-      newVault.admin = Address.fromHexString(address);
-      newVault.name = "Reference Vault";
-      newVault.symbol = "REF";
-      newVault.save();
-      
-      account.offchainAssetReceiptVault = newVault.id;
-    }
-    
+    account.hashCount = ZERO; 
     account.save();
   }
 
@@ -94,15 +65,18 @@ export function getRoleHolder(
     authorizer + "-" + address + "-" + role
   );
   if (!roleHolder) {
-    roleHolder = new RoleHolder(
-      authorizer + "-" + address + "-" + role
-    );
-    roleHolder.account = getAccount(address, authorizer).id;
-    roleHolder.authorizer = authorizer;
-    roleHolder.role = authorizer + "-" + role;
-    roleHolder.activeRoles = [];
-
-    roleHolder.save();
+    let authorizerEntity = Authorizer.load(authorizer);
+    if(authorizerEntity && authorizerEntity.offchainAssetReceiptVault != null) {
+      roleHolder = new RoleHolder(
+        authorizer + "-" + address + "-" + role
+      );
+      roleHolder.account = getAccount(address, authorizerEntity.offchainAssetReceiptVault as string).id;
+      roleHolder.authorizer = authorizer;
+      roleHolder.role = authorizer + "-" + role;
+      roleHolder.activeRoles = [];
+      roleHolder.save();
+    }
+    
   }
   return roleHolder as RoleHolder;
 }

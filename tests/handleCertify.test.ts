@@ -6,9 +6,7 @@ import {
     afterEach,
     beforeAll,
     clearInBlockStore,
-    dataSourceMock,
-    logStore,
-    log
+    dataSourceMock
 } from "matchstick-as";
 import {
     Address,
@@ -21,7 +19,6 @@ import { createCertifyEvent, createNewCloneEvent, createSetAuthorizerEvent } fro
 import { handleNewClone } from "../src/CloneFactory";
 import { AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS, AMOY_VAULT_IMPLEMENTATION_ADDRESS } from "../src/networkImplementation";
 import { handleAuthorizerSet, handleCertify } from "../src/OffchainAssetReceiptVault";
-import { Authorizer, Certify } from "../generated/schema";
 import { getAccount } from "../src/utils";
 
 describe("Certify Test", () => {
