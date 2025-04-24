@@ -48,10 +48,12 @@ export function handleAuthorizerSet(event: AuthorizerSet): void {
     event.address.toHex()
   );
   if (offchainAssetReceiptVault) {
-    let previousAuthorizer = Authorizer.load(offchainAssetReceiptVault.activeAuthorizer);
-    if (previousAuthorizer && previousAuthorizer.id != event.params.authorizer.toHex()) {
-      previousAuthorizer.isActive = false;
-      previousAuthorizer.save();
+    if(offchainAssetReceiptVault.activeAuthorizer != null){
+      let previousAuthorizer = Authorizer.load(offchainAssetReceiptVault.activeAuthorizer as string);
+      if (previousAuthorizer && previousAuthorizer.id != event.params.authorizer.toHex()) {
+        previousAuthorizer.isActive = false;
+        previousAuthorizer.save();
+      }
     }
     
     let authorizer = Authorizer.load(event.params.authorizer.toHex());

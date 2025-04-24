@@ -23,12 +23,36 @@ export function getAccount(
   
   let accountId = offchainAssetReceiptVault + "-" + address;
   let account = Account.load(accountId);
-  let vault = OffchainAssetReceiptVault.load(offchainAssetReceiptVault);
- 
+  
   // First check if account exists
-  if (!account && vault) {
+  if (!account) {
+    let vault = OffchainAssetReceiptVault.load(offchainAssetReceiptVault);
+    
     account = new Account(accountId);
-    account.offchainAssetReceiptVault = vault.id;
+    
+    // If the vault exists, use its ID, otherwise use the provided vault address
+    if (vault) {
+      account.offchainAssetReceiptVault = vault.id;
+    } else {
+      // Create a temporary vault entity if it doesn't exist
+      // This might happen during initialization when events are processed before the vault is created
+      let tempVault = new OffchainAssetReceiptVault(offchainAssetReceiptVault);
+      tempVault.address = Address.fromString(offchainAssetReceiptVault);
+      tempVault.deployBlock = BigInt.fromI32(0);
+      tempVault.deployTimestamp = BigInt.fromI32(0);
+      tempVault.deployer = Address.fromString(ZERO_ADDRESS);
+      tempVault.admin = Address.fromString(ZERO_ADDRESS);
+      tempVault.name = "";
+      tempVault.symbol = "";
+      tempVault.totalShares = ZERO;
+      tempVault.shareHoldersCount = ZERO;
+      tempVault.hashCount = ZERO;
+      tempVault.certifiedUntil = ZERO;
+      tempVault.save();
+      
+      account.offchainAssetReceiptVault = tempVault.id;
+    }
+    
     account.address = Address.fromHexString(address);
     account.hashCount = ZERO; 
     account.save();
@@ -66,18 +90,25 @@ export function getRoleHolder(
   );
   if (!roleHolder) {
     let authorizerEntity = Authorizer.load(authorizer);
-    if(authorizerEntity && authorizerEntity.offchainAssetReceiptVault != null) {
-      roleHolder = new RoleHolder(
-        authorizer + "-" + address + "-" + role
-      );
-      roleHolder.account = getAccount(address, authorizerEntity.offchainAssetReceiptVault as string).id;
-      roleHolder.authorizer = authorizer;
-      roleHolder.role = authorizer + "-" + role;
-      roleHolder.activeRoles = [];
-      roleHolder.save();
+    
+    // Create the role holder regardless of whether the authorizer is linked to a vault
+    roleHolder = new RoleHolder(
+      authorizer + "-" + address + "-" + role
+    );
+    
+    // Use the authorizer address as the vault ID if no vault is linked yet
+    let vaultId = authorizer;
+    if (authorizerEntity && authorizerEntity.offchainAssetReceiptVault != null) {
+      vaultId = authorizerEntity.offchainAssetReceiptVault as string;
     }
     
+    roleHolder.account = getAccount(address, vaultId).id;
+    roleHolder.authorizer = authorizer;
+    roleHolder.role = authorizer + "-" + role;
+    roleHolder.activeRoles = [];
+    roleHolder.save();
   }
+  
   return roleHolder as RoleHolder;
 }
 
