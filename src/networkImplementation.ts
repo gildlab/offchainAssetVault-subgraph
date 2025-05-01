@@ -1,5 +1,3 @@
-import { dataSource } from '@graphprotocol/graph-ts';
-
 // Authorizer Implementation Addresses
 export const AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0xB8a96Df657B8b921dfaaFFe44C9B47699e650945";
 export const POLYGON_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";

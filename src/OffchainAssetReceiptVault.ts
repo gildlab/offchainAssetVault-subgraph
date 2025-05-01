@@ -13,7 +13,7 @@ import {
   TokenHolder, SharesTransfer,
   Authorizer
 } from "../generated/schema";
-import { ReceiptTemplate, OffchainAssetReceiptVaultAuthorizerV1Template } from "../generated/templates";
+import { ReceiptTemplate } from "../generated/templates";
 import {
   Certify as CertifyEvent,
   ConfiscateShares as ConfiscateSharesEvent,

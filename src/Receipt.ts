@@ -1,4 +1,4 @@
-import { dataSource, json, log } from "@graphprotocol/graph-ts";
+import { dataSource, json } from "@graphprotocol/graph-ts";
 import {
   Hash,
   OffchainAssetReceiptVault,

@@ -32,7 +32,7 @@ import {
   getTransaction
 } from "./utils";
 
-import { log, store } from "@graphprotocol/graph-ts";
+import { store } from "@graphprotocol/graph-ts";
 
 export function handleRoleAdminChanged(event: RoleAdminChanged): void {
   
