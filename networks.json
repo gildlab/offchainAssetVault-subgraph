@@ -1,0 +1,33 @@
+{
+    "polygon-amoy": {
+        "CloneFactory": {
+            "address": "0x8F61d274aaB5D8CFD82dc266529EAe33020386a9",
+            "startBlock": 20725715
+        }
+    },
+    "base": {
+        "CloneFactory": {
+            "address": "0x017F5651eB8fa4048BBc17433149c6c035d391A6",
+            "startBlock": 29647531
+        }
+    },
+    "matic": {
+        "CloneFactory": {
+            "address": "0x5e9e22154D71f9Fd4b5FD1eE36852A4c9FcDcC9E",
+            "startBlock": 70971061
+        }
+    },
+    "sepolia": {
+        "CloneFactory": {
+            "address": "0xc4EB51776Ff8b0E74D14029842444895D6C5c38E",
+            "startBlock": 8231751
+        }
+    },
+    "epn": {
+        "CloneFactory": {
+            "address": "0xd294cB1ac82D6A5c1536107cA6eBB32BFF06d98A",
+            "startBlock": 60756888
+        }
+    }
+    
+}

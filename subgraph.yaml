@@ -1,13 +1,13 @@
 specVersion: 0.0.4
 schema:
-  file: ./schema.graphql 
+  file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
     name: CloneFactory
     network: polygon-amoy
     source:
-      address: "0x8F61d274aaB5D8CFD82dc266529EAe33020386a9"
       abi: CloneFactory
+      address: "0x8F61d274aaB5D8CFD82dc266529EAe33020386a9"
       startBlock: 20725715
     mapping:
       kind: ethereum/events
@@ -40,23 +40,23 @@ templates:
         - name: OffchainAssetReceiptVault
           file: ./abis/OffchainAssetReceiptVault.json
       eventHandlers:
-        - event: Approval(indexed address,indexed address,uint256) 
+        - event: Approval(indexed address,indexed address,uint256)
           handler: handleApproval
-        - event: Certify(address,uint256,bool,bytes) 
+        - event: Certify(address,uint256,bool,bytes)
           handler: handleCertify
-        - event: ConfiscateReceipt(address,address,uint256,uint256,uint256,bytes) 
+        - event: ConfiscateReceipt(address,address,uint256,uint256,uint256,bytes)
           handler: handleConfiscateReceipt
-        - event: ConfiscateShares(address,address,uint256,uint256,bytes) 
+        - event: ConfiscateShares(address,address,uint256,uint256,bytes)
           handler: handleConfiscateShares
         - event: Deposit(address,address,uint256,uint256,uint256,bytes)
           handler: handleDeposit
-        - event: OffchainAssetReceiptVaultInitializedV2(address,(address,(address,(address,string,string)))) 
+        - event: OffchainAssetReceiptVaultInitializedV2(address,(address,(address,(address,string,string))))
           handler: handleOffchainAssetVaultInitializedV2
         - event: AuthorizerSet(address,address)
           handler: handleAuthorizerSet
         - event: ReceiptVaultInformation(address,bytes)
-          handler: handleReceiptVaultInformation 
-        - event: Transfer(indexed address,indexed address,uint256) 
+          handler: handleReceiptVaultInformation
+        - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
         - event: Withdraw(address,address,address,uint256,uint256,uint256,bytes)
           handler: handleWithdraw
