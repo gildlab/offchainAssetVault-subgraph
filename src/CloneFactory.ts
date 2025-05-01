@@ -4,10 +4,9 @@ import {
 import {
   Deployer,
   OffchainAssetReceiptVault,
-  OffchainAssetReceiptVaultFactory,
 } from "../generated/schema";
 import { OffchainAssetReceiptVaultTemplate } from "../generated/templates";
-import { ONE, ZERO } from "./utils";
+import { ZERO } from "./utils";
 
 
 export function handleNewClone(event: NewClone): void {
@@ -16,7 +15,6 @@ export function handleNewClone(event: NewClone): void {
   child.deployBlock = event.block.number;
   child.deployTimestamp = event.block.timestamp;
   child.deployer = event.params.sender;
-  child.factory = event.address.toHex();
   child.admin = event.params.sender;
 
   child.name = "";
@@ -28,11 +26,6 @@ export function handleNewClone(event: NewClone): void {
 
   child.save();
 
-  let factory = OffchainAssetReceiptVaultFactory.load(event.address.toHex());
-  if (factory) {
-    factory.childrenCount = factory.childrenCount.plus(ONE);
-    factory.save();
-  }
 
   let deployer = Deployer.load(event.params.sender.toHex());
   if(!deployer){
