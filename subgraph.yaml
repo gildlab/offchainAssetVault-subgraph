@@ -18,7 +18,7 @@ dataSources:
         - Verify
       abis:
         - name: CloneFactory
-          file: ./abis/CloneFactory.json
+          file: ./lib/rain.factory/out/CloneFactory.sol/CloneFactory.json
       eventHandlers:
         - event: NewClone(address,address,address)
           handler: handleNewClone
@@ -38,7 +38,7 @@ templates:
         - Verify
       abis:
         - name: OffchainAssetReceiptVault
-          file: ./abis/OffchainAssetReceiptVault.json
+          file: ./lib/ethgild/out/OffchainAssetReceiptVault.sol/OffchainAssetReceiptVault.json
       eventHandlers:
         - event: Approval(indexed address,indexed address,uint256)
           handler: handleApproval
@@ -89,7 +89,7 @@ templates:
         - Verify
       abis:
         - name: Receipt
-          file: ./abis/Receipt.json
+          file: ./lib/ethgild/out/Receipt.sol/Receipt.json
       eventHandlers:
         - event: ReceiptInformation(address,uint256,bytes)
           handler: handleReceiptInformation
