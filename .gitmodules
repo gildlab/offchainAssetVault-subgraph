@@ -1,3 +1,6 @@
 [submodule "lib/ethgild"]
 	path = lib/ethgild
 	url = https://github.com/gildlab/ethgild.git
+[submodule "lib/rain.factory"]
+	path = lib/rain.factory
+	url = https://github.com/rainlanguage/rain.factory.git
