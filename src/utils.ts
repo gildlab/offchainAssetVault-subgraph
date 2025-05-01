@@ -1,6 +1,7 @@
-import { Address, BigDecimal, BigInt, ByteArray, Bytes, ethereum } from "@graphprotocol/graph-ts";
+import { Address, BigDecimal, BigInt, ByteArray, Bytes, ethereum, log } from "@graphprotocol/graph-ts";
 import {
   Account,
+  Authorizer,
   OffchainAssetReceiptVault,
   Receipt,
   ReceiptBalance,
@@ -19,22 +20,52 @@ export function getAccount(
   address: string,
   offchainAssetReceiptVault: string
 ): Account {
-  let account = Account.load(offchainAssetReceiptVault + "-" + address);
-  let vault = OffchainAssetReceiptVault.load(offchainAssetReceiptVault);
-  if (!account && vault) {
-    account = new Account(offchainAssetReceiptVault + "-" + address);
-    account.offchainAssetReceiptVault = vault.id;
+  
+  let accountId = offchainAssetReceiptVault + "-" + address;
+  let account = Account.load(accountId);
+  
+  // First check if account exists
+  if (!account) {
+    let vault = OffchainAssetReceiptVault.load(offchainAssetReceiptVault);
+    
+    account = new Account(accountId);
+    
+    // If the vault exists, use its ID, otherwise use the provided vault address
+    if (vault) {
+      account.offchainAssetReceiptVault = vault.id;
+    } else {
+      // Create a temporary vault entity if it doesn't exist
+      // This might happen during initialization when events are processed before the vault is created
+      let tempVault = new OffchainAssetReceiptVault(offchainAssetReceiptVault);
+      tempVault.address = Address.fromString(offchainAssetReceiptVault);
+      tempVault.deployBlock = BigInt.fromI32(0);
+      tempVault.deployTimestamp = BigInt.fromI32(0);
+      tempVault.deployer = Address.fromString(ZERO_ADDRESS);
+      tempVault.admin = Address.fromString(ZERO_ADDRESS);
+      tempVault.name = "";
+      tempVault.symbol = "";
+      tempVault.totalShares = ZERO;
+      tempVault.shareHoldersCount = ZERO;
+      tempVault.hashCount = ZERO;
+      tempVault.certifiedUntil = ZERO;
+      tempVault.save();
+      
+      account.offchainAssetReceiptVault = tempVault.id;
+    }
+    
     account.address = Address.fromHexString(address);
-    account.hashCount = ZERO;
+    account.hashCount = ZERO; 
     account.save();
   }
 
+  // Create or load user entity
   let user = User.load(address);
   if(!user){
     user = new User(address);
     user.hashCount = ZERO;
     user.save();
   }
+  
   return account as Account;
 }
 
@@ -50,24 +81,34 @@ export function getTransaction(block: ethereum.Block, hash:string): Transaction 
 }
 
 export function getRoleHolder(
-  offchainAssetReceiptVault: string,
+  authorizer: string,
   address: string,
   role: string
 ): RoleHolder {
   let roleHolder = RoleHolder.load(
-    offchainAssetReceiptVault + "-" + address + "-" + role
+    authorizer + "-" + address + "-" + role
   );
   if (!roleHolder) {
+    let authorizerEntity = Authorizer.load(authorizer);
+    
+    // Create the role holder regardless of whether the authorizer is linked to a vault
     roleHolder = new RoleHolder(
-      offchainAssetReceiptVault + "-" + address + "-" + role
+      authorizer + "-" + address + "-" + role
     );
-    roleHolder.account = getAccount(address, offchainAssetReceiptVault).id;
-    roleHolder.offchainAssetReceiptVault = offchainAssetReceiptVault;
-    roleHolder.role = offchainAssetReceiptVault + "-" + role;
+    
+    // Use the authorizer address as the vault ID if no vault is linked yet
+    let vaultId = authorizer;
+    if (authorizerEntity && authorizerEntity.offchainAssetReceiptVault != null) {
+      vaultId = authorizerEntity.offchainAssetReceiptVault as string;
+    }
+    
+    roleHolder.account = getAccount(address, vaultId).id;
+    roleHolder.authorizer = authorizer;
+    roleHolder.role = authorizer + "-" + role;
     roleHolder.activeRoles = [];
-
     roleHolder.save();
   }
+  
   return roleHolder as RoleHolder;
 }
 
@@ -82,9 +123,9 @@ export function getTokenHolder(
     tokenHolder = new TokenHolder(
       offchainAssetReceiptVault + "-" + address
     );
-    tokenHolder.account = getAccount(address, offchainAssetReceiptVault).id;
     tokenHolder.offchainAssetReceiptVault = offchainAssetReceiptVault;
-
+    tokenHolder.address = Address.fromHexString(address);
+    tokenHolder.balance = ZERO;
     tokenHolder.save();
   }
   return tokenHolder as TokenHolder;

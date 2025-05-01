@@ -1,11 +1,8 @@
-import { Address, DataSourceContext, json } from "@graphprotocol/graph-ts";
+import { DataSourceContext, json } from "@graphprotocol/graph-ts";
 import {
   Certify,
   DepositWithReceipt,
   OffchainAssetReceiptVault,
-  Role,
-  RoleGranted,
-  RoleRevoked,
   ConfiscateShares,
   ConfiscateReceipt,
   WithdrawWithReceipt,
@@ -13,52 +10,26 @@ import {
   User,
   Deployer,
   ReceiptVaultInformation,
-  TokenHolder, SharesTransfer
+  TokenHolder, SharesTransfer,
+  Authorizer
 } from "../generated/schema";
-import { ReceiptTemplate } from "../generated/templates";
+import { ReceiptTemplate, OffchainAssetReceiptVaultAuthorizerV1Template } from "../generated/templates";
 import {
-  Approval,
   Certify as CertifyEvent,
   ConfiscateShares as ConfiscateSharesEvent,
   ConfiscateReceipt as ConfiscateReceiptEvent,
   Deposit,
-  DepositWithReceipt as DepositWithReceiptEvent,
-  ReceiptVaultInformation as ReceiptVaultInformationEvent,
-  RoleAdminChanged,
-  RoleGranted as RoleGrantedEvent,
-  RoleRevoked as RoleRevokedEvent,
-  SetERC1155Tier,
-  SetERC20Tier,
-  Snapshot,
+  ReceiptVaultInformation as ReceiptVaultInformationEvent, 
   Transfer,
   Withdraw,
-  WithdrawWithReceipt as WithdrawWithReceiptEvent,
   OffchainAssetReceiptVault as OffchainAssetVaultContract,
-  OffchainAssetReceiptVaultInitialized
+  OffchainAssetReceiptVaultInitializedV2,
+  AuthorizerSet
 } from "../generated/templates/OffchainAssetReceiptVaultTemplate/OffchainAssetReceiptVault";
-import {
-  CERTIFIER,
-  CERTIFIER_ADMIN,
-  CONFISCATOR,
-  CONFISCATOR_ADMIN,
-  DEPOSITOR,
-  DEPOSITOR_ADMIN,
-  ERC1155TIERER,
-  ERC1155TIERER_ADMIN,
-  ERC20SNAPSHOTTER,
-  ERC20SNAPSHOTTER_ADMIN,
-  ERC20TIERER,
-  ERC20TIERER_ADMIN,
-  HANDLER,
-  HANDLER_ADMIN,
-  WITHDRAWER,
-  WITHDRAWER_ADMIN
-} from "./roles";
 import {
   getAccount,
   getReceipt,
   getReceiptBalance,
-  getRoleHolder,
   getTransaction,
   ONE,
   toDecimals,
@@ -68,11 +39,34 @@ import {
   BigintToHexString,
   ZERO_ADDRESS
 } from "./utils";
-import { store } from '@graphprotocol/graph-ts'
+import { store, Entity, Value } from '@graphprotocol/graph-ts'
 import { CBORDecoder } from "@rainprotocol/assemblyscript-cbor";
 
+export function handleAuthorizerSet(event: AuthorizerSet): void {
+  
+  let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
+    event.address.toHex()
+  );
+  if (offchainAssetReceiptVault) {
+    if(offchainAssetReceiptVault.activeAuthorizer != null){
+      let previousAuthorizer = Authorizer.load(offchainAssetReceiptVault.activeAuthorizer as string);
+      if (previousAuthorizer && previousAuthorizer.id != event.params.authorizer.toHex()) {
+        previousAuthorizer.isActive = false;
+        previousAuthorizer.save();
+      }
+    }
+    
+    let authorizer = Authorizer.load(event.params.authorizer.toHex());
+    if (authorizer) {
+      authorizer.isActive = true;
+      authorizer.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+      authorizer.save();
 
-export function handleApproval(event: Approval): void {
+      // Set Active Authorizer
+      offchainAssetReceiptVault.activeAuthorizer = authorizer.id;
+      offchainAssetReceiptVault.save();
+    }
+  }
 }
 
 export function handleCertify(event: CertifyEvent): void {
@@ -218,9 +212,6 @@ export function handleConfiscateShares(event: ConfiscateSharesEvent): void {
 }
 
 export function handleDeposit(event: Deposit): void {
-}
-
-export function handleDepositWithReceipt(event: DepositWithReceiptEvent): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
     event.address.toHex()
   );
@@ -303,14 +294,14 @@ export function handleDepositWithReceipt(event: DepositWithReceiptEvent): void {
   }
 }
 
-export function handleOffchainAssetVaultInitialized(
-  event: OffchainAssetReceiptVaultInitialized
+export function handleOffchainAssetVaultInitializedV2(
+  event: OffchainAssetReceiptVaultInitializedV2
 ): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
     event.address.toHex()
   );
   if ( offchainAssetReceiptVault ) {
-    offchainAssetReceiptVault.admin = event.params.config.admin;
+    offchainAssetReceiptVault.admin = event.params.config.initialAdmin;
     offchainAssetReceiptVault.name =
       event.params.config.receiptVaultConfig.vaultConfig.name;
     offchainAssetReceiptVault.symbol =
@@ -394,150 +385,6 @@ export function handleReceiptVaultInformation(
       }
     }
   }
-}
-
-export function handleRoleAdminChanged(event: RoleAdminChanged): void {
-  let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
-    event.address.toHex()
-  );
-  let role = new Role(event.address.toHex() + "-" + event.params.role.toHex());
-  if ( offchainAssetReceiptVault ) {
-    if ( event.params.role.toHex() == DEPOSITOR ) {
-      role.roleName = "DEPOSITOR";
-    } else if ( event.params.role.toHex() == DEPOSITOR_ADMIN ) {
-      role.roleName = "DEPOSITOR_ADMIN";
-    } else if ( event.params.role.toHex() == WITHDRAWER_ADMIN ) {
-      role.roleName = "WITHDRAWER_ADMIN";
-    } else if ( event.params.role.toHex() == CERTIFIER_ADMIN ) {
-      role.roleName = "CERTIFIER_ADMIN";
-    } else if ( event.params.role.toHex() == HANDLER_ADMIN ) {
-      role.roleName = "HANDLER_ADMIN";
-    } else if ( event.params.role.toHex() == ERC20TIERER_ADMIN ) {
-      role.roleName = "ERC20TIERER_ADMIN";
-    } else if ( event.params.role.toHex() == ERC1155TIERER_ADMIN ) {
-      role.roleName = "ERC1155TIERER_ADMIN";
-    } else if ( event.params.role.toHex() == ERC20SNAPSHOTTER_ADMIN ) {
-      role.roleName = "ERC20SNAPSHOTTER_ADMIN";
-    } else if ( event.params.role.toHex() == CONFISCATOR_ADMIN ) {
-      role.roleName = "CONFISCATOR_ADMIN";
-    } else if ( event.params.role.toHex() == WITHDRAWER ) {
-      role.roleName = "WITHDRAWER";
-    } else if ( event.params.role.toHex() == CERTIFIER ) {
-      role.roleName = "CERTIFIER";
-    } else if ( event.params.role.toHex() == HANDLER ) {
-      role.roleName = "HANDLER";
-    } else if ( event.params.role.toHex() == ERC20TIERER ) {
-      role.roleName = "ERC20TIERER";
-    } else if ( event.params.role.toHex() == ERC1155TIERER ) {
-      role.roleName = "ERC1155TIERER";
-    } else if ( event.params.role.toHex() == ERC20SNAPSHOTTER ) {
-      role.roleName = "ERC20SNAPSHOTTER";
-    } else if ( event.params.role.toHex() == CONFISCATOR ) {
-      role.roleName = "CONFISCATOR";
-    } else {
-      role.roleName = "UNKNOWN";
-    }
-    role.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-    role.roleHash = event.params.role;
-    role.save();
-  }
-}
-
-export function handleRoleGranted(event: RoleGrantedEvent): void {
-  let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
-    event.address.toHex()
-  );
-  let role = Role.load(event.address.toHex() + "-" + event.params.role.toHex());
-
-  if ( offchainAssetReceiptVault && role ) {
-    let roleGranted = new RoleGranted(event.transaction.hash.toHex()+ "-" + role.roleName );
-    roleGranted.account = getAccount(
-      event.params.account.toHex(),
-      offchainAssetReceiptVault.id
-    ).id;
-    roleGranted.emitter = getAccount(
-      event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
-    ).id;
-    roleGranted.sender = getAccount(
-      event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
-    ).id;
-    roleGranted.transaction = getTransaction(
-      event.block,
-      event.transaction.hash.toHex()
-    ).id;
-    roleGranted.timestamp = event.block.timestamp;
-    roleGranted.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-    roleGranted.role = role.id;
-    let roleHolder = getRoleHolder(
-      event.address.toHex(),
-      event.params.account.toHex(),
-      event.params.role.toHex()
-    );
-    if ( roleHolder ) {
-      roleGranted.roleHolder = roleHolder.id;
-
-      let activeRoles = roleHolder.activeRoles;
-      if ( activeRoles ) activeRoles.push(role.id);
-      roleHolder.activeRoles = activeRoles;
-      roleHolder.save();
-    }
-    roleGranted.save();
-
-    role.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-    role.roleHash = event.params.role;
-    role.save();
-  }
-}
-
-export function handleRoleRevoked(event: RoleRevokedEvent): void {
-  let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
-    event.address.toHex()
-  );
-  let role = Role.load(event.address.toHex() + "-" + event.params.role.toHex());
-
-  if ( offchainAssetReceiptVault && role ) {
-    let roleRevoked = new RoleRevoked(event.transaction.hash.toHex());
-    roleRevoked.account = getAccount(
-      event.params.account.toHex(),
-      offchainAssetReceiptVault.id
-    ).id;
-    roleRevoked.emitter = getAccount(
-      event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
-    ).id;
-    roleRevoked.sender = getAccount(
-      event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
-    ).id;
-    roleRevoked.transaction = getTransaction(
-      event.block,
-      event.transaction.hash.toHex()
-    ).id;
-    roleRevoked.timestamp = event.block.timestamp;
-    roleRevoked.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-    roleRevoked.role = role.id;
-    let roleHolder = getRoleHolder(
-      event.address.toHex(),
-      event.params.account.toHex(),
-      event.params.role.toHex()
-    );
-    if ( roleHolder ) {
-      roleRevoked.roleHolder = roleHolder.id;
-      store.remove("RoleHolder", roleHolder.id);
-    }
-    roleRevoked.save();
-  }
-}
-
-export function handleSetERC1155Tier(event: SetERC1155Tier): void {
-}
-
-export function handleSetERC20Tier(event: SetERC20Tier): void {
-}
-
-export function handleSnapshot(event: Snapshot): void {
 }
 
 export function handleTransfer(event: Transfer): void {
@@ -675,16 +522,8 @@ export function handleTransfer(event: Transfer): void {
   }
 }
 
-export function handleWithdraw(event: Withdraw): void {
-  let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
-    event.address.toHex()
-  );
-  if ( offchainAssetReceiptVault ) {
-  }
-}
-
-export function handleWithdrawWithReceipt(
-  event: WithdrawWithReceiptEvent
+export function handleWithdraw(
+  event: Withdraw
 ): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
     event.address.toHex()
