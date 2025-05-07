@@ -1,10 +1,10 @@
 // Authorizer Implementation Addresses
-export const AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0xB8a96Df657B8b921dfaaFFe44C9B47699e650945";
+export const AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0xe580e077De0485f6298e5bE8734F71b4AAA0365a";
 export const POLYGON_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
 export const MAINNET_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
 
 // Vault Implementation Addresses
-export const AMOY_VAULT_IMPLEMENTATION_ADDRESS = "0x7e9434d67F0e00cc9ac02822b5F600bF2Fb207E5";
+export const AMOY_VAULT_IMPLEMENTATION_ADDRESS = "0x9F4cDc54Ce4640F3a10c048DeB93f1cc91b7CdD6";
 export const POLYGON_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
 export const MAINNET_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
 

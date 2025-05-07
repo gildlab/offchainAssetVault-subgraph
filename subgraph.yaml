@@ -8,7 +8,7 @@ dataSources:
     source:
       abi: CloneFactory
       address: "0x8F61d274aaB5D8CFD82dc266529EAe33020386a9"
-      startBlock: 20725715
+      startBlock: 21367561
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
