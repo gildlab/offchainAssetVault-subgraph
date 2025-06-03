@@ -5,6 +5,12 @@
             "startBlock": 22431904
         }
     },
+    "arbitrum-one": {
+        "CloneFactory": {
+            "address": "0x34b9Fc3cbe19330fBd57ff732630d1517b605e48",
+            "startBlock": 343476563
+        }
+    },
     "base": {
         "CloneFactory": {
             "address": "0x017F5651eB8fa4048BBc17433149c6c035d391A6",
