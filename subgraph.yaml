@@ -40,8 +40,6 @@ templates:
         - name: OffchainAssetReceiptVault
           file: ./lib/ethgild/out/OffchainAssetReceiptVault.sol/OffchainAssetReceiptVault.json
       eventHandlers:
-        - event: Approval(indexed address,indexed address,uint256)
-          handler: handleApproval
         - event: Certify(address,uint256,bool,bytes)
           handler: handleCertify
         - event: ConfiscateReceipt(address,address,uint256,uint256,uint256,bytes)
