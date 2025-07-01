@@ -41,7 +41,7 @@ function testRoleGranted(roleName: string, role: string, roleAdmin: string, acco
     handleRoleGranted(roleGrantedEvent); 
     assert.entityCount("RoleGranted", 1);
 
-    const roleGrantedId = `${roleGrantedEvent.transaction.hash.toHex()}-${roleName}`;
+    const roleGrantedId = `${roleGrantedEvent.transaction.hash.toHex()}-${roleName}-granted`;
     const roleId = `${authorizerClone.toHex()}-${role}`;
 
     assert.fieldEquals(

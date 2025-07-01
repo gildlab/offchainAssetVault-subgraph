@@ -50,7 +50,7 @@ function testRoleRevoked(roleName: string, role: string, roleAdmin: string, acco
     handleRoleRevoked(roleRevokedEvent);
     assert.entityCount("RoleRevoked", 1);
 
-    const roleRevokedId = `${roleRevokedEvent.transaction.hash.toHex()}-${roleName}`;   
+    const roleRevokedId = `${roleRevokedEvent.transaction.hash.toHex()}-${roleName}-revoked`;   
     const roleId = `${authorizerClone.toHex()}-${role}`;
     const roleHolderId = `${authorizerClone.toHex()}-${account.toHex()}-${role}`;
 
