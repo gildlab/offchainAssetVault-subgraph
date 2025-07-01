@@ -1,12 +1,15 @@
 // Authorizer Implementation Addresses
 export const AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0x99B2aC726f8e41a22f27e7e35D554888103b88E9";
 export const ARBITRUM_ONE_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0x0438560b398eA874DEb29360aCda10735D9790C8";
+export const BASE_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0x86E489460507fD6e0016f9a43C998F7E284c4B56";
 export const POLYGON_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
 export const MAINNET_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
+
 
 // Vault Implementation Addresses
 export const AMOY_VAULT_IMPLEMENTATION_ADDRESS = "0x3eD9dA0268198aafFFDAa760e9cB0C6750dbb3Da";
 export const ARBITRUM_ONE_VAULT_IMPLEMENTATION_ADDRESS = "0xA75040cc33bF4BE0c953e4617f66ff05798B4D1c";
+export const BASE_VAULT_IMPLEMENTATION_ADDRESS = "0xBe1B6eb500773Fc61ba596B4beF9409F190bF6df";
 export const POLYGON_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
 export const MAINNET_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
 
@@ -48,6 +51,13 @@ export class NetworkImplementation {
       ];
       this.vaultImplementations = [
         AMOY_VAULT_IMPLEMENTATION_ADDRESS
+      ];
+    } else if (network == 'base') {
+      this.authorizerImplementations = [
+        BASE_AUTHORIZER_IMPLEMENTATION_ADDRESS
+      ];
+      this.vaultImplementations = [
+        BASE_VAULT_IMPLEMENTATION_ADDRESS
       ];
     } else {
       this.authorizerImplementations = [];
