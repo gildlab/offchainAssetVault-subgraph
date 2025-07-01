@@ -128,7 +128,7 @@ export function handleRoleGranted(event: RoleGrantedEvent): void {
   }
 
   // Process the role granted event now that we have both authorizer and role
-  let roleGrantedId = event.transaction.hash.toHex() + "-" + role.roleName;
+  let roleGrantedId = event.transaction.hash.toHex() + "-" + role.roleName + "-granted";
   let roleGranted = new RoleGranted(roleGrantedId);
 
   // Use the authorizer address as the vault ID if no vault is linked yet
@@ -221,7 +221,7 @@ export function handleRoleRevoked(event: RoleRevokedEvent): void {
   }
 
   // Process the role revoked event now that we have both authorizer and role
-  let roleRevokedId = event.transaction.hash.toHex() + "-" + role.roleName;
+  let roleRevokedId = event.transaction.hash.toHex() + "-" + role.roleName + "-revoked";
   let roleRevoked = new RoleRevoked(roleRevokedId);
 
   // Use the authorizer address as the vault ID if no vault is linked yet
