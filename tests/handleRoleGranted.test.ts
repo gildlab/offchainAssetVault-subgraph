@@ -166,7 +166,7 @@ describe("handleRoleAdminChanged", () => {
         handleRoleGranted(roleGrantedEvent); 
         assert.entityCount("RoleGranted", 1);
 
-        const roleGrantedId = `${roleGrantedEvent.transaction.hash.toHex()}-CERTIFY`;
+        const roleGrantedId = `${roleGrantedEvent.transaction.hash.toHex()}-CERTIFY-granted`;
         const roleId = `${authorizerClone.toHex()}-${CERTIFY}`;
 
         assert.fieldEquals(
@@ -277,7 +277,7 @@ describe("handleRoleAdminChanged", () => {
         handleRoleGranted(roleGrantedEvent); 
         assert.entityCount("RoleGranted", 1);
 
-        const roleGrantedId = `${roleGrantedEvent.transaction.hash.toHex()}-CERTIFY_ADMIN`;
+        const roleGrantedId = `${roleGrantedEvent.transaction.hash.toHex()}-CERTIFY_ADMIN-granted`;
         const roleId = `${authorizerClone.toHex()}-${CERTIFY_ADMIN}`;
 
         assert.fieldEquals(
