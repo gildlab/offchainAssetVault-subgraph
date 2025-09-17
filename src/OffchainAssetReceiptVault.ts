@@ -443,7 +443,7 @@ export function handleTransfer(event: Transfer): void {
       }
       if ( to.toHex() != ZERO_ADDRESS ) {
         //add sharestransfer
-        let sharesTransfer = new SharesTransfer(event.transaction.hash.toHex());
+        let sharesTransfer = new SharesTransfer(event.transaction.hash.toHex() + "-" + event.logIndex.toString());
 
         sharesTransfer.emitter = getAccount(
           event.params.from.toHex(),
