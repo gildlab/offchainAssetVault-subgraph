@@ -14,9 +14,10 @@ import {
     DataSourceContext,
     Value,
 } from "@graphprotocol/graph-ts";
-import { createNewCloneEvent, createRoleAdminChangedEvent, createRoleGrantedEvent, createRoleRevokedEvent, createSetAuthorizerEvent } from "./mock.test";
+import { createNewCloneEvent, createRoleAdminChangedEvent, createRoleGrantedEvent, createRoleRevokedEvent, createSetAuthorizerEvent, createDeploymentEvent } from "./mock.test";
 import { handleNewClone } from "../src/CloneFactory";
-import { AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS, AMOY_VAULT_IMPLEMENTATION_ADDRESS } from "../src/networkImplementation";
+import { handleDeployment } from "../src/OffchainAssetReceiptVaultBeaconSetDeployer";
+import { AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS } from "../src/networkImplementation";
 import { handleRoleAdminChanged, handleRoleGranted, handleRoleRevoked } from "../src/OffchainAssetReceiptVaultAuthorizerV1";
 import { CERTIFY, CERTIFY_ADMIN, CONFISCATE_RECEIPT, CONFISCATE_RECEIPT_ADMIN, CONFISCATE_SHARES, CONFISCATE_SHARES_ADMIN, DEPOSIT, DEPOSIT_ADMIN, NULL_ROLE, WITHDRAW, WITHDRAW_ADMIN } from "../src/roles";
 import { handleAuthorizerSet } from "../src/OffchainAssetReceiptVault";
@@ -126,11 +127,11 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Clone
-         const assetVaultImplementation = Address.fromString(AMOY_VAULT_IMPLEMENTATION_ADDRESS);
+         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-         let assetVaultCloneEvent = createNewCloneEvent(sender, assetVaultImplementation, assetVaultClone);
-         handleNewClone(assetVaultCloneEvent);
+         const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         handleDeployment(deploymentEvent);
  
          // Authorizer Clone
          const authorizerImplementation = Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS);
@@ -150,11 +151,11 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Clone
-         const assetVaultImplementation = Address.fromString(AMOY_VAULT_IMPLEMENTATION_ADDRESS);
+         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-         let assetVaultCloneEvent = createNewCloneEvent(sender, assetVaultImplementation, assetVaultClone);
-         handleNewClone(assetVaultCloneEvent);
+         const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         handleDeployment(deploymentEvent);
  
          // Authorizer Clone
          const authorizerImplementation = Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS);
@@ -174,11 +175,11 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Clone
-         const assetVaultImplementation = Address.fromString(AMOY_VAULT_IMPLEMENTATION_ADDRESS);
+         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-         let assetVaultCloneEvent = createNewCloneEvent(sender, assetVaultImplementation, assetVaultClone);
-         handleNewClone(assetVaultCloneEvent);
+         const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         handleDeployment(deploymentEvent);
  
          // Authorizer Clone
          const authorizerImplementation = Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS);
@@ -198,11 +199,11 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Clone
-         const assetVaultImplementation = Address.fromString(AMOY_VAULT_IMPLEMENTATION_ADDRESS);
+         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-         let assetVaultCloneEvent = createNewCloneEvent(sender, assetVaultImplementation, assetVaultClone);
-         handleNewClone(assetVaultCloneEvent);
+         const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         handleDeployment(deploymentEvent);
  
          // Authorizer Clone
          const authorizerImplementation = Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS);
@@ -222,11 +223,11 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Clone
-         const assetVaultImplementation = Address.fromString(AMOY_VAULT_IMPLEMENTATION_ADDRESS);
+         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-         let assetVaultCloneEvent = createNewCloneEvent(sender, assetVaultImplementation, assetVaultClone);
-         handleNewClone(assetVaultCloneEvent);
+         const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         handleDeployment(deploymentEvent);
  
          // Authorizer Clone
          const authorizerImplementation = Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS);
@@ -246,11 +247,11 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Clone
-         const assetVaultImplementation = Address.fromString(AMOY_VAULT_IMPLEMENTATION_ADDRESS);
+         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-         let assetVaultCloneEvent = createNewCloneEvent(sender, assetVaultImplementation, assetVaultClone);
-         handleNewClone(assetVaultCloneEvent);
+         const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         handleDeployment(deploymentEvent);
  
          // Authorizer Clone
          const authorizerImplementation = Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS);
@@ -270,11 +271,11 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Clone
-         const assetVaultImplementation = Address.fromString(AMOY_VAULT_IMPLEMENTATION_ADDRESS);
+         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-         let assetVaultCloneEvent = createNewCloneEvent(sender, assetVaultImplementation, assetVaultClone);
-         handleNewClone(assetVaultCloneEvent);
+         const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         handleDeployment(deploymentEvent);
  
          // Authorizer Clone
          const authorizerImplementation = Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS);
@@ -294,11 +295,11 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Clone
-         const assetVaultImplementation = Address.fromString(AMOY_VAULT_IMPLEMENTATION_ADDRESS);
+         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-         let assetVaultCloneEvent = createNewCloneEvent(sender, assetVaultImplementation, assetVaultClone);
-         handleNewClone(assetVaultCloneEvent);
+         const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         handleDeployment(deploymentEvent);
  
          // Authorizer Clone
          const authorizerImplementation = Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS);
@@ -318,11 +319,11 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Clone
-         const assetVaultImplementation = Address.fromString(AMOY_VAULT_IMPLEMENTATION_ADDRESS);
+         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-         let assetVaultCloneEvent = createNewCloneEvent(sender, assetVaultImplementation, assetVaultClone);
-         handleNewClone(assetVaultCloneEvent);
+         const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         handleDeployment(deploymentEvent);
  
          // Authorizer Clone
          const authorizerImplementation = Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS);
@@ -342,11 +343,11 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Clone
-         const assetVaultImplementation = Address.fromString(AMOY_VAULT_IMPLEMENTATION_ADDRESS);
+         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-         let assetVaultCloneEvent = createNewCloneEvent(sender, assetVaultImplementation, assetVaultClone);
-         handleNewClone(assetVaultCloneEvent);
+         const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         handleDeployment(deploymentEvent);
  
          // Authorizer Clone
          const authorizerImplementation = Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS);
@@ -366,11 +367,11 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Clone
-         const assetVaultImplementation = Address.fromString(AMOY_VAULT_IMPLEMENTATION_ADDRESS);
+         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-         let assetVaultCloneEvent = createNewCloneEvent(sender, assetVaultImplementation, assetVaultClone);
-         handleNewClone(assetVaultCloneEvent);
+         const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         handleDeployment(deploymentEvent);
  
          // Authorizer Clone
          const authorizerImplementation = Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS);

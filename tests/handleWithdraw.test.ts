@@ -15,9 +15,10 @@ import {
     Value,
     BigInt
 } from "@graphprotocol/graph-ts";
-import { createDepositEvent, createNewCloneEvent, createMockERC20Functions, createWithdrawEvent } from "./mock.test";
+import { createDepositEvent, createNewCloneEvent, createMockERC20Functions, createWithdrawEvent, createDeploymentEvent } from "./mock.test";
 import { handleNewClone } from "../src/CloneFactory";
-import { AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS, AMOY_VAULT_IMPLEMENTATION_ADDRESS } from "../src/networkImplementation";
+import { handleDeployment } from "../src/OffchainAssetReceiptVaultBeaconSetDeployer";
+import { AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS } from "../src/networkImplementation";
 import { handleDeposit, handleWithdraw } from "../src/OffchainAssetReceiptVault";
 import { getAccount, getReceiptBalance } from "../src/utils";
 
@@ -39,11 +40,11 @@ describe("Withdraw Test", () => {
     test("handle withdraw", () => {
         const depositorWithdrawer = Address.fromString("0x1234567890123456789012345678901234567890");
 
-        // Asset Vault Clone
-        const assetVaultImplementation = Address.fromString(AMOY_VAULT_IMPLEMENTATION_ADDRESS);
+        // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
         const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-        let assetVaultCloneEvent = createNewCloneEvent(depositorWithdrawer, assetVaultImplementation, assetVaultClone);
-        handleNewClone(assetVaultCloneEvent);
+        const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
+        let deploymentEvent = createDeploymentEvent(depositorWithdrawer, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+        handleDeployment(deploymentEvent);
 
         // Authorizer Clone
         const authorizerImplementation = Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS);
@@ -66,7 +67,7 @@ describe("Withdraw Test", () => {
 
         assert.entityCount("DepositWithReceipt", 1);
         assert.entityCount("OffchainAssetReceiptVault", 1);
-        assert.entityCount("Authorizer", 2);
+        assert.entityCount("Authorizer", 2); // 1 from vault deployment + 1 from authorizer clone
 
         const withdrawEvent = createWithdrawEvent(
             depositorWithdrawer,

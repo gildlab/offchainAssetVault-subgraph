@@ -14,18 +14,21 @@ import {
     DataSourceContext,
     Value
 } from "@graphprotocol/graph-ts";
-import { createNewCloneEvent, createSetAuthorizerEvent } from "./mock.test";
+import { createNewCloneEvent, createSetAuthorizerEvent, createDeploymentEvent } from "./mock.test";
 import { handleNewClone } from "../src/CloneFactory";
-import { AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS, AMOY_VAULT_IMPLEMENTATION_ADDRESS } from "../src/networkImplementation";
+import { handleDeployment } from "../src/OffchainAssetReceiptVaultBeaconSetDeployer";
+import { AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS } from "../src/networkImplementation";
 import { handleAuthorizerSet } from "../src/OffchainAssetReceiptVault";
 import { Authorizer } from "../generated/schema";
 
 describe("Set Authorizer Test", () => {
 
+    const dataSourceAddress = '0xA16081F360e3847006dB660bae1c6d1b2e17eC2A';
+
     beforeAll(() => {
         let context = new DataSourceContext()
         context.set('contextVal', Value.fromI32(325))
-        dataSourceMock.setReturnValues('0xA16081F360e3847006dB660bae1c6d1b2e17eC2A', 'polygon-amoy', context)
+        dataSourceMock.setReturnValues(dataSourceAddress, 'polygon-amoy', context)
     });
 
     afterEach(() => {
@@ -42,11 +45,11 @@ describe("Set Authorizer Test", () => {
         let authorizerCloneEvent = createNewCloneEvent(sender, authorizerImplementation, authorizerClone);
         handleNewClone(authorizerCloneEvent);
 
-        // Asset Vault Clone
-        const assetVaultImplementation = Address.fromString(AMOY_VAULT_IMPLEMENTATION_ADDRESS);
+        // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
         const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000000bbb");
-        let assetVaultCloneEvent = createNewCloneEvent(sender, assetVaultImplementation, assetVaultClone);
-        handleNewClone(assetVaultCloneEvent);
+        const receipt = Address.fromString("0x0000000000000000000000000000000000000ccc");
+        let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+        handleDeployment(deploymentEvent);
 
         assert.entityCount("OffchainAssetReceiptVault", 1);
         assert.entityCount("Authorizer", 2);
@@ -90,11 +93,11 @@ describe("Set Authorizer Test", () => {
     test("handle set authorizer with multiple authorizers", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
 
-        // Asset Vault Clone
-        const assetVaultImplementation = Address.fromString(AMOY_VAULT_IMPLEMENTATION_ADDRESS);
+        // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
         const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-        let assetVaultCloneEvent = createNewCloneEvent(sender, assetVaultImplementation, assetVaultClone);
-        handleNewClone(assetVaultCloneEvent);
+        const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
+        let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+        handleDeployment(deploymentEvent);
 
         // Authorizer Clone
         const authorizerImplementation = Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS);
