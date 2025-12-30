@@ -1,6 +1,9 @@
 import {
     NewClone,
 } from "../generated/CloneFactory/CloneFactory";
+import {
+    Deployment,
+} from "../generated/OffchainAssetReceiptVaultBeaconSetDeployer/OffchainAssetReceiptVaultBeaconSetDeployer";
 import { newMockEvent, createMockedFunction } from "matchstick-as";
 import {
     Authorizer,
@@ -459,6 +462,37 @@ export function createRoleRevokedEvent(
         new ethereum.EventParam("sender", ethereum.Value.fromAddress(sender))
     );  
     return roleRevokedEvent;
+}
+
+// event Deployment(address sender, address offchainAssetReceiptVault, address receipt);
+export function createDeploymentEvent(
+    sender: Address,
+    offchainAssetReceiptVault: Address,
+    receipt: Address,
+    contractAddress: Address
+): Deployment {
+    let mockEvent = newMockEvent();
+    let deploymentEvent = new Deployment(
+        contractAddress,
+        mockEvent.logIndex,
+        mockEvent.transactionLogIndex,
+        mockEvent.logType,
+        mockEvent.block,
+        mockEvent.transaction,
+        mockEvent.parameters,
+        null
+    );
+    deploymentEvent.parameters = new Array();
+    deploymentEvent.parameters.push(
+        new ethereum.EventParam("sender", ethereum.Value.fromAddress(sender))
+    );
+    deploymentEvent.parameters.push(
+        new ethereum.EventParam("offchainAssetReceiptVault", ethereum.Value.fromAddress(offchainAssetReceiptVault))
+    );
+    deploymentEvent.parameters.push(
+        new ethereum.EventParam("receipt", ethereum.Value.fromAddress(receipt))
+    );
+    return deploymentEvent;
 }
 
 export function createMockERC20Functions(address: Address): void {
