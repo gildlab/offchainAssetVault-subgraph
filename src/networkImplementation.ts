@@ -8,9 +8,10 @@ export const MAINNET_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffff
 
 
 // Vault Implementation Addresses
-export const AMOY_VAULT_IMPLEMENTATION_ADDRESS = "0x3eD9dA0268198aafFFDAa760e9cB0C6750dbb3Da";
-export const ARBITRUM_ONE_VAULT_IMPLEMENTATION_ADDRESS = "0xA75040cc33bF4BE0c953e4617f66ff05798B4D1c";
-export const BASE_VAULT_IMPLEMENTATION_ADDRESS = "0xBe1B6eb500773Fc61ba596B4beF9409F190bF6df";
+// Disable all vault implementations, vault implementations handled by OffchainAssetReceiptVaultBeaconSetDeployer
+export const AMOY_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
+export const ARBITRUM_ONE_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
+export const BASE_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
 export const POLYGON_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
 export const MAINNET_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
 

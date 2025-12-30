@@ -303,9 +303,9 @@ export function handleOffchainAssetVaultInitializedV2(
   if ( offchainAssetReceiptVault ) {
     offchainAssetReceiptVault.admin = event.params.config.initialAdmin;
     offchainAssetReceiptVault.name =
-      event.params.config.receiptVaultConfig.vaultConfig.name;
+      event.params.config.receiptVaultConfig.name;
     offchainAssetReceiptVault.symbol =
-      event.params.config.receiptVaultConfig.vaultConfig.symbol;
+      event.params.config.receiptVaultConfig.symbol;
     offchainAssetReceiptVault.receiptContractAddress =
       event.params.config.receiptVaultConfig.receipt;
     offchainAssetReceiptVault.asAccount = getAccount(
