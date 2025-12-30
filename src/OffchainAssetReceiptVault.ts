@@ -302,12 +302,13 @@ export function handleOffchainAssetVaultInitializedV2(
   );
   if ( offchainAssetReceiptVault ) {
     offchainAssetReceiptVault.admin = event.params.config.initialAdmin;
-    offchainAssetReceiptVault.name =
-      event.params.config.receiptVaultConfig.name;
-    offchainAssetReceiptVault.symbol =
-      event.params.config.receiptVaultConfig.symbol;
-    offchainAssetReceiptVault.receiptContractAddress =
-      event.params.config.receiptVaultConfig.receipt;
+    let receiptVaultConfig = event.params.config.receiptVaultConfig;
+    // String fields from nested tuples may need explicit conversion
+    // The generated types should expose these as strings, but if they're ethereum.Value,
+    // we need to ensure proper conversion
+    offchainAssetReceiptVault.name = receiptVaultConfig.name as string;
+    offchainAssetReceiptVault.symbol = receiptVaultConfig.symbol as string;
+    offchainAssetReceiptVault.receiptContractAddress = receiptVaultConfig.receipt;
     offchainAssetReceiptVault.asAccount = getAccount(
       event.address.toHex(),
       event.address.toHex()
