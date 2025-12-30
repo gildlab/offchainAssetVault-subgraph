@@ -8,7 +8,7 @@ dataSources:
     source:
       abi: CloneFactory
       address: "0x5e9e22154D71f9Fd4b5FD1eE36852A4c9FcDcC9E"
-      startBlock: 40119904
+      startBlock: 39975787
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -28,8 +28,8 @@ dataSources:
     network: base
     source:
       abi: OffchainAssetReceiptVaultBeaconSetDeployer
-      address: "0xcdcff3db56e61C2C00D55eFaFE871285CEEA48aF"
-      startBlock: 40119904
+      address: "0x2191981Ca2477B745870cC307cbEB4cB2967ACe3"
+      startBlock: 39975787
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
