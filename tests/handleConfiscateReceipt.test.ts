@@ -42,8 +42,8 @@ describe("Confiscate Receipt Test", () => {
 
         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
         const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-        const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
-        let deploymentEvent = createDeploymentEvent(depositor, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+        const receiptAddress = Address.fromString("0x0000000000000000000000000000000000cccccc");
+        let deploymentEvent = createDeploymentEvent(depositor, assetVaultClone, receiptAddress, Address.fromString(dataSourceAddress));
         handleDeployment(deploymentEvent);
 
         // Authorizer Clone

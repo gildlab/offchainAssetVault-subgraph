@@ -326,7 +326,17 @@ export function createConfiscateReceiptEvent(
     return confiscateReceiptEvent;
 }
 
-// event OffchainAssetReceiptVaultInitializedV2(address sender, (address initialAdmin, (address receipt, (address asset, string name, string symbol) vaultConfig) receiptVaultConfig) config);
+// event OffchainAssetReceiptVaultInitializedV2(address sender, OffchainAssetReceiptVaultConfigV2 config);
+// struct OffchainAssetReceiptVaultConfigV2 {
+//     address initialAdmin;
+//     ReceiptVaultConfigV2 receiptVaultConfig;
+// }
+// struct ReceiptVaultConfigV2 {
+//     address asset;
+//     string name;
+//     string symbol;
+//     address receipt;
+// }
 export function createOffchainAssetReceiptVaultInitializedV2Event(
     sender: Address,
     initialAdmin: Address,
@@ -345,18 +355,14 @@ export function createOffchainAssetReceiptVaultInitializedV2Event(
         null
     );
     
-    // Create the nested tuple structure for VaultConfig
-    let vaultConfigValues = new ethereum.Tuple();
-    vaultConfigValues.push(ethereum.Value.fromAddress(receiptVaultConfig.vaultConfig.address));
-    vaultConfigValues.push(ethereum.Value.fromString(receiptVaultConfig.vaultConfig.name.toString()));
-    vaultConfigValues.push(ethereum.Value.fromString(receiptVaultConfig.vaultConfig.symbol.toString()));
-    
-    // Create the receiptVaultConfig tuple
+    // Create the ReceiptVaultConfigV2 tuple: (asset, name, symbol, receipt)
     let receiptVaultConfigValues = new ethereum.Tuple();
-    receiptVaultConfigValues.push(ethereum.Value.fromAddress(receiptVaultConfig.receipt));
-    receiptVaultConfigValues.push(ethereum.Value.fromTuple(vaultConfigValues));
+    receiptVaultConfigValues.push(ethereum.Value.fromAddress(receiptVaultConfig.vaultConfig.address)); // asset
+    receiptVaultConfigValues.push(ethereum.Value.fromString(receiptVaultConfig.vaultConfig.name.toString())); // name
+    receiptVaultConfigValues.push(ethereum.Value.fromString(receiptVaultConfig.vaultConfig.symbol.toString())); // symbol
+    receiptVaultConfigValues.push(ethereum.Value.fromAddress(receiptVaultConfig.receipt)); // receipt
     
-    // Create the outer config tuple
+    // Create the OffchainAssetReceiptVaultConfigV2 tuple: (initialAdmin, receiptVaultConfig)
     let configTuple = new ethereum.Tuple();
     configTuple.push(ethereum.Value.fromAddress(initialAdmin));
     configTuple.push(ethereum.Value.fromTuple(receiptVaultConfigValues));
