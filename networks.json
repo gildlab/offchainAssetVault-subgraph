@@ -14,7 +14,11 @@
     "base": {
         "CloneFactory": {
             "address": "0x5e9e22154D71f9Fd4b5FD1eE36852A4c9FcDcC9E",
-            "startBlock": 32289155
+            "startBlock": 40119904
+        },
+        "OffchainAssetReceiptVaultBeaconSetDeployer": {
+            "address": "0xcdcff3db56e61C2C00D55eFaFE871285CEEA48aF",
+            "startBlock": 40119904
         }
     },
     "matic": {
