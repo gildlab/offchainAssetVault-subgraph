@@ -28,8 +28,8 @@ dataSources:
     network: base
     source:
       abi: OffchainAssetReceiptVaultBeaconSetDeployer
-      address: "0x2191981Ca2477B745870cC307cbEB4cB2967ACe3"
-      startBlock: 39975787
+      address: "0x9f1C34CA9017286E47629C153f0C09727b89415b"
+      startBlock: 41020032
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
