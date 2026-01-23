@@ -4,9 +4,9 @@
             "address": "0x5e9e22154D71f9Fd4b5FD1eE36852A4c9FcDcC9E",
             "startBlock": 39975787
         },
-        "OffchainAssetReceiptVaultBeaconSetDeployer": {
-            "address": "0x9f1C34CA9017286E47629C153f0C09727b89415b",
-            "startBlock": 41020032
+        "StoxUnifiedDeployer": {
+            "address": "0xf81f9f6CF1097ab026856431C5e95aCF94898036",
+            "startBlock": 41194078
         }
     }
     

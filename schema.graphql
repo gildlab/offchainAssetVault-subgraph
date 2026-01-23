@@ -5,6 +5,8 @@ type OffchainAssetReceiptVault @entity {
   address: Bytes! #OffchainAssetReceiptVault contract address
   "Address of this OffchainAssetReceiptVault receipt contract"
   receiptContractAddress: Bytes #OffchainAssetReceiptVault receipt contract address
+  "Address of this OffchainAssetReceiptVault wrapped token contract"
+  wrappedTokenContractAddress: Bytes #Wrapped ERC20 token contract address
   "Block number of contract deployment"
   deployBlock: BigInt! #the block the contract was deployed
   "Timestamp of contract deployment"

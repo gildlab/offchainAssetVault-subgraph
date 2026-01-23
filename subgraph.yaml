@@ -24,12 +24,12 @@ dataSources:
           handler: handleNewClone
       file: ./src/CloneFactory.ts
   - kind: ethereum/contract
-    name: OffchainAssetReceiptVaultBeaconSetDeployer
+    name: StoxUnifiedDeployer
     network: base
     source:
-      abi: OffchainAssetReceiptVaultBeaconSetDeployer
+      abi: StoxUnifiedDeployer
       address: "0x9f1C34CA9017286E47629C153f0C09727b89415b"
-      startBlock: 41020032
+      startBlock: 41194078
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -38,12 +38,12 @@ dataSources:
         - VerifyFactory
         - Verify
       abis:
-        - name: OffchainAssetReceiptVaultBeaconSetDeployer
-          file: ./lib/ethgild/out/OffchainAssetReceiptVaultBeaconSetDeployer.sol/OffchainAssetReceiptVaultBeaconSetDeployer.json
+        - name: StoxUnifiedDeployer
+          file: ./lib/ethgild/out/StoxUnifiedDeployer.sol/StoxUnifiedDeployer.json
       eventHandlers:
         - event: Deployment(address,address,address)
           handler: handleDeployment
-      file: ./src/OffchainAssetReceiptVaultBeaconSetDeployer.ts
+      file: ./src/StoxUnifiedDeployer.ts
 templates:
   - kind: ethereum/contract
     name: OffchainAssetReceiptVaultTemplate

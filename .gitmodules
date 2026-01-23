@@ -4,3 +4,6 @@
 [submodule "lib/rain.factory"]
 	path = lib/rain.factory
 	url = https://github.com/rainlanguage/rain.factory.git
+[submodule "lib/st0x.deploy"]
+	path = lib/st0x.deploy
+	url = https://github.com/S01-Issuer/st0x.deploy.git
