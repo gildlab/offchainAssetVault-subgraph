@@ -40,6 +40,8 @@ dataSources:
       abis:
         - name: StoxUnifiedDeployer
           file: ./lib/st0x.deploy/out/StoxUnifiedDeployer.sol/StoxUnifiedDeployer.json
+        - name: OffchainAssetReceiptVault
+          file: ./lib/ethgild/out/OffchainAssetReceiptVault.sol/OffchainAssetReceiptVault.json
       eventHandlers:
         - event: Deployment(address,address,address)
           handler: handleDeployment
