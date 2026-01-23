@@ -3,7 +3,7 @@ import {
 } from "../generated/CloneFactory/CloneFactory";
 import {
     Deployment,
-} from "../generated/OffchainAssetReceiptVaultBeaconSetDeployer/OffchainAssetReceiptVaultBeaconSetDeployer";
+} from "../generated/StoxUnifiedDeployer/StoxUnifiedDeployer";
 import { newMockEvent, createMockedFunction } from "matchstick-as";
 import {
     Authorizer,
@@ -470,11 +470,11 @@ export function createRoleRevokedEvent(
     return roleRevokedEvent;
 }
 
-// event Deployment(address sender, address offchainAssetReceiptVault, address receipt);
+// event Deployment(address sender, address asset, address wrapper);
 export function createDeploymentEvent(
     sender: Address,
-    offchainAssetReceiptVault: Address,
-    receipt: Address,
+    asset: Address,
+    wrapper: Address,
     contractAddress: Address
 ): Deployment {
     let mockEvent = newMockEvent();
@@ -493,10 +493,10 @@ export function createDeploymentEvent(
         new ethereum.EventParam("sender", ethereum.Value.fromAddress(sender))
     );
     deploymentEvent.parameters.push(
-        new ethereum.EventParam("offchainAssetReceiptVault", ethereum.Value.fromAddress(offchainAssetReceiptVault))
+        new ethereum.EventParam("asset", ethereum.Value.fromAddress(asset))
     );
     deploymentEvent.parameters.push(
-        new ethereum.EventParam("receipt", ethereum.Value.fromAddress(receipt))
+        new ethereum.EventParam("wrapper", ethereum.Value.fromAddress(wrapper))
     );
     return deploymentEvent;
 }
@@ -511,4 +511,10 @@ export function createMockERC20Functions(address: Address): void {
     createMockedFunction(address, "decimals", "decimals():(uint8)")
       .withArgs([])
       .returns([ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(18))]);
+  }
+
+export function createMockReceiptFunction(vaultAddress: Address, receiptAddress: Address): void {
+    createMockedFunction(vaultAddress, "receipt", "receipt():(address)")
+      .withArgs([])
+      .returns([ethereum.Value.fromAddress(receiptAddress)]);
   }

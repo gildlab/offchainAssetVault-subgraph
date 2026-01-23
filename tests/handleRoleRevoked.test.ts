@@ -14,9 +14,9 @@ import {
     DataSourceContext,
     Value,
 } from "@graphprotocol/graph-ts";
-import { createNewCloneEvent, createRoleAdminChangedEvent, createRoleGrantedEvent, createRoleRevokedEvent, createSetAuthorizerEvent, createDeploymentEvent } from "./mock.test";
+import { createNewCloneEvent, createRoleAdminChangedEvent, createRoleGrantedEvent, createRoleRevokedEvent, createSetAuthorizerEvent, createDeploymentEvent, createMockReceiptFunction } from "./mock.test";
 import { handleNewClone } from "../src/CloneFactory";
-import { handleDeployment } from "../src/OffchainAssetReceiptVaultBeaconSetDeployer";
+import { handleDeployment } from "../src/StoxUnifiedDeployer";
 import { AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS } from "../src/networkImplementation";
 import { handleRoleAdminChanged, handleRoleGranted, handleRoleRevoked } from "../src/OffchainAssetReceiptVaultAuthorizerV1";
 import { CERTIFY, CERTIFY_ADMIN, CONFISCATE_RECEIPT, CONFISCATE_RECEIPT_ADMIN, CONFISCATE_SHARES, CONFISCATE_SHARES_ADMIN, DEPOSIT, DEPOSIT_ADMIN, NULL_ROLE, WITHDRAW, WITHDRAW_ADMIN } from "../src/roles";
@@ -127,10 +127,13 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
+         // Asset Vault Deployment (handled by StoxUnifiedDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
          const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
-         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         const wrapper = Address.fromString("0x0000000000000000000000000000000000dddddd");
+         // Mock the receipt() RPC call
+         createMockReceiptFunction(assetVaultClone, receipt);
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
          handleDeployment(deploymentEvent);
  
          // Authorizer Clone
@@ -151,10 +154,13 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
+         // Asset Vault Deployment (handled by StoxUnifiedDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
          const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
-         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         const wrapper = Address.fromString("0x0000000000000000000000000000000000dddddd");
+         // Mock the receipt() RPC call
+         createMockReceiptFunction(assetVaultClone, receipt);
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
          handleDeployment(deploymentEvent);
  
          // Authorizer Clone
@@ -175,10 +181,13 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
+         // Asset Vault Deployment (handled by StoxUnifiedDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
          const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
-         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         const wrapper = Address.fromString("0x0000000000000000000000000000000000dddddd");
+         // Mock the receipt() RPC call
+         createMockReceiptFunction(assetVaultClone, receipt);
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
          handleDeployment(deploymentEvent);
  
          // Authorizer Clone
@@ -199,10 +208,13 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
+         // Asset Vault Deployment (handled by StoxUnifiedDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
          const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
-         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         const wrapper = Address.fromString("0x0000000000000000000000000000000000dddddd");
+         // Mock the receipt() RPC call
+         createMockReceiptFunction(assetVaultClone, receipt);
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
          handleDeployment(deploymentEvent);
  
          // Authorizer Clone
@@ -223,10 +235,13 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
+         // Asset Vault Deployment (handled by StoxUnifiedDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
          const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
-         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         const wrapper = Address.fromString("0x0000000000000000000000000000000000dddddd");
+         // Mock the receipt() RPC call
+         createMockReceiptFunction(assetVaultClone, receipt);
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
          handleDeployment(deploymentEvent);
  
          // Authorizer Clone
@@ -247,10 +262,13 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
+         // Asset Vault Deployment (handled by StoxUnifiedDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
          const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
-         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         const wrapper = Address.fromString("0x0000000000000000000000000000000000dddddd");
+         // Mock the receipt() RPC call
+         createMockReceiptFunction(assetVaultClone, receipt);
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
          handleDeployment(deploymentEvent);
  
          // Authorizer Clone
@@ -271,10 +289,13 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
+         // Asset Vault Deployment (handled by StoxUnifiedDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
          const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
-         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         const wrapper = Address.fromString("0x0000000000000000000000000000000000dddddd");
+         // Mock the receipt() RPC call
+         createMockReceiptFunction(assetVaultClone, receipt);
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
          handleDeployment(deploymentEvent);
  
          // Authorizer Clone
@@ -295,10 +316,13 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
+         // Asset Vault Deployment (handled by StoxUnifiedDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
          const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
-         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         const wrapper = Address.fromString("0x0000000000000000000000000000000000dddddd");
+         // Mock the receipt() RPC call
+         createMockReceiptFunction(assetVaultClone, receipt);
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
          handleDeployment(deploymentEvent);
  
          // Authorizer Clone
@@ -319,10 +343,13 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
+         // Asset Vault Deployment (handled by StoxUnifiedDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
          const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
-         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         const wrapper = Address.fromString("0x0000000000000000000000000000000000dddddd");
+         // Mock the receipt() RPC call
+         createMockReceiptFunction(assetVaultClone, receipt);
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
          handleDeployment(deploymentEvent);
  
          // Authorizer Clone
@@ -343,10 +370,13 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
+         // Asset Vault Deployment (handled by StoxUnifiedDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
          const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
-         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         const wrapper = Address.fromString("0x0000000000000000000000000000000000dddddd");
+         // Mock the receipt() RPC call
+         createMockReceiptFunction(assetVaultClone, receipt);
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
          handleDeployment(deploymentEvent);
  
          // Authorizer Clone
@@ -367,10 +397,13 @@ describe("handleRoleRevoked", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
         const account = Address.fromString("0x1234567890123456789012345678901234567891");
         
-         // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
+         // Asset Vault Deployment (handled by StoxUnifiedDeployer)
          const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
          const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
-         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+         const wrapper = Address.fromString("0x0000000000000000000000000000000000dddddd");
+         // Mock the receipt() RPC call
+         createMockReceiptFunction(assetVaultClone, receipt);
+         let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
          handleDeployment(deploymentEvent);
  
          // Authorizer Clone

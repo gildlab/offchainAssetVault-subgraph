@@ -15,9 +15,9 @@ import {
     Value,
     BigInt
 } from "@graphprotocol/graph-ts";
-import { createNewCloneEvent, createMockERC20Functions, createConfiscateReceiptEvent, createDeploymentEvent } from "./mock.test";
+import { createNewCloneEvent, createMockERC20Functions, createConfiscateReceiptEvent, createDeploymentEvent, createMockReceiptFunction } from "./mock.test";
 import { handleNewClone } from "../src/CloneFactory";
-import { handleDeployment } from "../src/OffchainAssetReceiptVaultBeaconSetDeployer";
+import { handleDeployment } from "../src/StoxUnifiedDeployer";
 import { AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS } from "../src/networkImplementation";
 import { handleConfiscateReceipt } from "../src/OffchainAssetReceiptVault";
 import { getAccount, getReceipt } from "../src/utils";
@@ -40,10 +40,13 @@ describe("Confiscate Receipt Test", () => {
         const confiscator = Address.fromString("0x1234567890123456789012345678901234567890");
         const depositor = Address.fromString("0x1234567890123456789012345678901234567891");
 
-        // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
+        // Asset Vault Deployment (handled by StoxUnifiedDeployer)
         const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
         const receiptAddress = Address.fromString("0x0000000000000000000000000000000000cccccc");
-        let deploymentEvent = createDeploymentEvent(depositor, assetVaultClone, receiptAddress, Address.fromString(dataSourceAddress));
+        const wrapper = Address.fromString("0x0000000000000000000000000000000000dddddd");
+        // Mock the receipt() RPC call
+        createMockReceiptFunction(assetVaultClone, receiptAddress);
+        let deploymentEvent = createDeploymentEvent(depositor, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
         handleDeployment(deploymentEvent);
 
         // Authorizer Clone

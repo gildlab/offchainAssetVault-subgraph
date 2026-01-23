@@ -14,9 +14,9 @@ import {
     DataSourceContext,
     Value
 } from "@graphprotocol/graph-ts";
-import { createNewCloneEvent, createSetAuthorizerEvent, createDeploymentEvent } from "./mock.test";
+import { createNewCloneEvent, createSetAuthorizerEvent, createDeploymentEvent, createMockReceiptFunction } from "./mock.test";
 import { handleNewClone } from "../src/CloneFactory";
-import { handleDeployment } from "../src/OffchainAssetReceiptVaultBeaconSetDeployer";
+import { handleDeployment } from "../src/StoxUnifiedDeployer";
 import { AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS } from "../src/networkImplementation";
 import { handleAuthorizerSet } from "../src/OffchainAssetReceiptVault";
 import { Authorizer } from "../generated/schema";
@@ -45,10 +45,13 @@ describe("Set Authorizer Test", () => {
         let authorizerCloneEvent = createNewCloneEvent(sender, authorizerImplementation, authorizerClone);
         handleNewClone(authorizerCloneEvent);
 
-        // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
+        // Asset Vault Deployment (handled by StoxUnifiedDeployer)
         const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000000bbb");
         const receipt = Address.fromString("0x0000000000000000000000000000000000000ccc");
-        let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+        const wrapper = Address.fromString("0x0000000000000000000000000000000000000ddd");
+        // Mock the receipt() RPC call
+        createMockReceiptFunction(assetVaultClone, receipt);
+        let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
         handleDeployment(deploymentEvent);
 
         assert.entityCount("OffchainAssetReceiptVault", 1);
@@ -93,10 +96,13 @@ describe("Set Authorizer Test", () => {
     test("handle set authorizer with multiple authorizers", () => {
         const sender = Address.fromString("0x1234567890123456789012345678901234567890");
 
-        // Asset Vault Deployment (handled by OffchainAssetReceiptVaultBeaconSetDeployer)
+        // Asset Vault Deployment (handled by StoxUnifiedDeployer)
         const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
         const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
-        let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, receipt, Address.fromString(dataSourceAddress));
+        const wrapper = Address.fromString("0x0000000000000000000000000000000000dddddd");
+        // Mock the receipt() RPC call
+        createMockReceiptFunction(assetVaultClone, receipt);
+        let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
         handleDeployment(deploymentEvent);
 
         // Authorizer Clone

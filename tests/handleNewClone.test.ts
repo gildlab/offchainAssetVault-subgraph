@@ -67,7 +67,7 @@ describe("Clone Factory Test", () => {
 
     handleNewClone(newCloneEvent);
 
-    // Vault clones are not handled by CloneFactory - they are handled by OffchainAssetReceiptVaultBeaconSetDeployer
+    // Vault clones are not handled by CloneFactory - they are handled by StoxUnifiedDeployer
     // So no entities should be created
     assert.entityCount("OffchainAssetReceiptVault", 0);
     assert.entityCount("Authorizer", 0);

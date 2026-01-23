@@ -13,8 +13,8 @@ import {
   DataSourceContext,
   Value
 } from "@graphprotocol/graph-ts";
-import { handleDeployment } from "../src/OffchainAssetReceiptVaultBeaconSetDeployer";
-import { createDeploymentEvent } from "./mock.test";
+import { handleDeployment } from "../src/StoxUnifiedDeployer";
+import { createDeploymentEvent, createMockReceiptFunction } from "./mock.test";
 
 describe("Handle Deployment Test", () => {
 
@@ -33,14 +33,17 @@ describe("Handle Deployment Test", () => {
 
   test("handle deployment creates OffchainAssetReceiptVault and Authorizer", () => {
     const sender = Address.fromString("0x1234567890123456789012345678901234567890");
-    const offchainAssetReceiptVault = Address.fromString("0x1234567890123456789012345678901234567891");
+    const asset = Address.fromString("0x1234567890123456789012345678901234567891");
     const receipt = Address.fromString("0x1234567890123456789012345678901234567892");
+    const wrapper = Address.fromString("0x1234567890123456789012345678901234567893");
     const contractAddress = Address.fromString(dataSourceAddress);
     
+    // Mock the receipt() RPC call
+    createMockReceiptFunction(asset, receipt);
     let deploymentEvent = createDeploymentEvent(
       sender,
-      offchainAssetReceiptVault,
-      receipt,
+      asset,
+      wrapper,
       contractAddress
     );
 
@@ -54,77 +57,77 @@ describe("Handle Deployment Test", () => {
     // Verify OffchainAssetReceiptVault fields
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault.toHexString(),
+      asset.toHexString(),
       "address",
-      offchainAssetReceiptVault.toHexString()
+      asset.toHexString()
     );
 
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault.toHexString(),
+      asset.toHexString(),
       "deployer",
       sender.toHexString()
     );
 
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault.toHexString(),
+      asset.toHexString(),
       "admin",
       sender.toHexString()
     );
 
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault.toHexString(),
+      asset.toHexString(),
       "name",
       ""
     );
 
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault.toHexString(),
+      asset.toHexString(),
       "symbol",
       ""
     );
 
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault.toHexString(),
+      asset.toHexString(),
       "totalShares",
       "0"
     );
 
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault.toHexString(),
+      asset.toHexString(),
       "certifiedUntil",
       "0"
     );
 
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault.toHexString(),
+      asset.toHexString(),
       "hashCount",
       "0"
     );
 
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault.toHexString(),
+      asset.toHexString(),
       "shareHoldersCount",
       "0"
     );
 
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault.toHexString(),
+      asset.toHexString(),
       "deployBlock",
       deploymentEvent.block.number.toString()
     );
 
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault.toHexString(),
+      asset.toHexString(),
       "deployTimestamp",
       deploymentEvent.block.timestamp.toString()
     );
@@ -132,14 +135,14 @@ describe("Handle Deployment Test", () => {
     // Verify Authorizer entity was created
     assert.fieldEquals(
       "Authorizer",
-      offchainAssetReceiptVault.toHexString(),
+      asset.toHexString(),
       "address",
-      offchainAssetReceiptVault.toHexString()
+      asset.toHexString()
     );
 
     assert.fieldEquals(
       "Authorizer",
-      offchainAssetReceiptVault.toHexString(),
+      asset.toHexString(),
       "isActive",
       "true"
     );
@@ -147,9 +150,9 @@ describe("Handle Deployment Test", () => {
     // Verify activeAuthorizer is set correctly
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault.toHexString(),
+      asset.toHexString(),
       "activeAuthorizer",
-      offchainAssetReceiptVault.toHexString()
+      asset.toHexString()
     );
 
     // Verify Deployer entity was created
@@ -163,26 +166,30 @@ describe("Handle Deployment Test", () => {
 
   test("handle deployment with existing deployer does not create duplicate", () => {
     const sender = Address.fromString("0x1234567890123456789012345678901234567890");
-    const offchainAssetReceiptVault1 = Address.fromString("0x1234567890123456789012345678901234567891");
+    const asset1 = Address.fromString("0x1234567890123456789012345678901234567891");
     const receipt1 = Address.fromString("0x1234567890123456789012345678901234567892");
-    const offchainAssetReceiptVault2 = Address.fromString("0x1234567890123456789012345678901234567893");
-    const receipt2 = Address.fromString("0x1234567890123456789012345678901234567894");
+    const wrapper1 = Address.fromString("0x1234567890123456789012345678901234567893");
+    const asset2 = Address.fromString("0x1234567890123456789012345678901234567894");
+    const receipt2 = Address.fromString("0x1234567890123456789012345678901234567895");
+    const wrapper2 = Address.fromString("0x1234567890123456789012345678901234567896");
     const contractAddress = Address.fromString(dataSourceAddress);
     
     // First deployment
+    createMockReceiptFunction(asset1, receipt1);
     let deploymentEvent1 = createDeploymentEvent(
       sender,
-      offchainAssetReceiptVault1,
-      receipt1,
+      asset1,
+      wrapper1,
       contractAddress
     );
     handleDeployment(deploymentEvent1);
 
     // Second deployment by same sender
+    createMockReceiptFunction(asset2, receipt2);
     let deploymentEvent2 = createDeploymentEvent(
       sender,
-      offchainAssetReceiptVault2,
-      receipt2,
+      asset2,
+      wrapper2,
       contractAddress
     );
     handleDeployment(deploymentEvent2);
@@ -195,14 +202,14 @@ describe("Handle Deployment Test", () => {
     // Verify both vaults reference the same deployer
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault1.toHexString(),
+      asset1.toHexString(),
       "deployer",
       sender.toHexString()
     );
 
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault2.toHexString(),
+      asset2.toHexString(),
       "deployer",
       sender.toHexString()
     );
@@ -211,26 +218,30 @@ describe("Handle Deployment Test", () => {
   test("handle deployment with different senders creates separate deployers", () => {
     const sender1 = Address.fromString("0x1234567890123456789012345678901234567890");
     const sender2 = Address.fromString("0x1234567890123456789012345678901234567899");
-    const offchainAssetReceiptVault1 = Address.fromString("0x1234567890123456789012345678901234567891");
+    const asset1 = Address.fromString("0x1234567890123456789012345678901234567891");
     const receipt1 = Address.fromString("0x1234567890123456789012345678901234567892");
-    const offchainAssetReceiptVault2 = Address.fromString("0x1234567890123456789012345678901234567893");
-    const receipt2 = Address.fromString("0x1234567890123456789012345678901234567894");
+    const wrapper1 = Address.fromString("0x1234567890123456789012345678901234567893");
+    const asset2 = Address.fromString("0x1234567890123456789012345678901234567894");
+    const receipt2 = Address.fromString("0x1234567890123456789012345678901234567895");
+    const wrapper2 = Address.fromString("0x1234567890123456789012345678901234567896");
     const contractAddress = Address.fromString(dataSourceAddress);
     
     // First deployment by sender1
+    createMockReceiptFunction(asset1, receipt1);
     let deploymentEvent1 = createDeploymentEvent(
       sender1,
-      offchainAssetReceiptVault1,
-      receipt1,
+      asset1,
+      wrapper1,
       contractAddress
     );
     handleDeployment(deploymentEvent1);
 
     // Second deployment by sender2
+    createMockReceiptFunction(asset2, receipt2);
     let deploymentEvent2 = createDeploymentEvent(
       sender2,
-      offchainAssetReceiptVault2,
-      receipt2,
+      asset2,
+      wrapper2,
       contractAddress
     );
     handleDeployment(deploymentEvent2);
@@ -243,14 +254,14 @@ describe("Handle Deployment Test", () => {
     // Verify each vault references its own deployer
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault1.toHexString(),
+      asset1.toHexString(),
       "deployer",
       sender1.toHexString()
     );
 
     assert.fieldEquals(
       "OffchainAssetReceiptVault",
-      offchainAssetReceiptVault2.toHexString(),
+      asset2.toHexString(),
       "deployer",
       sender2.toHexString()
     );
