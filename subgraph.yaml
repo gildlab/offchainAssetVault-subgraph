@@ -39,7 +39,7 @@ dataSources:
         - Verify
       abis:
         - name: StoxUnifiedDeployer
-          file: ./lib/ethgild/out/StoxUnifiedDeployer.sol/StoxUnifiedDeployer.json
+          file: ./lib/st0x.deploy/out/StoxUnifiedDeployer.sol/StoxUnifiedDeployer.json
       eventHandlers:
         - event: Deployment(address,address,address)
           handler: handleDeployment

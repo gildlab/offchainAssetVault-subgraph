@@ -7,6 +7,7 @@ import {
     OffchainAssetReceiptVault
   } from "../generated/schema";
   import { OffchainAssetReceiptVaultTemplate, OffchainAssetReceiptVaultAuthorizerV1Template } from "../generated/templates";
+  import { OffchainAssetReceiptVault as OffchainAssetReceiptVaultContract } from "../generated/templates/OffchainAssetReceiptVaultTemplate/OffchainAssetReceiptVault";
   import { ZERO, ZERO_ADDRESS } from "./utils";
   import { NetworkImplementation } from "./networkImplementation";
   import { dataSource } from "@graphprotocol/graph-ts";
@@ -29,6 +30,13 @@ import {
     child.hashCount = ZERO;
     child.shareHoldersCount = ZERO;
     child.activeAuthorizer = ZERO_ADDRESS;
+
+    // Call receipt() on the asset contract to get the receipt contract address
+    let contract = OffchainAssetReceiptVaultContract.bind(event.params.asset);
+    let receiptResult = contract.try_receipt();
+    if (!receiptResult.reverted) {
+      child.receiptContractAddress = receiptResult.value;
+    }
 
     let authorizer = new Authorizer(event.params.asset.toHex());
     authorizer.address = event.params.asset;
