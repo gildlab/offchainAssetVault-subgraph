@@ -10,7 +10,7 @@ import {
   User,
   Deployer,
   ReceiptVaultInformation,
-  TokenHolder, SharesTransfer,
+  TokenHolder, SharesTransfer, SharesBalance, Account,
   Authorizer
 } from "../generated/schema";
 import { ReceiptTemplate } from "../generated/templates";
@@ -39,7 +39,8 @@ import {
   BigintToHexString,
   ZERO_ADDRESS
 } from "./utils";
-import { store, Entity, Value } from '@graphprotocol/graph-ts'
+import { store, Entity, Value } from '@graphprotocol/graph-ts';
+import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { CBORDecoder } from "@rainprotocol/assemblyscript-cbor";
 
 export function handleAuthorizerSet(event: AuthorizerSet): void {
@@ -388,139 +389,121 @@ export function handleReceiptVaultInformation(
   }
 }
 
-export function handleTransfer(event: Transfer): void {
-  let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
-    event.address.toHex()
-  );
-  let offchainAssetVaultContract = OffchainAssetVaultContract.bind(
-    event.address
-  );
+function holderId(vaultAddr: Address, user: Address): string {
+  return vaultAddr.toHex() + " - " + user.toHex();
+}
 
+function sharesBalanceId(vaultId: string, accountId: string): string {
+  return vaultId + "-" + accountId;
+}
 
-  if ( offchainAssetReceiptVault ) {
-    offchainAssetReceiptVault.totalShares =
-      offchainAssetVaultContract.totalSupply();
-
-    let from = event.params.from;
-    let to = event.params.to;
-    let holders = offchainAssetReceiptVault.tokenHolders;
-
-    // Check if Sender is Zero address. Does not take as holder when contract mint
-    if ( from.toHex() != ZERO_ADDRESS ) {
-      // Load the Sender's Holder entity
-      let sender = TokenHolder.load(
-        event.address.toHex() + " - " + from.toHex()
-      );
-
-      // Create a new Holders entity if Sender doesnot exists
-      if ( !sender ) {
-        sender = new TokenHolder(
-          event.address.toHex() + " - " + from.toHex()
-        );
-        // Set the Sender's balance
-        sender.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-
-        sender.balance = ZERO;
-      }
-
-      // Update the sender's balance
-      // Set the sender's balance
-      sender.balance = offchainAssetVaultContract.balanceOf(from);
-      sender.address = from;
-      sender.save();
-
-      // Add the sender in Holders if not already exists
-      if ( holders ) {
-        let specificHolder = TokenHolder.load(sender.id);
-        if ( !specificHolder ) {
-          let newHolder = new TokenHolder(sender.id);
-          newHolder.address = sender.address
-          newHolder.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-          newHolder.balance = ZERO
-          newHolder.save();
-
-        }
-
-      }
-      if ( to.toHex() != ZERO_ADDRESS ) {
-        //add sharestransfer
-        let sharesTransfer = new SharesTransfer(event.transaction.hash.toHex() + "-" + event.logIndex.toString());
-
-        sharesTransfer.emitter = getAccount(
-          event.params.from.toHex(),
-          offchainAssetReceiptVault.id
-        ).id;
-
-        sharesTransfer.from = getAccount(
-          event.params.from.toHex(),
-          offchainAssetReceiptVault.id
-        ).id;
-        sharesTransfer.fromBalance = offchainAssetVaultContract.balanceOf(from).toString();
-
-        sharesTransfer.to = getAccount(
-          event.params.to.toHex(),
-          offchainAssetReceiptVault.id
-        ).id;
-
-        sharesTransfer.toBalance = offchainAssetVaultContract.balanceOf(to).toString();
-
-        sharesTransfer.valueExact = event.params.value;
-        sharesTransfer.value = toDecimals(
-          event.params.value,
-          18
-        );
-
-        sharesTransfer.transaction = getTransaction(
-          event.block,
-          event.transaction.hash.toHex()
-        ).id;
-        sharesTransfer.timestamp = event.block.timestamp;
-        sharesTransfer.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-        sharesTransfer.save();
-      }
-
-    }
-    if ( to.toHex() != ZERO_ADDRESS ) {
-      // Load the Receiver's Holder entity
-      let receiver = TokenHolder.load(
-        event.address.toHex() + " - " + to.toHex()
-      );
-
-      // Create a new Holders entity if Receiver doesnot exists
-      if ( !receiver ) {
-        receiver = new TokenHolder(
-          event.address.toHex() + " - " + to.toHex()
-        );
-        // Set the Reciver's balance
-        receiver.balance = ZERO;
-      }
-
-      // Update the Receiver balance
-      // Set the Receiver's balance
-      receiver.balance = offchainAssetVaultContract.balanceOf(to);
-      receiver.address = to;
-      receiver.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-
-      receiver.save();
-
-      // Add the Receiver in Holders if not already exists
-
-      if ( holders ) {
-        let specificHolder = TokenHolder.load(receiver.id);
-        if ( !specificHolder ) {
-          let newHolder = new TokenHolder(receiver.id);
-          newHolder.address = receiver.address
-          newHolder.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-          newHolder.balance = ZERO
-          newHolder.save();
-        }
-
-      }
-    }
-
-
-    offchainAssetReceiptVault.save();
+function upsertTokenHolder(
+  vault: OffchainAssetReceiptVault,
+  vaultAddr: Address,
+  vaultContract: OffchainAssetVaultContract,
+  user: Address
+): BigInt {
+  const id = holderId(vaultAddr, user);
+  let th = TokenHolder.load(id);
+  if (th == null) {
+    th = new TokenHolder(id);
+    th.offchainAssetReceiptVault = vault.id;
+    th.address = user;
+    th.balance = ZERO;
   }
+  const bal = vaultContract.balanceOf(user);
+  th.balance = bal;
+  th.save();
+  return bal;
+}
+
+function upsertSharesBalance(
+  vault: OffchainAssetReceiptVault,
+  accountId: string,
+  exact: BigInt
+): string {
+  const id = sharesBalanceId(vault.id, accountId);
+  let sb = SharesBalance.load(id);
+  if (sb == null) {
+    sb = new SharesBalance(id);
+    sb.offchainAssetReceiptVault = vault.id;
+    sb.account = accountId;
+    sb.confiscated = ZERO;
+    sb.valueExact = ZERO;
+    sb.value = toDecimals(ZERO, 18); // change if share decimals differ
+  }
+  sb.valueExact = exact;
+  sb.value = toDecimals(exact, 18);
+  sb.save();
+  return sb.id;
+}
+
+function getZeroAccountId(vaultId: string): string {
+  return getAccount(ZERO_ADDRESS, vaultId).id;
+}
+
+export function handleTransfer(event: Transfer): void {
+  const vault = OffchainAssetReceiptVault.load(event.address.toHex());
+  if (vault == null) return;
+
+  const vaultContract = OffchainAssetVaultContract.bind(event.address);
+
+  vault.totalShares = vaultContract.totalSupply();
+
+  const from = event.params.from;
+  const to = event.params.to;
+
+  const isMint = from.toHex() == ZERO_ADDRESS;
+  const isBurn = to.toHex() == ZERO_ADDRESS;
+
+  const zeroAccountId = getZeroAccountId(vault.id);
+
+  const fromAccountId = isMint
+    ? zeroAccountId
+    : getAccount(from.toHex(), vault.id).id;
+
+  const toAccountId = isBurn
+    ? zeroAccountId
+    : getAccount(to.toHex(), vault.id).id;
+
+  // Update balances for real addresses only
+  let fromBalExact = ZERO;
+  let toBalExact = ZERO;
+
+  if (!isMint) {
+    fromBalExact = upsertTokenHolder(vault, event.address, vaultContract, from);
+    upsertSharesBalance(vault, fromAccountId, fromBalExact);
+  }
+
+  if (!isBurn) {
+    toBalExact = upsertTokenHolder(vault, event.address, vaultContract, to);
+    upsertSharesBalance(vault, toAccountId, toBalExact);
+  }
+
+  const st = new SharesTransfer(
+    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
+  );
+
+  st.offchainAssetReceiptVault = vault.id;
+  st.transaction = getTransaction(event.block, event.transaction.hash.toHex()).id;
+  st.timestamp = event.block.timestamp;
+
+  // ALWAYS set from/to (zero account when mint/burn)
+  st.from = fromAccountId;
+  st.to = toAccountId;
+
+  // emitter: mint => to, else from
+  st.emitter = isMint ? toAccountId : fromAccountId;
+
+  // Balances: only attach when non-zero side exists
+  if (!isMint) st.fromBalance = sharesBalanceId(vault.id, fromAccountId);
+  if (!isBurn) st.toBalance = sharesBalanceId(vault.id, toAccountId);
+
+  st.valueExact = event.params.value;
+  st.value = toDecimals(event.params.value, 18);
+
+  st.save();
+  vault.save();
 }
 
 export function handleWithdraw(
