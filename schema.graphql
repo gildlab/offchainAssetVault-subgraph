@@ -79,6 +79,9 @@ type OffchainAssetReceiptVault @entity {
   hashCount: BigInt!
   "Token holders"
   tokenHolders: [TokenHolder!] @derivedFrom(field: "offchainAssetReceiptVault")
+  "Wrapped ERC20 token transfers for this vault (wallet-to-wallet)"
+  wrappedTokenTransfers: [WrappedTokenTransfer!]
+    @derivedFrom(field: "offchainAssetReceiptVault")
 }
 
 type Authorizer @entity {
@@ -487,4 +490,26 @@ type TokenHolder @entity {
   address: Bytes!
   offchainAssetReceiptVault: OffchainAssetReceiptVault!
   balance: BigInt!
+}
+
+# Wrapped ERC20 (ERC4626) token transfers — wallet-to-wallet only.
+# Enables snapshot pipeline to correlate wrapped + unwrapped holdings per vault.
+type WrappedTokenTransfer @entity {
+  id: ID!
+  "Sender address"
+  from: Bytes!
+  "Recipient address"
+  to: Bytes!
+  "Transfer amount (18 decimals)"
+  value: BigInt!
+  "Block number of the transaction"
+  blockNumber: BigInt!
+  "Block timestamp"
+  timestamp: BigInt!
+  "Wrapped token contract address (which wt* token)"
+  token: Bytes!
+  "Associated unwrapped OffchainAssetReceiptVault (underlying)"
+  offchainAssetReceiptVault: OffchainAssetReceiptVault!
+  "Transaction (for consistency with other events)"
+  transaction: Transaction!
 }

@@ -6,11 +6,10 @@ import {
     Deployer,
     OffchainAssetReceiptVault
   } from "../generated/schema";
-  import { OffchainAssetReceiptVaultTemplate, OffchainAssetReceiptVaultAuthorizerV1Template } from "../generated/templates";
+  import { OffchainAssetReceiptVaultTemplate, WrappedTokenTemplate } from "../generated/templates";
   import { OffchainAssetReceiptVault as OffchainAssetReceiptVaultContract } from "../generated/templates/OffchainAssetReceiptVaultTemplate/OffchainAssetReceiptVault";
   import { ZERO, ZERO_ADDRESS } from "./utils";
-  import { NetworkImplementation } from "./networkImplementation";
-  import { dataSource } from "@graphprotocol/graph-ts";
+  import { Address, DataSourceContext } from "@graphprotocol/graph-ts";
 
 
   export function handleDeployment(event: Deployment): void { 
@@ -55,4 +54,10 @@ import {
   
     OffchainAssetReceiptVaultTemplate.create(event.params.asset);
 
+    let zeroAddr = Address.fromString(ZERO_ADDRESS);
+    if (!event.params.wrapper.equals(zeroAddr)) {
+      let context = new DataSourceContext();
+      context.setString("vaultId", event.params.asset.toHex());
+      WrappedTokenTemplate.createWithContext(event.params.wrapper, context);
+    }
 }

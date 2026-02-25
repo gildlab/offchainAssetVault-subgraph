@@ -125,3 +125,22 @@ templates:
         - event: ReceiptInformation(address,uint256,bytes)
           handler: handleReceiptInformation
       file: ./src/Receipt.ts
+  - kind: ethereum/contract
+    name: WrappedTokenTemplate
+    network: base
+    source:
+      abi: ERC20
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - WrappedTokenTransfer
+        - Transaction
+      abis:
+        - name: ERC20
+          file: ./lib/ethgild/out/ERC20.sol/ERC20.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleWrappedTokenTransfer
+      file: ./src/WrappedToken.ts
