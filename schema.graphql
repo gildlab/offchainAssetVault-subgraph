@@ -492,6 +492,99 @@ type TokenHolder @entity {
   balance: BigInt!
 }
 
+type TimelockController @entity {
+  "The contract address (used as id)"
+  id: ID!
+  "Address of this TimelockController"
+  address: Bytes!
+  "Network this timelock is deployed on"
+  network: String
+  "All operations scheduled via this timelock"
+  operations: [TimelockOperation!]! @derivedFrom(field: "timelock")
+  "Min-delay change history"
+  minDelayChanges: [TimelockMinDelayChange!]! @derivedFrom(field: "timelock")
+}
+
+type TimelockOperation @entity {
+  "The operation id (bytes32 hex as returned by hashOperation / hashOperationBatch)"
+  id: ID!
+  "The TimelockController that owns this operation"
+  timelock: TimelockController!
+  "Predecessor operation id (zero bytes if none)"
+  predecessor: Bytes!
+  "Salt used when scheduling (null if not emitted via CallSalt)"
+  salt: Bytes
+  "Delay in seconds before execution is allowed"
+  delay: BigInt!
+  "Earliest execution timestamp: scheduledAt + delay"
+  timestamp: BigInt!
+  "Block timestamp when the operation was scheduled"
+  scheduledAt: BigInt!
+  "Block number when the operation was scheduled"
+  scheduledBlockNumber: BigInt!
+  "Transaction hash of the scheduling transaction"
+  scheduledTxHash: Bytes!
+  "Current state: PENDING | DONE | CANCELLED (UI derives READY from timestamp <= now && state == PENDING)"
+  state: String!
+  "Total number of calls in this batch"
+  callCount: Int!
+  "Number of calls that have been executed so far"
+  executedCallCount: Int!
+  "Block timestamp when cancelled (null if not cancelled)"
+  cancelledAt: BigInt
+  "Block timestamp when fully executed (null until all calls executed)"
+  executedAt: BigInt
+  "Individual calls within this batch operation"
+  calls: [TimelockOperationCall!]! @derivedFrom(field: "operation")
+}
+
+type TimelockOperationCall @entity {
+  "id = {operationId}-{index}"
+  id: ID!
+  "The parent operation"
+  operation: TimelockOperation!
+  "Call index within the batch (0 for single-call operations)"
+  index: Int!
+  "Target contract address"
+  target: Bytes!
+  "ETH value to send with the call"
+  value: BigInt!
+  "Raw calldata"
+  data: Bytes!
+  "Whether this specific call has been executed"
+  executed: Boolean!
+  "Block timestamp when this call was executed (null until executed)"
+  executedAt: BigInt
+  "Block number when this call was executed (null until executed)"
+  executedBlockNumber: BigInt
+  "Transaction hash when this call was executed (null until executed)"
+  executedTxHash: Bytes
+  "Decoded function name if calldata matches a known selector (e.g. grantRole)"
+  decodedFunctionName: String
+  "Decoded role hash if the call is a role grant or revoke"
+  decodedRoleHash: Bytes
+  "Human-readable role name if the role hash is one of the known authorizer roles"
+  decodedRoleName: String
+  "Decoded account address for role grant / revoke calls"
+  decodedAccount: Bytes
+}
+
+type TimelockMinDelayChange @entity {
+  id: ID!
+  "The TimelockController that emitted this event"
+  timelock: TimelockController!
+  "Previous minimum delay in seconds"
+  oldDuration: BigInt!
+  "New minimum delay in seconds"
+  newDuration: BigInt!
+  "Block timestamp of the change"
+  timestamp: BigInt!
+  "Block number of the change"
+  blockNumber: BigInt!
+  "Transaction that triggered the change"
+  transaction: Transaction!
+}
+
 # Wrapped ERC20 (ERC4626) token transfers — wallet-to-wallet only.
 # Enables snapshot pipeline to correlate wrapped + unwrapped holdings per vault.
 type WrappedTokenTransfer @entity {

@@ -3,6 +3,72 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum/contract
+    name: TimelockControllerA
+    network: base
+    source:
+      abi: TimelockController
+      address: "0xcbFD7A6e17ED8367d91FA2A8681afa5A6999A142"
+      startBlock: 43738864
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - TimelockController
+        - TimelockOperation
+        - TimelockOperationCall
+        - TimelockMinDelayChange
+        - Transaction
+      abis:
+        - name: TimelockController
+          file: ./abis/TimelockController.json
+      eventHandlers:
+        - event: CallScheduled(indexed bytes32,indexed
+            uint256,address,uint256,bytes,bytes32,uint256)
+          handler: handleCallScheduled
+        - event: CallExecuted(indexed bytes32,indexed uint256,address,uint256,bytes)
+          handler: handleCallExecuted
+        - event: Cancelled(indexed bytes32)
+          handler: handleCancelled
+        - event: CallSalt(indexed bytes32,bytes32)
+          handler: handleCallSalt
+        - event: MinDelayChange(uint256,uint256)
+          handler: handleMinDelayChange
+      file: ./src/TimelockController.ts
+  - kind: ethereum/contract
+    name: TimelockControllerB
+    network: base
+    source:
+      abi: TimelockController
+      address: "0xa9Cc20fAd43076c12f49D28EE09c6D09832409d4"
+      startBlock: 43738808
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - TimelockController
+        - TimelockOperation
+        - TimelockOperationCall
+        - TimelockMinDelayChange
+        - Transaction
+      abis:
+        - name: TimelockController
+          file: ./abis/TimelockController.json
+      eventHandlers:
+        - event: CallScheduled(indexed bytes32,indexed
+            uint256,address,uint256,bytes,bytes32,uint256)
+          handler: handleCallScheduled
+        - event: CallExecuted(indexed bytes32,indexed uint256,address,uint256,bytes)
+          handler: handleCallExecuted
+        - event: Cancelled(indexed bytes32)
+          handler: handleCancelled
+        - event: CallSalt(indexed bytes32,bytes32)
+          handler: handleCallSalt
+        - event: MinDelayChange(uint256,uint256)
+          handler: handleMinDelayChange
+      file: ./src/TimelockController.ts
+  - kind: ethereum/contract
     name: CloneFactory
     network: base
     source:
@@ -28,8 +94,8 @@ dataSources:
     network: base
     source:
       abi: StoxUnifiedDeployer
-      address: "0x821a71a313bdDDc94192CF0b5F6f5bC31Ac75853"
-      startBlock: 41197252
+      address: "0xeaE1c37b7aD1643D20da2B1b97705Fa949eAFaE7"
+      startBlock: 43566307
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -144,3 +210,34 @@ templates:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleWrappedTokenTransfer
       file: ./src/WrappedToken.ts
+  - kind: ethereum/contract
+    name: TimelockControllerTemplate
+    network: base
+    source:
+      abi: TimelockController
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - TimelockController
+        - TimelockOperation
+        - TimelockOperationCall
+        - TimelockMinDelayChange
+        - Transaction
+      abis:
+        - name: TimelockController
+          file: ./abis/TimelockController.json
+      eventHandlers:
+        - event: CallScheduled(indexed bytes32,indexed
+            uint256,address,uint256,bytes,bytes32,uint256)
+          handler: handleCallScheduled
+        - event: CallExecuted(indexed bytes32,indexed uint256,address,uint256,bytes)
+          handler: handleCallExecuted
+        - event: Cancelled(indexed bytes32)
+          handler: handleCancelled
+        - event: CallSalt(indexed bytes32,bytes32)
+          handler: handleCallSalt
+        - event: MinDelayChange(uint256,uint256)
+          handler: handleMinDelayChange
+      file: ./src/TimelockController.ts
