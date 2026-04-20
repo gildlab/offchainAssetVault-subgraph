@@ -1,4 +1,8 @@
-import { DataSourceContext, json } from "@graphprotocol/graph-ts";
+import {
+  DataSourceContext,
+  json,
+  JSONValueKind,
+} from "@graphprotocol/graph-ts";
 import {
   Certify,
   DepositWithReceipt,
@@ -10,8 +14,11 @@ import {
   User,
   Deployer,
   ReceiptVaultInformation,
-  TokenHolder, SharesTransfer, SharesBalance, Account,
-  Authorizer
+  TokenHolder,
+  SharesTransfer,
+  SharesBalance,
+  Account,
+  Authorizer,
 } from "../generated/schema";
 import { ReceiptTemplate } from "../generated/templates";
 import {
@@ -19,12 +26,12 @@ import {
   ConfiscateShares as ConfiscateSharesEvent,
   ConfiscateReceipt as ConfiscateReceiptEvent,
   Deposit,
-  ReceiptVaultInformation as ReceiptVaultInformationEvent, 
+  ReceiptVaultInformation as ReceiptVaultInformationEvent,
   Transfer,
   Withdraw,
   OffchainAssetReceiptVault as OffchainAssetVaultContract,
   OffchainAssetReceiptVaultInitializedV2,
-  AuthorizerSet
+  AuthorizerSet,
 } from "../generated/templates/OffchainAssetReceiptVaultTemplate/OffchainAssetReceiptVault";
 import {
   getAccount,
@@ -37,26 +44,30 @@ import {
   stringToArrayBuffer,
   RAIN_META_DOCUMENT,
   BigintToHexString,
-  ZERO_ADDRESS
+  ZERO_ADDRESS,
 } from "./utils";
-import { store, Entity, Value } from '@graphprotocol/graph-ts';
+import { store, Entity, Value } from "@graphprotocol/graph-ts";
 import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { CBORDecoder } from "@rainprotocol/assemblyscript-cbor";
 
 export function handleAuthorizerSet(event: AuthorizerSet): void {
-  
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
-    event.address.toHex()
+    event.address.toHex(),
   );
   if (offchainAssetReceiptVault) {
-    if(offchainAssetReceiptVault.activeAuthorizer != null){
-      let previousAuthorizer = Authorizer.load(offchainAssetReceiptVault.activeAuthorizer as string);
-      if (previousAuthorizer && previousAuthorizer.id != event.params.authorizer.toHex()) {
+    if (offchainAssetReceiptVault.activeAuthorizer != null) {
+      let previousAuthorizer = Authorizer.load(
+        offchainAssetReceiptVault.activeAuthorizer as string,
+      );
+      if (
+        previousAuthorizer &&
+        previousAuthorizer.id != event.params.authorizer.toHex()
+      ) {
         previousAuthorizer.isActive = false;
         previousAuthorizer.save();
       }
     }
-    
+
     let authorizer = Authorizer.load(event.params.authorizer.toHex());
     if (authorizer) {
       authorizer.isActive = true;
@@ -72,23 +83,23 @@ export function handleAuthorizerSet(event: AuthorizerSet): void {
 
 export function handleCertify(event: CertifyEvent): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
-    event.address.toHex()
+    event.address.toHex(),
   );
-  if ( offchainAssetReceiptVault ) {
-    let certify = new Certify(`Certify-${ event.transaction.hash.toHex() }`);
+  if (offchainAssetReceiptVault) {
+    let certify = new Certify(`Certify-${event.transaction.hash.toHex()}`);
     certify.transaction = getTransaction(
       event.block,
-      event.transaction.hash.toHex()
+      event.transaction.hash.toHex(),
     ).id;
     certify.emitter = getAccount(
       event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
     certify.timestamp = event.block.timestamp;
     certify.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
     certify.certifier = getAccount(
       event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
     certify.certifiedUntil = event.params.certifyUntil;
     certify.totalShares = offchainAssetReceiptVault.totalShares;
@@ -96,33 +107,43 @@ export function handleCertify(event: CertifyEvent): void {
     certify.information = event.params.data;
 
     let meta = event.params.data.toHex();
-    if ( meta.includes(BigintToHexString(RAIN_META_DOCUMENT)) ) {
-
+    if (meta.includes(BigintToHexString(RAIN_META_DOCUMENT))) {
       let metaData = event.params.data.toHex().slice(18);
       let data = new CBORDecoder(stringToArrayBuffer(metaData));
       let jsonData = json.try_fromString(data.parse().stringify());
-      if ( jsonData.isOk ) {
+      if (jsonData.isOk && jsonData.value.kind == JSONValueKind.ARRAY) {
         let jsonDataArray = jsonData.value.toArray();
-        if ( jsonDataArray.length ) {
-
+        if (
+          jsonDataArray.length >= 2 &&
+          jsonDataArray[0].kind == JSONValueKind.OBJECT &&
+          jsonDataArray[1].kind == JSONValueKind.OBJECT
+        ) {
+          let hashEntry = jsonDataArray[1].toObject();
 
           certify.save();
           // HashList
-          let hashList = jsonDataArray[ 1 ].toObject().mustGet("0").toString();
-          let hashListArray = hashList.split(",");
-          if ( hashListArray.length ) {
-            for ( let i = 0; i < hashListArray.length; i++ ) {
-              if ( offchainAssetReceiptVault ) {
-                let hash = new Hash(event.transaction.hash.toHex().toString() + "-" + i.toString());
-                hash.owner = event.params.sender.toString();
-                hash.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-                hash.offchainAssetReceiptVaultDeployer = offchainAssetReceiptVault.deployer.toHex();
-                hash.hash = hashListArray[ i ];
-                hash.timestamp = event.block.timestamp;
-                hash.save();
-                offchainAssetReceiptVault.hashCount =
-                  offchainAssetReceiptVault.hashCount.plus(ONE);
-                offchainAssetReceiptVault.save();
+          let hashListValue = hashEntry.get("0");
+          if (hashListValue) {
+            let hashListArray = hashListValue.toString().split(",");
+            if (hashListArray.length) {
+              for (let i = 0; i < hashListArray.length; i++) {
+                if (offchainAssetReceiptVault) {
+                  let hash = new Hash(
+                    event.transaction.hash.toHex().toString() +
+                      "-" +
+                      i.toString(),
+                  );
+                  hash.owner = event.params.sender.toString();
+                  hash.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+                  hash.offchainAssetReceiptVaultDeployer =
+                    offchainAssetReceiptVault.deployer.toHex();
+                  hash.hash = hashListArray[i];
+                  hash.timestamp = event.block.timestamp;
+                  hash.save();
+                  offchainAssetReceiptVault.hashCount =
+                    offchainAssetReceiptVault.hashCount.plus(ONE);
+                  offchainAssetReceiptVault.save();
+                }
               }
             }
           }
@@ -131,7 +152,10 @@ export function handleCertify(event: CertifyEvent): void {
     }
 
     certify.save();
-    if ( event.params.forceUntil || event.params.certifyUntil > offchainAssetReceiptVault.certifiedUntil ) {
+    if (
+      event.params.forceUntil ||
+      event.params.certifyUntil > offchainAssetReceiptVault.certifiedUntil
+    ) {
       offchainAssetReceiptVault.certifiedUntil = event.params.certifyUntil;
     }
     offchainAssetReceiptVault.save();
@@ -140,36 +164,36 @@ export function handleCertify(event: CertifyEvent): void {
 
 export function handleConfiscateReceipt(event: ConfiscateReceiptEvent): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
-    event.address.toHex()
+    event.address.toHex(),
   );
-  if ( offchainAssetReceiptVault ) {
+  if (offchainAssetReceiptVault) {
     let confiscateReceipts = new ConfiscateReceipt(
-      `ConfiscateReceipt-${ event.transaction.hash.toHex() }`
+      `ConfiscateReceipt-${event.transaction.hash.toHex()}`,
     );
     confiscateReceipts.transaction = getTransaction(
       event.block,
-      event.transaction.hash.toHex()
+      event.transaction.hash.toHex(),
     ).id;
     confiscateReceipts.timestamp = event.block.timestamp;
     confiscateReceipts.emitter = getAccount(
       event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
     confiscateReceipts.confiscatee = getAccount(
       event.params.confiscatee.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
     confiscateReceipts.confiscator = getAccount(
       event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
 
     let receipt = getReceipt(
       offchainAssetReceiptVault.id.toString(),
-      event.params.id
+      event.params.id,
     );
 
-    if ( receipt ) {
+    if (receipt) {
       confiscateReceipts.receipt = receipt.id;
     }
 
@@ -182,28 +206,28 @@ export function handleConfiscateReceipt(event: ConfiscateReceiptEvent): void {
 
 export function handleConfiscateShares(event: ConfiscateSharesEvent): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
-    event.address.toHex()
+    event.address.toHex(),
   );
-  if ( offchainAssetReceiptVault ) {
+  if (offchainAssetReceiptVault) {
     let confiscateShares = new ConfiscateShares(
-      `ConfiscateShares-${ event.transaction.hash.toHex() }`
+      `ConfiscateShares-${event.transaction.hash.toHex()}`,
     );
     confiscateShares.transaction = getTransaction(
       event.block,
-      event.transaction.hash.toHex()
+      event.transaction.hash.toHex(),
     ).id;
     confiscateShares.timestamp = event.block.timestamp;
     confiscateShares.emitter = getAccount(
       event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
     confiscateShares.confiscatee = getAccount(
       event.params.confiscatee.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
     confiscateShares.confiscator = getAccount(
       event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
     confiscateShares.confiscated = event.params.confiscated;
     confiscateShares.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
@@ -214,28 +238,28 @@ export function handleConfiscateShares(event: ConfiscateSharesEvent): void {
 
 export function handleDeposit(event: Deposit): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
-    event.address.toHex()
+    event.address.toHex(),
   );
-  if ( offchainAssetReceiptVault ) {
+  if (offchainAssetReceiptVault) {
     let depositWithReceipt = new DepositWithReceipt(
-      `DepositWithReceipt-${ event.transaction.hash.toHex() }-${ event.params.id.toString() }`
+      `DepositWithReceipt-${event.transaction.hash.toHex()}-${event.params.id.toString()}`,
     );
     depositWithReceipt.timestamp = event.block.timestamp;
     depositWithReceipt.transaction = getTransaction(
       event.block,
-      event.transaction.hash.toHex()
+      event.transaction.hash.toHex(),
     ).id;
     depositWithReceipt.emitter = getAccount(
       event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
     depositWithReceipt.receiver = getAccount(
       event.params.owner.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
     depositWithReceipt.caller = getAccount(
       event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
     depositWithReceipt.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
     depositWithReceipt.amount = event.params.shares;
@@ -244,27 +268,27 @@ export function handleDeposit(event: Deposit): void {
 
     let receipt = getReceipt(
       offchainAssetReceiptVault.id.toString(),
-      event.params.id
+      event.params.id,
     );
     let receiptBalance = getReceiptBalance(
       event.address.toHex(),
-      event.params.id
+      event.params.id,
     );
     let contract = OffchainAssetVaultContract.bind(event.address);
     receiptBalance.valueExact = receiptBalance.valueExact.plus(
-      event.params.shares
+      event.params.shares,
     );
     receiptBalance.value = toDecimals(
       receiptBalance.valueExact,
-      contract.decimals()
+      contract.decimals(),
     );
     receiptBalance.account = getAccount(
       event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
     receiptBalance.confiscated = ZERO;
 
-    if ( receipt ) {
+    if (receipt) {
       receipt.shares = receipt.shares.plus(event.params.shares);
       receipt.save();
 
@@ -276,19 +300,19 @@ export function handleDeposit(event: Deposit): void {
 
     let account = getAccount(
       event.params.owner.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     );
-    if ( account ) {
+    if (account) {
       account.hashCount = account.hashCount.plus(ONE);
       account.save();
     }
     let user = User.load(event.params.owner.toHex());
-    if ( user ) {
+    if (user) {
       user.hashCount = user.hashCount.plus(ONE);
       user.save();
     }
     let deployer = Deployer.load(offchainAssetReceiptVault.deployer.toHex());
-    if ( deployer ) {
+    if (deployer) {
       deployer.hashCount = deployer.hashCount.plus(ONE);
       deployer.save();
     }
@@ -296,12 +320,12 @@ export function handleDeposit(event: Deposit): void {
 }
 
 export function handleOffchainAssetVaultInitializedV2(
-  event: OffchainAssetReceiptVaultInitializedV2
+  event: OffchainAssetReceiptVaultInitializedV2,
 ): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
-    event.address.toHex()
+    event.address.toHex(),
   );
-  if ( offchainAssetReceiptVault ) {
+  if (offchainAssetReceiptVault) {
     offchainAssetReceiptVault.admin = event.params.config.initialAdmin;
     let receiptVaultConfig = event.params.config.receiptVaultConfig;
     // String fields from nested tuples may need explicit conversion
@@ -309,10 +333,11 @@ export function handleOffchainAssetVaultInitializedV2(
     // we need to ensure proper conversion
     offchainAssetReceiptVault.name = receiptVaultConfig.name as string;
     offchainAssetReceiptVault.symbol = receiptVaultConfig.symbol as string;
-    offchainAssetReceiptVault.receiptContractAddress = receiptVaultConfig.receipt;
+    offchainAssetReceiptVault.receiptContractAddress =
+      receiptVaultConfig.receipt;
     offchainAssetReceiptVault.asAccount = getAccount(
       event.address.toHex(),
-      event.address.toHex()
+      event.address.toHex(),
     ).id;
     offchainAssetReceiptVault.save();
   }
@@ -320,67 +345,87 @@ export function handleOffchainAssetVaultInitializedV2(
   context.setString("vault", event.address.toHex());
   ReceiptTemplate.createWithContext(
     event.params.config.receiptVaultConfig.receipt,
-    context
+    context,
   );
 }
 
 export function handleReceiptVaultInformation(
-  event: ReceiptVaultInformationEvent
+  event: ReceiptVaultInformationEvent,
 ): void {
-
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
-    event.address.toHex()
+    event.address.toHex(),
   );
 
-
   let meta = event.params.vaultInformation.toHex();
-  if ( meta.includes(BigintToHexString(RAIN_META_DOCUMENT)) ) {
-
+  if (meta.includes(BigintToHexString(RAIN_META_DOCUMENT))) {
     let metaData = event.params.vaultInformation.toHex().slice(18);
     let data = new CBORDecoder(stringToArrayBuffer(metaData));
     let jsonData = json.try_fromString(data.parse().stringify());
-    if ( jsonData.isOk ) {
+    if (jsonData.isOk && jsonData.value.kind == JSONValueKind.ARRAY) {
       let jsonDataArray = jsonData.value.toArray();
-      if ( jsonDataArray.length ) {
-        let receiptVaultInformation = new ReceiptVaultInformation(event.transaction.hash.toHex());
+      if (
+        jsonDataArray.length >= 2 &&
+        jsonDataArray[0].kind == JSONValueKind.OBJECT &&
+        jsonDataArray[1].kind == JSONValueKind.OBJECT
+      ) {
+        let primaryInformation = jsonDataArray[0].toObject();
+        let hashEntry = jsonDataArray[1].toObject();
+        let receiptVaultInformation = new ReceiptVaultInformation(
+          event.transaction.hash.toHex(),
+        );
 
         receiptVaultInformation.transaction = getTransaction(
           event.block,
-          event.transaction.hash.toHex()
+          event.transaction.hash.toHex(),
         ).id;
         receiptVaultInformation.timestamp = event.block.timestamp;
-        receiptVaultInformation.offchainAssetReceiptVault = event.address.toHex();
+        receiptVaultInformation.offchainAssetReceiptVault =
+          event.address.toHex();
         receiptVaultInformation.information = event.params.vaultInformation;
         receiptVaultInformation.caller = getAccount(
           event.params.sender.toHex(),
-          event.address.toHex()
+          event.address.toHex(),
         ).id;
         receiptVaultInformation.emitter = getAccount(
           event.params.sender.toHex(),
-          event.address.toHex()
+          event.address.toHex(),
         ).id;
-        receiptVaultInformation.payload = jsonDataArray[ 0 ].toObject().mustGet("0").toString();
-        receiptVaultInformation.magicNumber = jsonDataArray[ 0 ].toObject().mustGet("1").toBigInt();
-        receiptVaultInformation.contentType = jsonDataArray[ 0 ].toObject().mustGet("2").toString();
-        receiptVaultInformation.contentEncoding = jsonDataArray[ 0 ].toObject().mustGet("3").toString();
+        let payload = primaryInformation.get("0");
+        if (payload) receiptVaultInformation.payload = payload.toString();
+        let magicNumber = primaryInformation.get("1");
+        if (magicNumber)
+          receiptVaultInformation.magicNumber = magicNumber.toBigInt();
+        let contentType = primaryInformation.get("2");
+        if (contentType)
+          receiptVaultInformation.contentType = contentType.toString();
+        let contentEncoding = primaryInformation.get("3");
+        if (contentEncoding)
+          receiptVaultInformation.contentEncoding = contentEncoding.toString();
         receiptVaultInformation.save();
 
         //HashList
-        let hashList = jsonDataArray[ 1 ].toObject().mustGet("0").toString();
-        let hashListArray = hashList.split(",");
-        if ( hashListArray.length ) {
-          for ( let i = 0; i < hashListArray.length; i++ ) {
-            if ( offchainAssetReceiptVault ) {
-              let hash = new Hash(event.transaction.hash.toHex().toString() + "-" + i.toString());
-              hash.owner = receiptVaultInformation.caller;
-              hash.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-              hash.offchainAssetReceiptVaultDeployer = offchainAssetReceiptVault.deployer.toHex();
-              hash.hash = hashListArray[ i ];
-              hash.timestamp = event.block.timestamp;
-              hash.save();
-              offchainAssetReceiptVault.hashCount =
-                offchainAssetReceiptVault.hashCount.plus(ONE);
-              offchainAssetReceiptVault.save();
+        let hashListValue = hashEntry.get("0");
+        if (hashListValue) {
+          let hashListArray = hashListValue.toString().split(",");
+          if (hashListArray.length) {
+            for (let i = 0; i < hashListArray.length; i++) {
+              if (offchainAssetReceiptVault) {
+                let hash = new Hash(
+                  event.transaction.hash.toHex().toString() +
+                    "-" +
+                    i.toString(),
+                );
+                hash.owner = receiptVaultInformation.caller;
+                hash.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+                hash.offchainAssetReceiptVaultDeployer =
+                  offchainAssetReceiptVault.deployer.toHex();
+                hash.hash = hashListArray[i];
+                hash.timestamp = event.block.timestamp;
+                hash.save();
+                offchainAssetReceiptVault.hashCount =
+                  offchainAssetReceiptVault.hashCount.plus(ONE);
+                offchainAssetReceiptVault.save();
+              }
             }
           }
         }
@@ -401,7 +446,7 @@ function upsertTokenHolder(
   vault: OffchainAssetReceiptVault,
   vaultAddr: Address,
   vaultContract: OffchainAssetVaultContract,
-  user: Address
+  user: Address,
 ): BigInt {
   const id = holderId(vaultAddr, user);
   let th = TokenHolder.load(id);
@@ -420,7 +465,7 @@ function upsertTokenHolder(
 function upsertSharesBalance(
   vault: OffchainAssetReceiptVault,
   accountId: string,
-  exact: BigInt
+  exact: BigInt,
 ): string {
   const id = sharesBalanceId(vault.id, accountId);
   let sb = SharesBalance.load(id);
@@ -481,11 +526,14 @@ export function handleTransfer(event: Transfer): void {
   }
 
   const st = new SharesTransfer(
-    event.transaction.hash.toHex() + "-" + event.logIndex.toString()
+    event.transaction.hash.toHex() + "-" + event.logIndex.toString(),
   );
 
   st.offchainAssetReceiptVault = vault.id;
-  st.transaction = getTransaction(event.block, event.transaction.hash.toHex()).id;
+  st.transaction = getTransaction(
+    event.block,
+    event.transaction.hash.toHex(),
+  ).id;
   st.timestamp = event.block.timestamp;
 
   // ALWAYS set from/to (zero account when mint/burn)
@@ -506,61 +554,58 @@ export function handleTransfer(event: Transfer): void {
   vault.save();
 }
 
-export function handleWithdraw(
-  event: Withdraw
-): void {
+export function handleWithdraw(event: Withdraw): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
-    event.address.toHex()
+    event.address.toHex(),
   );
-  if ( offchainAssetReceiptVault ) {
+  if (offchainAssetReceiptVault) {
     let withdrawWithReceipt = new WithdrawWithReceipt(
-      `WithdrawWithReceipt-${ event.transaction.hash.toHex() }-${ event.params.id.toString() }`
+      `WithdrawWithReceipt-${event.transaction.hash.toHex()}-${event.params.id.toString()}`,
     );
     withdrawWithReceipt.amount = event.params.shares;
     withdrawWithReceipt.caller = getAccount(
       event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
     withdrawWithReceipt.emitter = getAccount(
       event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
     withdrawWithReceipt.owner = getAccount(
       event.params.owner.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
     withdrawWithReceipt.offchainAssetReceiptVault =
       offchainAssetReceiptVault.id;
     withdrawWithReceipt.timestamp = event.block.timestamp;
     withdrawWithReceipt.transaction = getTransaction(
       event.block,
-      event.transaction.hash.toHex()
+      event.transaction.hash.toHex(),
     ).id;
     withdrawWithReceipt.data = event.params.receiptInformation.toString();
     withdrawWithReceipt.erc1155TokenId = event.params.id.toString();
 
-
     let receiptBalance = getReceiptBalance(
       event.address.toHex(),
-      event.params.id
+      event.params.id,
     );
     let contract = OffchainAssetVaultContract.bind(event.address);
     receiptBalance.valueExact = receiptBalance.valueExact.minus(
-      event.params.shares
+      event.params.shares,
     );
     receiptBalance.value = toDecimals(
       receiptBalance.valueExact,
-      contract.decimals()
+      contract.decimals(),
     );
     receiptBalance.account = getAccount(
       event.params.sender.toHex(),
-      offchainAssetReceiptVault.id
+      offchainAssetReceiptVault.id,
     ).id;
     receiptBalance.confiscated = ZERO;
     receiptBalance.save();
 
     let receipt = getReceipt(offchainAssetReceiptVault.id, event.params.id);
-    if ( receipt ) {
+    if (receipt) {
       receipt.shares = receipt.shares.minus(event.params.shares);
       receipt.save();
       withdrawWithReceipt.receipt = receipt.id;
