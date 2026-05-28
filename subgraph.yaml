@@ -129,7 +129,7 @@ templates:
     name: WrappedTokenTemplate
     network: base
     source:
-      abi: ERC20
+      abi: ERC4626
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -138,8 +138,8 @@ templates:
         - WrappedTokenTransfer
         - Transaction
       abis:
-        - name: ERC20
-          file: ./lib/ethgild/out/ERC20.sol/ERC20.json
+        - name: ERC4626
+          file: ./abis/ERC4626.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleWrappedTokenTransfer
