@@ -298,6 +298,10 @@ export function handleDeposit(event: Deposit): void {
     receiptBalance.save();
     depositWithReceipt.save();
 
+    offchainAssetReceiptVault.depositVolume =
+      offchainAssetReceiptVault.depositVolume.plus(event.params.shares);
+    offchainAssetReceiptVault.save();
+
     let account = getAccount(
       event.params.owner.toHex(),
       offchainAssetReceiptVault.id,
@@ -450,6 +454,7 @@ function upsertTokenHolder(
 ): BigInt {
   const id = holderId(vaultAddr, user);
   let th = TokenHolder.load(id);
+  const previousBalance = th != null ? th.balance : ZERO;
   if (th == null) {
     th = new TokenHolder(id);
     th.offchainAssetReceiptVault = vault.id;
@@ -459,6 +464,13 @@ function upsertTokenHolder(
   const bal = vaultContract.balanceOf(user);
   th.balance = bal;
   th.save();
+
+  if (previousBalance.equals(ZERO) && bal.gt(ZERO)) {
+    vault.tokenHolderCount = vault.tokenHolderCount.plus(ONE);
+  } else if (previousBalance.gt(ZERO) && bal.equals(ZERO)) {
+    vault.tokenHolderCount = vault.tokenHolderCount.minus(ONE);
+  }
+
   return bal;
 }
 
@@ -551,6 +563,7 @@ export function handleTransfer(event: Transfer): void {
   st.value = toDecimals(event.params.value, 18);
 
   st.save();
+  vault.shareTransferCount = vault.shareTransferCount.plus(ONE);
   vault.save();
 }
 
@@ -612,5 +625,9 @@ export function handleWithdraw(event: Withdraw): void {
     }
 
     withdrawWithReceipt.save();
+
+    offchainAssetReceiptVault.withdrawVolume =
+      offchainAssetReceiptVault.withdrawVolume.plus(event.params.shares);
+    offchainAssetReceiptVault.save();
   }
 }
