@@ -4,11 +4,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: CloneFactory
-    network: polygon-amoy
+    network: base
     source:
       abi: CloneFactory
-      address: "0x8F61d274aaB5D8CFD82dc266529EAe33020386a9"
-      startBlock: 21367561
+      address: "0x5e9e22154D71f9Fd4b5FD1eE36852A4c9FcDcC9E"
+      startBlock: 39975787
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -23,10 +23,33 @@ dataSources:
         - event: NewClone(address,address,address)
           handler: handleNewClone
       file: ./src/CloneFactory.ts
+  - kind: ethereum/contract
+    name: StoxUnifiedDeployer
+    network: base
+    source:
+      abi: StoxUnifiedDeployer
+      address: "0x821a71a313bdDDc94192CF0b5F6f5bC31Ac75853"
+      startBlock: 41197252
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - VerifyFactory
+        - Verify
+      abis:
+        - name: StoxUnifiedDeployer
+          file: ./lib/st0x.deploy/out/StoxUnifiedDeployer.sol/StoxUnifiedDeployer.json
+        - name: OffchainAssetReceiptVault
+          file: ./lib/ethgild/out/OffchainAssetReceiptVault.sol/OffchainAssetReceiptVault.json
+      eventHandlers:
+        - event: Deployment(address,address,address)
+          handler: handleDeployment
+      file: ./src/StoxUnifiedDeployer.ts
 templates:
   - kind: ethereum/contract
     name: OffchainAssetReceiptVaultTemplate
-    network: polygon-amoy
+    network: base
     source:
       abi: OffchainAssetReceiptVault
     mapping:
@@ -48,7 +71,7 @@ templates:
           handler: handleConfiscateShares
         - event: Deposit(address,address,uint256,uint256,uint256,bytes)
           handler: handleDeposit
-        - event: OffchainAssetReceiptVaultInitializedV2(address,(address,(address,(address,string,string))))
+        - event: OffchainAssetReceiptVaultInitializedV2(address,(address,(address,string,string,address)))
           handler: handleOffchainAssetVaultInitializedV2
         - event: AuthorizerSet(address,address)
           handler: handleAuthorizerSet
@@ -61,7 +84,7 @@ templates:
       file: ./src/OffchainAssetReceiptVault.ts
   - kind: ethereum/contract
     name: OffchainAssetReceiptVaultAuthorizerV1Template
-    network: polygon-amoy
+    network: base
     source:
       abi: OffchainAssetReceiptVaultAuthorizerV1
     mapping:
@@ -85,7 +108,7 @@ templates:
       file: ./src/OffchainAssetReceiptVaultAuthorizerV1.ts
   - kind: ethereum/contract
     name: ReceiptTemplate
-    network: polygon-amoy
+    network: base
     source:
       abi: Receipt
     mapping:
@@ -102,3 +125,22 @@ templates:
         - event: ReceiptInformation(address,uint256,bytes)
           handler: handleReceiptInformation
       file: ./src/Receipt.ts
+  - kind: ethereum/contract
+    name: WrappedTokenTemplate
+    network: base
+    source:
+      abi: ERC4626
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - WrappedTokenTransfer
+        - Transaction
+      abis:
+        - name: ERC4626
+          file: ./abis/ERC4626.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleWrappedTokenTransfer
+      file: ./src/WrappedToken.ts

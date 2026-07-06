@@ -13,9 +13,8 @@ import {
     DataSourceContext,
     Value,
 } from "@graphprotocol/graph-ts";
-import { createNewCloneEvent, VaultConfig, ReceiptVaultConfig, createOffchainAssetReceiptVaultInitializedV2Event } from "./mock.test";
-import { handleNewClone } from "../src/CloneFactory";
-import { AMOY_VAULT_IMPLEMENTATION_ADDRESS } from "../src/networkImplementation";
+import { createNewCloneEvent, VaultConfig, ReceiptVaultConfig, createOffchainAssetReceiptVaultInitializedV2Event, createDeploymentEvent, createMockReceiptFunction } from "./mock.test";
+import { handleDeployment } from "../src/StoxUnifiedDeployer";
 import { handleOffchainAssetVaultInitializedV2 } from "../src/OffchainAssetReceiptVault";
 
 describe("OffchainAssetVaultInitializedV2 Test", () => {
@@ -36,11 +35,14 @@ describe("OffchainAssetVaultInitializedV2 Test", () => {
 
         const initialAdmin = Address.fromString("0x1234567890123456789012345678901234567890");
 
-        // Asset Vault Clone
-        const assetVaultImplementation = Address.fromString(AMOY_VAULT_IMPLEMENTATION_ADDRESS);
+        // Asset Vault Deployment (handled by StoxUnifiedDeployer)
         const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-        let assetVaultCloneEvent = createNewCloneEvent(initialAdmin, assetVaultImplementation, assetVaultClone);
-        handleNewClone(assetVaultCloneEvent);
+        const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
+        const wrapper = Address.fromString("0x0000000000000000000000000000000000dddddd");
+        // Mock the receipt() RPC call
+        createMockReceiptFunction(assetVaultClone, receipt);
+        let deploymentEvent = createDeploymentEvent(initialAdmin, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
+        handleDeployment(deploymentEvent);
 
         const vaultConfig = new VaultConfig(Address.fromString("0x1234567890123456789012345678901234567891"), "Test Vault", "TST");
         const receiptVaultConfig = new ReceiptVaultConfig(vaultConfig, Address.fromString("0x1234567890123456789012345678901234567892"));

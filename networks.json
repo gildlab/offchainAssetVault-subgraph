@@ -1,38 +1,12 @@
 {
-    "polygon-amoy": {
-        "CloneFactory": {
-            "address": "0x8F61d274aaB5D8CFD82dc266529EAe33020386a9",
-            "startBlock": 22431904
-        }
-    },
-    "arbitrum-one": {
-        "CloneFactory": {
-            "address": "0x34b9Fc3cbe19330fBd57ff732630d1517b605e48",
-            "startBlock": 343476563
-        }
-    },
     "base": {
         "CloneFactory": {
             "address": "0x5e9e22154D71f9Fd4b5FD1eE36852A4c9FcDcC9E",
-            "startBlock": 32289155
-        }
-    },
-    "matic": {
-        "CloneFactory": {
-            "address": "0x5e9e22154D71f9Fd4b5FD1eE36852A4c9FcDcC9E",
-            "startBlock": 70971061
-        }
-    },
-    "sepolia": {
-        "CloneFactory": {
-            "address": "0xc4EB51776Ff8b0E74D14029842444895D6C5c38E",
-            "startBlock": 8231751
-        }
-    },
-    "epn": {
-        "CloneFactory": {
-            "address": "0xd294cB1ac82D6A5c1536107cA6eBB32BFF06d98A",
-            "startBlock": 60756888
+            "startBlock": 39975787
+        },
+        "StoxUnifiedDeployer": {
+            "address": "0x821a71a313bdDDc94192CF0b5F6f5bC31Ac75853",
+            "startBlock": 41197252
         }
     }
     

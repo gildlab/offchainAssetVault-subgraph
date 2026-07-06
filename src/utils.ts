@@ -1,35 +1,42 @@
-import { Address, BigDecimal, BigInt, ByteArray, Bytes, ethereum } from "@graphprotocol/graph-ts";
+import {
+  Address,
+  BigDecimal,
+  BigInt,
+  ByteArray,
+  Bytes,
+  ethereum,
+} from "@graphprotocol/graph-ts";
 import {
   Account,
   Authorizer,
   OffchainAssetReceiptVault,
   Receipt,
   ReceiptBalance,
-  RoleHolder, TokenHolder,
+  RoleHolder,
+  TokenHolder,
   Transaction,
-  User
+  User,
 } from "../generated/schema";
 
 export const ZERO = BigInt.fromI32(0);
 export const ONE = BigInt.fromI32(1);
+export const ONE_18 = BigInt.fromString("1000000000000000000");
 export const ZERO_BD = BigDecimal.fromString("0");
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-
 export function getAccount(
   address: string,
-  offchainAssetReceiptVault: string
+  offchainAssetReceiptVault: string,
 ): Account {
-  
   let accountId = offchainAssetReceiptVault + "-" + address;
   let account = Account.load(accountId);
-  
+
   // First check if account exists
   if (!account) {
     let vault = OffchainAssetReceiptVault.load(offchainAssetReceiptVault);
-    
+
     account = new Account(accountId);
-    
+
     // If the vault exists, use its ID, otherwise use the provided vault address
     if (vault) {
       account.offchainAssetReceiptVault = vault.id;
@@ -47,29 +54,36 @@ export function getAccount(
       tempVault.totalShares = ZERO;
       tempVault.shareHoldersCount = ZERO;
       tempVault.hashCount = ZERO;
+      tempVault.tokenHolderCount = ZERO;
+      tempVault.shareTransferCount = ZERO;
+      tempVault.depositVolume = ZERO;
+      tempVault.withdrawVolume = ZERO;
       tempVault.certifiedUntil = ZERO;
       tempVault.save();
-      
+
       account.offchainAssetReceiptVault = tempVault.id;
     }
-    
+
     account.address = Address.fromHexString(address);
-    account.hashCount = ZERO; 
+    account.hashCount = ZERO;
     account.save();
   }
 
   // Create or load user entity
   let user = User.load(address);
-  if(!user){
+  if (!user) {
     user = new User(address);
     user.hashCount = ZERO;
     user.save();
   }
-  
+
   return account as Account;
 }
 
-export function getTransaction(block: ethereum.Block, hash:string): Transaction {
+export function getTransaction(
+  block: ethereum.Block,
+  hash: string,
+): Transaction {
   let transaction = Transaction.load(hash);
   if (!transaction) {
     transaction = new Transaction(hash);
@@ -83,46 +97,41 @@ export function getTransaction(block: ethereum.Block, hash:string): Transaction 
 export function getRoleHolder(
   authorizer: string,
   address: string,
-  role: string
+  role: string,
 ): RoleHolder {
-  let roleHolder = RoleHolder.load(
-    authorizer + "-" + address + "-" + role
-  );
+  let roleHolder = RoleHolder.load(authorizer + "-" + address + "-" + role);
   if (!roleHolder) {
     let authorizerEntity = Authorizer.load(authorizer);
-    
+
     // Create the role holder regardless of whether the authorizer is linked to a vault
-    roleHolder = new RoleHolder(
-      authorizer + "-" + address + "-" + role
-    );
-    
+    roleHolder = new RoleHolder(authorizer + "-" + address + "-" + role);
+
     // Use the authorizer address as the vault ID if no vault is linked yet
     let vaultId = authorizer;
-    if (authorizerEntity && authorizerEntity.offchainAssetReceiptVault != null) {
+    if (
+      authorizerEntity &&
+      authorizerEntity.offchainAssetReceiptVault != null
+    ) {
       vaultId = authorizerEntity.offchainAssetReceiptVault as string;
     }
-    
+
     roleHolder.account = getAccount(address, vaultId).id;
     roleHolder.authorizer = authorizer;
     roleHolder.role = authorizer + "-" + role;
     roleHolder.activeRoles = [];
     roleHolder.save();
   }
-  
+
   return roleHolder as RoleHolder;
 }
 
 export function getTokenHolder(
   offchainAssetReceiptVault: string,
-  address: string
+  address: string,
 ): TokenHolder {
-  let tokenHolder = TokenHolder.load(
-    offchainAssetReceiptVault + "-" + address
-  );
+  let tokenHolder = TokenHolder.load(offchainAssetReceiptVault + "-" + address);
   if (!tokenHolder) {
-    tokenHolder = new TokenHolder(
-      offchainAssetReceiptVault + "-" + address
-    );
+    tokenHolder = new TokenHolder(offchainAssetReceiptVault + "-" + address);
     tokenHolder.offchainAssetReceiptVault = offchainAssetReceiptVault;
     tokenHolder.address = Address.fromHexString(address);
     tokenHolder.balance = ZERO;
@@ -131,21 +140,33 @@ export function getTokenHolder(
   return tokenHolder as TokenHolder;
 }
 
-export function getReceipt(offchainAssetReceiptVault: string, receiptId: BigInt): Receipt{
-  let receipt = Receipt.load(offchainAssetReceiptVault + "-" + receiptId.toString());
-  if(!receipt){
-    receipt = new Receipt(offchainAssetReceiptVault + "-" + receiptId.toString());
+export function getReceipt(
+  offchainAssetReceiptVault: string,
+  receiptId: BigInt,
+): Receipt {
+  let receipt = Receipt.load(
+    offchainAssetReceiptVault + "-" + receiptId.toString(),
+  );
+  if (!receipt) {
+    receipt = new Receipt(
+      offchainAssetReceiptVault + "-" + receiptId.toString(),
+    );
     receipt.offchainAssetReceiptVault = offchainAssetReceiptVault;
     receipt.receiptId = receiptId;
     receipt.shares = ZERO;
-    receipt.save(); 
+    receipt.save();
   }
   return receipt as Receipt;
 }
 
-export function getReceiptBalance(contract: string, receiptId: BigInt): ReceiptBalance{
-  let receiptBalance = ReceiptBalance.load(contract + "-" + receiptId.toString());
-  if(!receiptBalance) {
+export function getReceiptBalance(
+  contract: string,
+  receiptId: BigInt,
+): ReceiptBalance {
+  let receiptBalance = ReceiptBalance.load(
+    contract + "-" + receiptId.toString(),
+  );
+  if (!receiptBalance) {
     receiptBalance = new ReceiptBalance(contract + "-" + receiptId.toString());
     receiptBalance.offchainAssetReceiptVault = contract;
     receiptBalance.valueExact = ZERO;
@@ -169,8 +190,8 @@ export function hexToBigint(hex: string): BigInt {
   return BigInt.fromUnsignedBytes(byteArray);
 }
 
-export function BigintToHexString(bigint: BigInt): string{
-  return ByteArray.fromBigInt(bigint).toHexString().toString().slice(0,18)
+export function BigintToHexString(bigint: BigInt): string {
+  return ByteArray.fromBigInt(bigint).toHexString().toString().slice(0, 18);
 }
 
 /**

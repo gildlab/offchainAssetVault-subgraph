@@ -3,14 +3,17 @@ export const AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0x99B2aC726f8e41a22f27e7e
 export const ARBITRUM_ONE_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0x0438560b398eA874DEb29360aCda10735D9790C8";
 export const BASE_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0x2B4A510c3619d5E888095BFE9f95902D32dA5556";
 export const BASE_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0xfDd9F4Cd3Db08c2a8cCa9CE181710a69de7d6c87";
+export const BASE_SEPOLIA_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0x667d2Ab75908c7d7983008aDbF558332F381a5f5";
+export const BASE_SEPOLIA_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0x72b2a394E129ede556b4024aCe939a964bA0a876";
 export const POLYGON_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
 export const MAINNET_AUTHORIZER_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
 
 
 // Vault Implementation Addresses
-export const AMOY_VAULT_IMPLEMENTATION_ADDRESS = "0x3eD9dA0268198aafFFDAa760e9cB0C6750dbb3Da";
-export const ARBITRUM_ONE_VAULT_IMPLEMENTATION_ADDRESS = "0xA75040cc33bF4BE0c953e4617f66ff05798B4D1c";
-export const BASE_VAULT_IMPLEMENTATION_ADDRESS = "0xBe1B6eb500773Fc61ba596B4beF9409F190bF6df";
+// Disable all vault implementations, vault implementations handled by OffchainAssetReceiptVaultBeaconSetDeployer
+export const AMOY_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
+export const ARBITRUM_ONE_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
+export const BASE_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
 export const POLYGON_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
 export const MAINNET_VAULT_IMPLEMENTATION_ADDRESS = "0xffffffffffffffffffffffffffffffffffffffff";
 
@@ -57,6 +60,14 @@ export class NetworkImplementation {
       this.authorizerImplementations = [
         BASE_AUTHORIZER_IMPLEMENTATION_ADDRESS,
         BASE_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS
+      ];
+      this.vaultImplementations = [
+        BASE_VAULT_IMPLEMENTATION_ADDRESS
+      ];
+    } else if (network == 'base-sepolia') {
+      this.authorizerImplementations = [
+        BASE_SEPOLIA_AUTHORIZER_IMPLEMENTATION_ADDRESS,
+        BASE_SEPOLIA_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS
       ];
       this.vaultImplementations = [
         BASE_VAULT_IMPLEMENTATION_ADDRESS

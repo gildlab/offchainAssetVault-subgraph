@@ -67,71 +67,9 @@ describe("Clone Factory Test", () => {
 
     handleNewClone(newCloneEvent);
 
-    assert.entityCount("OffchainAssetReceiptVault", 1);
-    assert.entityCount("Authorizer", 1);
-
-    assert.fieldEquals(
-      "OffchainAssetReceiptVault",
-      clone.toHexString(),
-      "address",
-      clone.toHexString()
-    );
-
-    assert.fieldEquals(
-      "OffchainAssetReceiptVault",
-      clone.toHexString(),
-      "deployer",
-      sender.toHexString()
-    );
-
-    assert.fieldEquals(
-      "OffchainAssetReceiptVault",
-      clone.toHexString(),
-      "admin",
-      sender.toHexString()
-    );
-
-    assert.fieldEquals(
-      "OffchainAssetReceiptVault",
-      clone.toHexString(),
-      "name",
-      ""
-    );
-
-    assert.fieldEquals(
-      "OffchainAssetReceiptVault",
-      clone.toHexString(),
-      "symbol",
-      ""
-    );
-
-    assert.fieldEquals(
-      "OffchainAssetReceiptVault",
-      clone.toHexString(),
-      "totalShares",
-      "0"
-    );
-
-    assert.fieldEquals(
-      "OffchainAssetReceiptVault",
-      clone.toHexString(),
-      "certifiedUntil",
-      "0"
-    );
-
-    assert.fieldEquals(
-      "OffchainAssetReceiptVault",
-      clone.toHexString(),
-      "shareHoldersCount",
-      "0"
-    );
-
-    assert.fieldEquals(
-      "OffchainAssetReceiptVault",
-      clone.toHexString(),
-      "hashCount",
-      "0"
-    );
-      
+    // Vault clones are not handled by CloneFactory - they are handled by StoxUnifiedDeployer
+    // So no entities should be created
+    assert.entityCount("OffchainAssetReceiptVault", 0);
+    assert.entityCount("Authorizer", 0);
   });
 });
