@@ -79,6 +79,14 @@ type OffchainAssetReceiptVault @entity {
   hashCount: BigInt!
   "Token holders"
   tokenHolders: [TokenHolder!] @derivedFrom(field: "offchainAssetReceiptVault")
+  "Count of TokenHolder entities with balance > 0"
+  tokenHolderCount: BigInt!
+  "Count of SharesTransfer entities for this vault"
+  shareTransferCount: BigInt!
+  "Sum of DepositWithReceipt.amount for this vault"
+  depositVolume: BigInt!
+  "Sum of WithdrawWithReceipt.amount for this vault"
+  withdrawVolume: BigInt!
   "Wrapped ERC20 token transfers for this vault (wallet-to-wallet)"
   wrappedTokenTransfers: [WrappedTokenTransfer!]
     @derivedFrom(field: "offchainAssetReceiptVault")

@@ -54,6 +54,10 @@ export function getAccount(
       tempVault.totalShares = ZERO;
       tempVault.shareHoldersCount = ZERO;
       tempVault.hashCount = ZERO;
+      tempVault.tokenHolderCount = ZERO;
+      tempVault.shareTransferCount = ZERO;
+      tempVault.depositVolume = ZERO;
+      tempVault.withdrawVolume = ZERO;
       tempVault.certifiedUntil = ZERO;
       tempVault.save();
 
