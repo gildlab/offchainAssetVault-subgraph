@@ -79,9 +79,25 @@ type OffchainAssetReceiptVault @entity {
   hashCount: BigInt!
   "Token holders"
   tokenHolders: [TokenHolder!] @derivedFrom(field: "offchainAssetReceiptVault")
+  "Count of TokenHolder entities with balance > 0"
+  tokenHolderCount: BigInt!
+  "Count of SharesTransfer entities for this vault"
+  shareTransferCount: BigInt!
+  "Sum of DepositWithReceipt.amount for this vault"
+  depositVolume: BigInt!
+  "Sum of WithdrawWithReceipt.amount for this vault"
+  withdrawVolume: BigInt!
   "Wrapped ERC20 token transfers for this vault (wallet-to-wallet)"
   wrappedTokenTransfers: [WrappedTokenTransfer!]
     @derivedFrom(field: "offchainAssetReceiptVault")
+  "Underlying assets per 1e18 wrapped shares (ERC4626 convertToAssets(1e18))"
+  assetsPerShare: BigInt
+  "Wrapped shares per 1e18 underlying assets (ERC4626 convertToShares(1e18))"
+  sharesPerAsset: BigInt
+  "Block when wrapped exchange rates were last updated"
+  exchangeRateBlock: BigInt
+  "Timestamp when wrapped exchange rates were last updated"
+  exchangeRateTimestamp: BigInt
 }
 
 type Authorizer @entity {
@@ -500,7 +516,7 @@ type WrappedTokenTransfer @entity {
   from: Bytes!
   "Recipient address"
   to: Bytes!
-  "Transfer amount (18 decimals)"
+  "Transfer amount (18 decimals, wrapped ERC4626 shares)"
   value: BigInt!
   "Block number of the transaction"
   blockNumber: BigInt!
