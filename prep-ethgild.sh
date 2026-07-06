@@ -9,6 +9,8 @@ git submodule update --init --recursive
 echo "Building contracts..."
 nix develop -c bash -c '(cd lib/ethgild && rainix-sol-prelude)'
 nix develop -c bash -c '(cd lib/rain.factory && rainix-sol-prelude)'
+nix develop -c bash -c '(cd lib/st0x.deploy && rainix-sol-prelude)'
+
 
 
 
