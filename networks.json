@@ -1,0 +1,13 @@
+{
+    "base": {
+        "CloneFactory": {
+            "address": "0x5e9e22154D71f9Fd4b5FD1eE36852A4c9FcDcC9E",
+            "startBlock": 39975787
+        },
+        "StoxUnifiedDeployer": {
+            "address": "0x821a71a313bdDDc94192CF0b5F6f5bC31Ac75853",
+            "startBlock": 41197252
+        }
+    }
+    
+}

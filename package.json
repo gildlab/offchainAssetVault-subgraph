@@ -4,22 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "npx hardhat test",
-    "ci-test": "npx hardhat test --network localhost",
-    "codegen": "graph codegen",
-    "build": "graph build",
-    "deploy-subgraph": "ts-node scripts/index.ts",
-    "deploy-mumbai": "ts-node scripts/index.ts --config config/mumbai.json --subgraphTemplate subgraph.template.yaml --subgraphName gildlab/offchainassetvault-mumbai",
-    "deploy-polygon": "ts-node scripts/index.ts --config config/polygon.json --subgraphTemplate subgraph.template.yaml --subgraphName gildlab/offchainassetvault-polygon",
-    "deploy-goerli": "ts-node scripts/index.ts --config config/goerli.json --subgraphTemplate subgraph.template.yaml --subgraphName gildlab/offchainassetvault-goerli",
-    "deploy-mainnet": "ts-node scripts/index.ts --config config/ethereum.json --subgraphTemplate subgraph.template.yaml --subgraphName gildlab/offchainassetvault-ethereum",
-    "deploy-arbitrum-one": "ts-node scripts/index.ts --config config/arbitrum.json --subgraphTemplate subgraph.template.yaml --subgraphName gildlab/offchainassetvault-arbitrum",
-    "deploy-arbitrum-sepolia": "ts-node scripts/index.ts --config config/arbitrumSepolia.json --subgraphTemplate subgraph.template.yaml --subgraphName gildlab/offchainassetvault-sepolia",
-    "create-local": "graph create --node http://localhost:8020/ gildlab/offchainassetvault",
-    "remove-local": "graph remove --node http://localhost:8020/ gildlab/offchainassetvault",
-    "deploy-local": "npx mustache config/localhost.json subgraph.template.yaml subgraph.yaml && npm run codegen && graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 gildlab/offchainassetvault  --version-label 1",
-    "deploy-all": "npm run deploy-mumbai && npm run deploy-polygon && npm run deploy-goerli && npm run deploy-mainnet && npm run deploy-arbitrum-one && npm run deploy-arbitrum-sepolia"
-
+    "test": "graph test -d"
   },
   "repository": {
     "type": "git",
@@ -33,24 +18,14 @@
   },
   "homepage": "https://github.com/vishalkale151071/offchainAssetVault-subgraph#readme",
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "=2.2.3",
     "@typechain/ethers-v5": "=10.2.0",
-    "@types/chai": "=5.0.0",
-    "@types/mocha": "=10.0.8",
-    "apollo-fetch": "=0.7.0",
-    "commander": "=12.1.0",
     "ethers": "=5.7.2",
-    "typescript": "=4.3.2"
+    "typescript": "=5.6.2"
   },
   "dependencies": {
-    "@gildlab/ethgild": "git://github.com/gildlab/ethgild.git#30454f49857ab188698c9a8d0f928d7cce99044a",
     "@graphprotocol/graph-cli": "=0.81.0",
     "@graphprotocol/graph-ts": "=0.35.1",
-    "@nomiclabs/hardhat-etherscan": "=3.1.2",
-    "@nomiclabs/hardhat-waffle": "=2.0.3",
     "@rainprotocol/assemblyscript-cbor": "=0.0.2",
-    "@typechain/hardhat": "=6.1.5",
-    "dotenv": "=16.0.3",
-    "mustache": "=4.2.0"
+    "matchstick-as": "^0.6.0"
   }
 }
