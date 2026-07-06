@@ -5,6 +5,8 @@ type OffchainAssetReceiptVault @entity {
   address: Bytes! #OffchainAssetReceiptVault contract address
   "Address of this OffchainAssetReceiptVault receipt contract"
   receiptContractAddress: Bytes #OffchainAssetReceiptVault receipt contract address
+  "Address of this OffchainAssetReceiptVault wrapped token contract"
+  wrappedTokenContractAddress: Bytes #Wrapped ERC20 token contract address
   "Block number of contract deployment"
   deployBlock: BigInt! #the block the contract was deployed
   "Timestamp of contract deployment"
@@ -56,7 +58,11 @@ type OffchainAssetReceiptVault @entity {
   "Withdraws for this OffchainAssetReceiptVault"
   withdraws: [WithdrawWithReceipt!]
     @derivedFrom(field: "offchainAssetReceiptVault")
-
+  "Current active authorizer for this OffchainAssetReceiptVault"
+  activeAuthorizer: Authorizer
+  "All authorizers (historical) for this OffchainAssetReceiptVault"
+  authorizers: [Authorizer!] @derivedFrom(field: "offchainAssetReceiptVault")
+  
   "The timestamp that this OffchainAssetReceiptVault is certified until"
   certifiedUntil: BigInt! # Updated with each new Certify event
   "Certifications for this OffchainAssetReceiptVault"
@@ -69,18 +75,44 @@ type OffchainAssetReceiptVault @entity {
   receiptConfiscations: [ConfiscateReceipt!]
     @derivedFrom(field: "offchainAssetReceiptVault")
 
-  "Role holders"
-  roleHolders: [RoleHolder!] @derivedFrom(field: "offchainAssetReceiptVault")
-  "Roles"
-  roles: [Role!] @derivedFrom(field: "offchainAssetReceiptVault")
-  "Role revoke events"
-  roleRevokes: [RoleRevoked!] @derivedFrom(field: "offchainAssetReceiptVault")
-  "Role granted events"
-  rolesGranted: [RoleGranted!] @derivedFrom(field: "offchainAssetReceiptVault")
   hashes: [Hash!] @derivedFrom(field: "offchainAssetReceiptVault")
   hashCount: BigInt!
   "Token holders"
   tokenHolders: [TokenHolder!] @derivedFrom(field: "offchainAssetReceiptVault")
+  "Count of TokenHolder entities with balance > 0"
+  tokenHolderCount: BigInt!
+  "Count of SharesTransfer entities for this vault"
+  shareTransferCount: BigInt!
+  "Sum of DepositWithReceipt.amount for this vault"
+  depositVolume: BigInt!
+  "Sum of WithdrawWithReceipt.amount for this vault"
+  withdrawVolume: BigInt!
+  "Wrapped ERC20 token transfers for this vault (wallet-to-wallet)"
+  wrappedTokenTransfers: [WrappedTokenTransfer!]
+    @derivedFrom(field: "offchainAssetReceiptVault")
+  "Underlying assets per 1e18 wrapped shares (ERC4626 convertToAssets(1e18))"
+  assetsPerShare: BigInt
+  "Wrapped shares per 1e18 underlying assets (ERC4626 convertToShares(1e18))"
+  sharesPerAsset: BigInt
+  "Block when wrapped exchange rates were last updated"
+  exchangeRateBlock: BigInt
+  "Timestamp when wrapped exchange rates were last updated"
+  exchangeRateTimestamp: BigInt
+}
+
+type Authorizer @entity {
+  id: ID!
+  address: Bytes!
+  offchainAssetReceiptVault: OffchainAssetReceiptVault
+  isActive: Boolean!
+  "Role holders"
+  roleHolders: [RoleHolder!] @derivedFrom(field: "authorizer")
+  "Roles"
+  roles: [Role!] @derivedFrom(field: "authorizer")
+  "Role revoke events"
+  roleRevokes: [RoleRevoked!] @derivedFrom(field: "authorizer")
+  "Role granted events"
+  rolesGranted: [RoleGranted!] @derivedFrom(field: "authorizer")
 }
 
 type Account @entity {
@@ -400,7 +432,7 @@ type RoleGranted implements Event @entity {
   sender: Account!
   transaction: Transaction!
   timestamp: BigInt!
-  offchainAssetReceiptVault: OffchainAssetReceiptVault!
+  authorizer: Authorizer!
   role: Role!
   roleHolder: RoleHolder!
 }
@@ -412,14 +444,14 @@ type RoleRevoked implements Event @entity {
   sender: Account!
   transaction: Transaction!
   timestamp: BigInt!
-  offchainAssetReceiptVault: OffchainAssetReceiptVault!
+  authorizer: Authorizer!
   role: Role!
   roleHolder: RoleHolder
 }
 
 type RoleHolder @entity {
   id: ID!
-  offchainAssetReceiptVault: OffchainAssetReceiptVault!
+  authorizer: Authorizer!
   role: Role!
   account: Account!
   activeRoles: [Role!]
@@ -429,7 +461,7 @@ type RoleHolder @entity {
 
 type Role @entity {
   id: ID!
-  offchainAssetReceiptVault: OffchainAssetReceiptVault!
+  authorizer: Authorizer!
   roleHash: Bytes!
   roleName: String! # match the hash to the roles in roles.sol
   roleHolders: [RoleHolder!]! @derivedFrom(field: "role")
@@ -474,4 +506,26 @@ type TokenHolder @entity {
   address: Bytes!
   offchainAssetReceiptVault: OffchainAssetReceiptVault!
   balance: BigInt!
+}
+
+# Wrapped ERC20 (ERC4626) token transfers — wallet-to-wallet only.
+# Enables snapshot pipeline to correlate wrapped + unwrapped holdings per vault.
+type WrappedTokenTransfer @entity {
+  id: ID!
+  "Sender address"
+  from: Bytes!
+  "Recipient address"
+  to: Bytes!
+  "Transfer amount (18 decimals, wrapped ERC4626 shares)"
+  value: BigInt!
+  "Block number of the transaction"
+  blockNumber: BigInt!
+  "Block timestamp"
+  timestamp: BigInt!
+  "Wrapped token contract address (which wt* token)"
+  token: Bytes!
+  "Associated unwrapped OffchainAssetReceiptVault (underlying)"
+  offchainAssetReceiptVault: OffchainAssetReceiptVault!
+  "Transaction (for consistency with other events)"
+  transaction: Transaction!
 }

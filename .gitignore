@@ -8,3 +8,7 @@ typechain
 build
 .env
 data
+.bin
+tests/.docker
+tests/.latest.json
+.pre-commit-config.yaml

@@ -1,44 +1,89 @@
-import { Address, BigDecimal, BigInt, ByteArray, Bytes, ethereum } from "@graphprotocol/graph-ts";
+import {
+  Address,
+  BigDecimal,
+  BigInt,
+  ByteArray,
+  Bytes,
+  ethereum,
+} from "@graphprotocol/graph-ts";
 import {
   Account,
+  Authorizer,
   OffchainAssetReceiptVault,
   Receipt,
   ReceiptBalance,
-  RoleHolder, TokenHolder,
+  RoleHolder,
+  TokenHolder,
   Transaction,
-  User
+  User,
 } from "../generated/schema";
 
 export const ZERO = BigInt.fromI32(0);
 export const ONE = BigInt.fromI32(1);
+export const ONE_18 = BigInt.fromString("1000000000000000000");
 export const ZERO_BD = BigDecimal.fromString("0");
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-
 export function getAccount(
   address: string,
-  offchainAssetReceiptVault: string
+  offchainAssetReceiptVault: string,
 ): Account {
-  let account = Account.load(offchainAssetReceiptVault + "-" + address);
-  let vault = OffchainAssetReceiptVault.load(offchainAssetReceiptVault);
-  if (!account && vault) {
-    account = new Account(offchainAssetReceiptVault + "-" + address);
-    account.offchainAssetReceiptVault = vault.id;
+  let accountId = offchainAssetReceiptVault + "-" + address;
+  let account = Account.load(accountId);
+
+  // First check if account exists
+  if (!account) {
+    let vault = OffchainAssetReceiptVault.load(offchainAssetReceiptVault);
+
+    account = new Account(accountId);
+
+    // If the vault exists, use its ID, otherwise use the provided vault address
+    if (vault) {
+      account.offchainAssetReceiptVault = vault.id;
+    } else {
+      // Create a temporary vault entity if it doesn't exist
+      // This might happen during initialization when events are processed before the vault is created
+      let tempVault = new OffchainAssetReceiptVault(offchainAssetReceiptVault);
+      tempVault.address = Address.fromString(offchainAssetReceiptVault);
+      tempVault.deployBlock = BigInt.fromI32(0);
+      tempVault.deployTimestamp = BigInt.fromI32(0);
+      tempVault.deployer = Address.fromString(ZERO_ADDRESS);
+      tempVault.admin = Address.fromString(ZERO_ADDRESS);
+      tempVault.name = "";
+      tempVault.symbol = "";
+      tempVault.totalShares = ZERO;
+      tempVault.shareHoldersCount = ZERO;
+      tempVault.hashCount = ZERO;
+      tempVault.tokenHolderCount = ZERO;
+      tempVault.shareTransferCount = ZERO;
+      tempVault.depositVolume = ZERO;
+      tempVault.withdrawVolume = ZERO;
+      tempVault.certifiedUntil = ZERO;
+      tempVault.save();
+
+      account.offchainAssetReceiptVault = tempVault.id;
+    }
+
     account.address = Address.fromHexString(address);
     account.hashCount = ZERO;
     account.save();
   }
 
+  // Create or load user entity
   let user = User.load(address);
-  if(!user){
+  if (!user) {
     user = new User(address);
     user.hashCount = ZERO;
     user.save();
   }
+
   return account as Account;
 }
 
-export function getTransaction(block: ethereum.Block, hash:string): Transaction {
+export function getTransaction(
+  block: ethereum.Block,
+  hash: string,
+): Transaction {
   let transaction = Transaction.load(hash);
   if (!transaction) {
     transaction = new Transaction(hash);
@@ -50,61 +95,78 @@ export function getTransaction(block: ethereum.Block, hash:string): Transaction 
 }
 
 export function getRoleHolder(
-  offchainAssetReceiptVault: string,
+  authorizer: string,
   address: string,
-  role: string
+  role: string,
 ): RoleHolder {
-  let roleHolder = RoleHolder.load(
-    offchainAssetReceiptVault + "-" + address + "-" + role
-  );
+  let roleHolder = RoleHolder.load(authorizer + "-" + address + "-" + role);
   if (!roleHolder) {
-    roleHolder = new RoleHolder(
-      offchainAssetReceiptVault + "-" + address + "-" + role
-    );
-    roleHolder.account = getAccount(address, offchainAssetReceiptVault).id;
-    roleHolder.offchainAssetReceiptVault = offchainAssetReceiptVault;
-    roleHolder.role = offchainAssetReceiptVault + "-" + role;
-    roleHolder.activeRoles = [];
+    let authorizerEntity = Authorizer.load(authorizer);
 
+    // Create the role holder regardless of whether the authorizer is linked to a vault
+    roleHolder = new RoleHolder(authorizer + "-" + address + "-" + role);
+
+    // Use the authorizer address as the vault ID if no vault is linked yet
+    let vaultId = authorizer;
+    if (
+      authorizerEntity &&
+      authorizerEntity.offchainAssetReceiptVault != null
+    ) {
+      vaultId = authorizerEntity.offchainAssetReceiptVault as string;
+    }
+
+    roleHolder.account = getAccount(address, vaultId).id;
+    roleHolder.authorizer = authorizer;
+    roleHolder.role = authorizer + "-" + role;
+    roleHolder.activeRoles = [];
     roleHolder.save();
   }
+
   return roleHolder as RoleHolder;
 }
 
 export function getTokenHolder(
   offchainAssetReceiptVault: string,
-  address: string
+  address: string,
 ): TokenHolder {
-  let tokenHolder = TokenHolder.load(
-    offchainAssetReceiptVault + "-" + address
-  );
+  let tokenHolder = TokenHolder.load(offchainAssetReceiptVault + "-" + address);
   if (!tokenHolder) {
-    tokenHolder = new TokenHolder(
-      offchainAssetReceiptVault + "-" + address
-    );
-    tokenHolder.account = getAccount(address, offchainAssetReceiptVault).id;
+    tokenHolder = new TokenHolder(offchainAssetReceiptVault + "-" + address);
     tokenHolder.offchainAssetReceiptVault = offchainAssetReceiptVault;
-
+    tokenHolder.address = Address.fromHexString(address);
+    tokenHolder.balance = ZERO;
     tokenHolder.save();
   }
   return tokenHolder as TokenHolder;
 }
 
-export function getReceipt(offchainAssetReceiptVault: string, receiptId: BigInt): Receipt{
-  let receipt = Receipt.load(offchainAssetReceiptVault + "-" + receiptId.toString());
-  if(!receipt){
-    receipt = new Receipt(offchainAssetReceiptVault + "-" + receiptId.toString());
+export function getReceipt(
+  offchainAssetReceiptVault: string,
+  receiptId: BigInt,
+): Receipt {
+  let receipt = Receipt.load(
+    offchainAssetReceiptVault + "-" + receiptId.toString(),
+  );
+  if (!receipt) {
+    receipt = new Receipt(
+      offchainAssetReceiptVault + "-" + receiptId.toString(),
+    );
     receipt.offchainAssetReceiptVault = offchainAssetReceiptVault;
     receipt.receiptId = receiptId;
     receipt.shares = ZERO;
-    receipt.save(); 
+    receipt.save();
   }
   return receipt as Receipt;
 }
 
-export function getReceiptBalance(contract: string, receiptId: BigInt): ReceiptBalance{
-  let receiptBalance = ReceiptBalance.load(contract + "-" + receiptId.toString());
-  if(!receiptBalance) {
+export function getReceiptBalance(
+  contract: string,
+  receiptId: BigInt,
+): ReceiptBalance {
+  let receiptBalance = ReceiptBalance.load(
+    contract + "-" + receiptId.toString(),
+  );
+  if (!receiptBalance) {
     receiptBalance = new ReceiptBalance(contract + "-" + receiptId.toString());
     receiptBalance.offchainAssetReceiptVault = contract;
     receiptBalance.valueExact = ZERO;
@@ -128,8 +190,8 @@ export function hexToBigint(hex: string): BigInt {
   return BigInt.fromUnsignedBytes(byteArray);
 }
 
-export function BigintToHexString(bigint: BigInt): string{
-  return ByteArray.fromBigInt(bigint).toHexString().toString().slice(0,18)
+export function BigintToHexString(bigint: BigInt): string {
+  return ByteArray.fromBigInt(bigint).toHexString().toString().slice(0, 18);
 }
 
 /**
