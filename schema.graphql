@@ -1,13 +1,3 @@
-type OffchainAssetReceiptVaultFactory @entity {
-  id: ID! #factory address
-  "Address of the OffchainAssetReceiptVault contract"
-  address: Bytes! #factory address
-  implementation: Bytes #implementation address from Implementation event
-  "Stake addresses deployed by this factory"
-  children: [OffchainAssetReceiptVault!] @derivedFrom(field: "factory") #all the children that were deployed by this factory
-  childrenCount: BigInt!
-}
-
 type OffchainAssetReceiptVault @entity {
   "The contract address"
   id: ID! #OffchainAssetReceiptVault contract address
@@ -21,8 +11,6 @@ type OffchainAssetReceiptVault @entity {
   deployTimestamp: BigInt! #the timestamp the contract was deployed
   "Address of deployer"
   deployer: Bytes! #address of the deployer - get from event OffchainAssetVaultConstruction.sender
-  "Address of the OffchainAssetReceiptVaultFactory that is this contract's parent."
-  factory: OffchainAssetReceiptVaultFactory! # The factory that deployed this contract
   "The initial admin set when this contract was deployed"
   admin: Bytes! # OffchainAssetVaultConstruction.sender
   "The name of the ERC20 token for this OffchainAssetReceiptVault"
