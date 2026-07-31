@@ -44,28 +44,35 @@ function dayStatId(vaultId: string, timestamp: BigInt): string {
   return vaultId + "-" + dayStart(timestamp).toString();
 }
 
+function deployVault(
+  deployer: Address,
+  assetVaultClone: Address,
+  receipt: Address,
+  wrapper: Address,
+  authorizerClone: Address,
+  dataSourceAddress: string,
+): void {
+  createMockReceiptFunction(assetVaultClone, receipt);
+  handleDeployment(
+    createDeploymentEvent(
+      deployer,
+      assetVaultClone,
+      wrapper,
+      Address.fromString(dataSourceAddress),
+    ),
+  );
+  handleNewClone(
+    createNewCloneEvent(
+      deployer,
+      Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS),
+      authorizerClone,
+    ),
+  );
+  createMockERC20Functions(assetVaultClone);
+}
+
 describe("VaultDayStat Test", () => {
   const dataSourceAddress = "0xA16081F360e3847006dB660bae1c6d1b2e17eC2A";
-  const deployer = Address.fromString(
-    "0x1234567890123456789012345678901234567890",
-  );
-  const assetVaultClone = Address.fromString(
-    "0x0000000000000000000000000000000000aaaaaa",
-  );
-  const receipt = Address.fromString(
-    "0x0000000000000000000000000000000000cccccc",
-  );
-  const wrapper = Address.fromString(
-    "0x0000000000000000000000000000000000dddddd",
-  );
-  const authorizerClone = Address.fromString(
-    "0x0000000000000000000000000000000000bbbbbb",
-  );
-
-  // UTC day 100 and day 101 midnights, plus an hour into day 100
-  const day100 = BigInt.fromI32(86400 * 100);
-  const day100Noon = day100.plus(BigInt.fromI32(3600));
-  const day101 = BigInt.fromI32(86400 * 101);
 
   beforeAll(() => {
     let context = new DataSourceContext();
@@ -78,28 +85,31 @@ describe("VaultDayStat Test", () => {
     clearInBlockStore();
   });
 
-  function deployVault(): void {
-    createMockReceiptFunction(assetVaultClone, receipt);
-    handleDeployment(
-      createDeploymentEvent(
-        deployer,
-        assetVaultClone,
-        wrapper,
-        Address.fromString(dataSourceAddress),
-      ),
-    );
-    handleNewClone(
-      createNewCloneEvent(
-        deployer,
-        Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS),
-        authorizerClone,
-      ),
-    );
-    createMockERC20Functions(assetVaultClone);
-  }
-
   test("deposit creates VaultDayStat bucket with counts and volume", () => {
-    deployVault();
+    const deployer = Address.fromString(
+      "0x1234567890123456789012345678901234567890",
+    );
+    const assetVaultClone = Address.fromString(
+      "0x0000000000000000000000000000000000aaaaaa",
+    );
+    const receipt = Address.fromString(
+      "0x0000000000000000000000000000000000cccccc",
+    );
+    const wrapper = Address.fromString(
+      "0x0000000000000000000000000000000000dddddd",
+    );
+    const authorizerClone = Address.fromString(
+      "0x0000000000000000000000000000000000bbbbbb",
+    );
+
+    deployVault(
+      deployer,
+      assetVaultClone,
+      receipt,
+      wrapper,
+      authorizerClone,
+      dataSourceAddress,
+    );
 
     const shares = BigInt.fromString("1000000000000000000");
     const depositEvent = createDepositEvent(
@@ -111,10 +121,13 @@ describe("VaultDayStat Test", () => {
       Bytes.fromHexString("0x"),
       assetVaultClone,
     );
-    depositEvent.block.timestamp = day100Noon;
+    depositEvent.block.timestamp = BigInt.fromI32(86400 * 100 + 3600);
     handleDeposit(depositEvent);
 
-    const id = dayStatId(assetVaultClone.toHex(), day100Noon);
+    const id = dayStatId(
+      assetVaultClone.toHex(),
+      BigInt.fromI32(86400 * 100 + 3600),
+    );
     assert.entityCount("VaultDayStat", 1);
     assert.fieldEquals("VaultDayStat", id, "id", id);
     assert.fieldEquals(
@@ -123,7 +136,12 @@ describe("VaultDayStat Test", () => {
       "offchainAssetReceiptVault",
       assetVaultClone.toHex(),
     );
-    assert.fieldEquals("VaultDayStat", id, "day", day100.toString());
+    assert.fieldEquals(
+      "VaultDayStat",
+      id,
+      "day",
+      BigInt.fromI32(86400 * 100).toString(),
+    );
     assert.fieldEquals("VaultDayStat", id, "depositCount", "1");
     assert.fieldEquals("VaultDayStat", id, "withdrawCount", "0");
     assert.fieldEquals("VaultDayStat", id, "transferCount", "0");
@@ -132,7 +150,30 @@ describe("VaultDayStat Test", () => {
   });
 
   test("same-day deposits accumulate on one VaultDayStat", () => {
-    deployVault();
+    const deployer = Address.fromString(
+      "0x1234567890123456789012345678901234567890",
+    );
+    const assetVaultClone = Address.fromString(
+      "0x0000000000000000000000000000000000aaaaaa",
+    );
+    const receipt = Address.fromString(
+      "0x0000000000000000000000000000000000cccccc",
+    );
+    const wrapper = Address.fromString(
+      "0x0000000000000000000000000000000000dddddd",
+    );
+    const authorizerClone = Address.fromString(
+      "0x0000000000000000000000000000000000bbbbbb",
+    );
+
+    deployVault(
+      deployer,
+      assetVaultClone,
+      receipt,
+      wrapper,
+      authorizerClone,
+      dataSourceAddress,
+    );
 
     const shares1 = BigInt.fromString("1000000000000000000");
     const shares2 = BigInt.fromString("2000000000000000000");
@@ -146,7 +187,7 @@ describe("VaultDayStat Test", () => {
       Bytes.fromHexString("0x"),
       assetVaultClone,
     );
-    deposit1.block.timestamp = day100;
+    deposit1.block.timestamp = BigInt.fromI32(86400 * 100);
     handleDeposit(deposit1);
 
     const deposit2 = createDepositEvent(
@@ -158,10 +199,10 @@ describe("VaultDayStat Test", () => {
       Bytes.fromHexString("0x"),
       assetVaultClone,
     );
-    deposit2.block.timestamp = day100Noon;
+    deposit2.block.timestamp = BigInt.fromI32(86400 * 100 + 3600);
     handleDeposit(deposit2);
 
-    const id = dayStatId(assetVaultClone.toHex(), day100);
+    const id = dayStatId(assetVaultClone.toHex(), BigInt.fromI32(86400 * 100));
     assert.entityCount("VaultDayStat", 1);
     assert.fieldEquals("VaultDayStat", id, "depositCount", "2");
     assert.fieldEquals(
@@ -173,7 +214,30 @@ describe("VaultDayStat Test", () => {
   });
 
   test("deposits on different UTC days create separate VaultDayStat rows", () => {
-    deployVault();
+    const deployer = Address.fromString(
+      "0x1234567890123456789012345678901234567890",
+    );
+    const assetVaultClone = Address.fromString(
+      "0x0000000000000000000000000000000000aaaaaa",
+    );
+    const receipt = Address.fromString(
+      "0x0000000000000000000000000000000000cccccc",
+    );
+    const wrapper = Address.fromString(
+      "0x0000000000000000000000000000000000dddddd",
+    );
+    const authorizerClone = Address.fromString(
+      "0x0000000000000000000000000000000000bbbbbb",
+    );
+
+    deployVault(
+      deployer,
+      assetVaultClone,
+      receipt,
+      wrapper,
+      authorizerClone,
+      dataSourceAddress,
+    );
 
     const shares = BigInt.fromString("1000000000000000000");
 
@@ -186,7 +250,7 @@ describe("VaultDayStat Test", () => {
       Bytes.fromHexString("0x"),
       assetVaultClone,
     );
-    depositDay100.block.timestamp = day100;
+    depositDay100.block.timestamp = BigInt.fromI32(86400 * 100);
     handleDeposit(depositDay100);
 
     const depositDay101 = createDepositEvent(
@@ -198,21 +262,60 @@ describe("VaultDayStat Test", () => {
       Bytes.fromHexString("0x"),
       assetVaultClone,
     );
-    depositDay101.block.timestamp = day101;
+    depositDay101.block.timestamp = BigInt.fromI32(86400 * 101);
     handleDeposit(depositDay101);
 
     assert.entityCount("VaultDayStat", 2);
 
-    const id100 = dayStatId(assetVaultClone.toHex(), day100);
-    const id101 = dayStatId(assetVaultClone.toHex(), day101);
-    assert.fieldEquals("VaultDayStat", id100, "day", day100.toString());
+    const id100 = dayStatId(
+      assetVaultClone.toHex(),
+      BigInt.fromI32(86400 * 100),
+    );
+    const id101 = dayStatId(
+      assetVaultClone.toHex(),
+      BigInt.fromI32(86400 * 101),
+    );
+    assert.fieldEquals(
+      "VaultDayStat",
+      id100,
+      "day",
+      BigInt.fromI32(86400 * 100).toString(),
+    );
     assert.fieldEquals("VaultDayStat", id100, "depositCount", "1");
-    assert.fieldEquals("VaultDayStat", id101, "day", day101.toString());
+    assert.fieldEquals(
+      "VaultDayStat",
+      id101,
+      "day",
+      BigInt.fromI32(86400 * 101).toString(),
+    );
     assert.fieldEquals("VaultDayStat", id101, "depositCount", "1");
   });
 
   test("withdraw updates withdrawCount and withdrawVolume on VaultDayStat", () => {
-    deployVault();
+    const deployer = Address.fromString(
+      "0x1234567890123456789012345678901234567890",
+    );
+    const assetVaultClone = Address.fromString(
+      "0x0000000000000000000000000000000000aaaaaa",
+    );
+    const receipt = Address.fromString(
+      "0x0000000000000000000000000000000000cccccc",
+    );
+    const wrapper = Address.fromString(
+      "0x0000000000000000000000000000000000dddddd",
+    );
+    const authorizerClone = Address.fromString(
+      "0x0000000000000000000000000000000000bbbbbb",
+    );
+
+    deployVault(
+      deployer,
+      assetVaultClone,
+      receipt,
+      wrapper,
+      authorizerClone,
+      dataSourceAddress,
+    );
 
     const depositShares = BigInt.fromString("1000000000000000000");
     const withdrawShares = BigInt.fromString("400000000000000000");
@@ -226,7 +329,7 @@ describe("VaultDayStat Test", () => {
       Bytes.fromHexString("0x"),
       assetVaultClone,
     );
-    depositEvent.block.timestamp = day100;
+    depositEvent.block.timestamp = BigInt.fromI32(86400 * 100);
     handleDeposit(depositEvent);
 
     const withdrawEvent = createWithdrawEvent(
@@ -239,10 +342,10 @@ describe("VaultDayStat Test", () => {
       Bytes.fromHexString("0x"),
       assetVaultClone,
     );
-    withdrawEvent.block.timestamp = day100Noon;
+    withdrawEvent.block.timestamp = BigInt.fromI32(86400 * 100 + 3600);
     handleWithdraw(withdrawEvent);
 
-    const id = dayStatId(assetVaultClone.toHex(), day100);
+    const id = dayStatId(assetVaultClone.toHex(), BigInt.fromI32(86400 * 100));
     assert.entityCount("VaultDayStat", 1);
     assert.fieldEquals("VaultDayStat", id, "depositCount", "1");
     assert.fieldEquals("VaultDayStat", id, "withdrawCount", "1");
@@ -261,8 +364,21 @@ describe("VaultDayStat Test", () => {
   });
 
   test("wallet-to-wallet transfer increments transferCount; mint and burn do not", () => {
-    deployVault();
-
+    const deployer = Address.fromString(
+      "0x1234567890123456789012345678901234567890",
+    );
+    const assetVaultClone = Address.fromString(
+      "0x0000000000000000000000000000000000aaaaaa",
+    );
+    const receipt = Address.fromString(
+      "0x0000000000000000000000000000000000cccccc",
+    );
+    const wrapper = Address.fromString(
+      "0x0000000000000000000000000000000000dddddd",
+    );
+    const authorizerClone = Address.fromString(
+      "0x0000000000000000000000000000000000bbbbbb",
+    );
     const sender = Address.fromString(
       "0x0000000000000000000000000000000000eeeeee",
     );
@@ -273,11 +389,20 @@ describe("VaultDayStat Test", () => {
     const amount = BigInt.fromString("1000000000000000000");
     const half = BigInt.fromString("500000000000000000");
 
+    deployVault(
+      deployer,
+      assetVaultClone,
+      receipt,
+      wrapper,
+      authorizerClone,
+      dataSourceAddress,
+    );
+
     // Mint (from zero) — must not create a VaultDayStat transfer bucket
     createMockTotalSupplyFunction(assetVaultClone, amount);
     createMockBalanceOfFunction(assetVaultClone, sender, amount);
     const mint = createTransferEvent(zero, sender, amount, assetVaultClone);
-    mint.block.timestamp = day100;
+    mint.block.timestamp = BigInt.fromI32(86400 * 100);
     handleTransfer(mint);
     assert.entityCount("VaultDayStat", 0);
 
@@ -291,10 +416,10 @@ describe("VaultDayStat Test", () => {
       half,
       assetVaultClone,
     );
-    walletTransfer.block.timestamp = day100Noon;
+    walletTransfer.block.timestamp = BigInt.fromI32(86400 * 100 + 3600);
     handleTransfer(walletTransfer);
 
-    const id = dayStatId(assetVaultClone.toHex(), day100);
+    const id = dayStatId(assetVaultClone.toHex(), BigInt.fromI32(86400 * 100));
     assert.entityCount("VaultDayStat", 1);
     assert.fieldEquals("VaultDayStat", id, "transferCount", "1");
     assert.fieldEquals("VaultDayStat", id, "depositCount", "0");
@@ -304,7 +429,7 @@ describe("VaultDayStat Test", () => {
     createMockBalanceOfFunction(assetVaultClone, recipient, ZERO);
     createMockTotalSupplyFunction(assetVaultClone, half);
     const burn = createTransferEvent(recipient, zero, half, assetVaultClone);
-    burn.block.timestamp = day100Noon;
+    burn.block.timestamp = BigInt.fromI32(86400 * 100 + 3600);
     handleTransfer(burn);
 
     assert.entityCount("VaultDayStat", 1);
