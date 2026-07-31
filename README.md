@@ -91,11 +91,13 @@ The workflow will:
 1. Build contract artifacts and the subgraph
 2. Deploy to Goldsky as `sft-<network>/<version>`
 
-Bump the version for each new deploy of a network (current `base` is `1.0.12`).
+Bump the version for each new deploy of a network (current `base` is `1.0.13`).
 Reusing an existing version name will fail or overwrite depending on Goldsky
 behavior — prefer always bumping.
 
-Requires the `CI_GOLDSKY_TOKEN` repository secret.
+Requires the `CI_GOLDSKY_TOKEN` repository secret. Optional `CACHIX_AUTH_TOKEN`
+speeds up Nix restores via the public `rainlanguage` Cachix (deploy still works
+without it).
 
 Supported networks: `arbitrum-one`, `arbitrum_sepolia`, `avalanche`, `base`,
 `bsc`, `mainnet`, `flare`, `mumbai`, `oasis_sapphire`, `matic`, `sepolia`,
