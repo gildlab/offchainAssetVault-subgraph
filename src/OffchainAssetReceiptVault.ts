@@ -580,6 +580,7 @@ export function handleTransfer(event: Transfer): void {
   if (!isMint && !isBurn) {
     let dayStat = getOrCreateVaultDayStat(vault.id, event.block.timestamp);
     dayStat.transferCount = dayStat.transferCount.plus(ONE);
+    dayStat.transferVolume = dayStat.transferVolume.plus(event.params.value);
     dayStat.save();
   }
 

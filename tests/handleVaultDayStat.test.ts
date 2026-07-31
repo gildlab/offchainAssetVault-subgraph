@@ -147,6 +147,7 @@ describe("VaultDayStat Test", () => {
     assert.fieldEquals("VaultDayStat", id, "transferCount", "0");
     assert.fieldEquals("VaultDayStat", id, "depositVolume", shares.toString());
     assert.fieldEquals("VaultDayStat", id, "withdrawVolume", "0");
+    assert.fieldEquals("VaultDayStat", id, "transferVolume", "0");
   });
 
   test("same-day deposits accumulate on one VaultDayStat", () => {
@@ -422,10 +423,11 @@ describe("VaultDayStat Test", () => {
     const id = dayStatId(assetVaultClone.toHex(), BigInt.fromI32(86400 * 100));
     assert.entityCount("VaultDayStat", 1);
     assert.fieldEquals("VaultDayStat", id, "transferCount", "1");
+    assert.fieldEquals("VaultDayStat", id, "transferVolume", half.toString());
     assert.fieldEquals("VaultDayStat", id, "depositCount", "0");
     assert.fieldEquals("VaultDayStat", id, "withdrawCount", "0");
 
-    // Burn (to zero) — must not bump transferCount
+    // Burn (to zero) — must not bump transferCount/volume
     createMockBalanceOfFunction(assetVaultClone, recipient, ZERO);
     createMockTotalSupplyFunction(assetVaultClone, half);
     const burn = createTransferEvent(recipient, zero, half, assetVaultClone);
@@ -434,5 +436,6 @@ describe("VaultDayStat Test", () => {
 
     assert.entityCount("VaultDayStat", 1);
     assert.fieldEquals("VaultDayStat", id, "transferCount", "1");
+    assert.fieldEquals("VaultDayStat", id, "transferVolume", half.toString());
   });
 });

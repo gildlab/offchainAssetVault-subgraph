@@ -125,6 +125,8 @@ type VaultDayStat @entity {
   depositVolume: BigInt!
   "Sum of withdraw amounts (shares) on this day"
   withdrawVolume: BigInt!
+  "Sum of wallet-to-wallet SharesTransfer valueExact on this day"
+  transferVolume: BigInt!
 }
 
 type Authorizer @entity {

@@ -116,6 +116,7 @@ export function getOrCreateVaultDayStat(
     dayStat.transferCount = ZERO;
     dayStat.depositVolume = ZERO;
     dayStat.withdrawVolume = ZERO;
+    dayStat.transferVolume = ZERO;
   }
   return dayStat;
 }
