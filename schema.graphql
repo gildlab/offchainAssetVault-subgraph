@@ -87,6 +87,8 @@ type OffchainAssetReceiptVault @entity {
   depositVolume: BigInt!
   "Sum of WithdrawWithReceipt.amount for this vault"
   withdrawVolume: BigInt!
+  "Per-UTC-day deposit/withdraw/transfer aggregates for dashboard charts"
+  dayStats: [VaultDayStat!]! @derivedFrom(field: "offchainAssetReceiptVault")
   "Wrapped ERC20 token transfers for this vault (wallet-to-wallet)"
   wrappedTokenTransfers: [WrappedTokenTransfer!]
     @derivedFrom(field: "offchainAssetReceiptVault")
@@ -98,6 +100,33 @@ type OffchainAssetReceiptVault @entity {
   exchangeRateBlock: BigInt
   "Timestamp when wrapped exchange rates were last updated"
   exchangeRateTimestamp: BigInt
+}
+
+"""
+One row per vault per UTC calendar day.
+Lets the home dashboard chart deposits/withdraws/transfers without paginating
+every DepositWithReceipt / WithdrawWithReceipt / SharesTransfer event.
+Updated incrementally in deposit / withdraw / share-transfer handlers.
+"""
+type VaultDayStat @entity {
+  " {vaultAddress}-{dayStartUnix} where dayStartUnix is UTC midnight "
+  id: ID!
+  "Vault this day bucket belongs to"
+  offchainAssetReceiptVault: OffchainAssetReceiptVault!
+  "Unix timestamp of UTC midnight for this day"
+  day: BigInt!
+  "Number of DepositWithReceipt events on this day"
+  depositCount: BigInt!
+  "Number of WithdrawWithReceipt events on this day"
+  withdrawCount: BigInt!
+  "Number of SharesTransfer events on this day"
+  transferCount: BigInt!
+  "Sum of deposit amounts (shares) on this day"
+  depositVolume: BigInt!
+  "Sum of withdraw amounts (shares) on this day"
+  withdrawVolume: BigInt!
+  "Sum of wallet-to-wallet SharesTransfer valueExact on this day"
+  transferVolume: BigInt!
 }
 
 type Authorizer @entity {
