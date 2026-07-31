@@ -81,13 +81,19 @@ npm test
 ## Deploy
 
 Deployments are triggered manually from GitHub Actions (**Deploy subgraph**
-workflow). Pick a network and the workflow will:
+workflow). Provide:
+
+- **network** — target chain
+- **version** — Goldsky subgraph version string (e.g. `1.0.13`)
+
+The workflow will:
 
 1. Build contract artifacts and the subgraph
-2. Deploy to Goldsky as `sft-<network>/<git-short-sha>`
+2. Deploy to Goldsky as `sft-<network>/<version>`
 
-The deploy version is the short git commit SHA of the checked-out ref, so each
-deployment is traceable to an exact commit.
+Bump the version for each new deploy of a network (current `base` is `1.0.12`).
+Reusing an existing version name will fail or overwrite depending on Goldsky
+behavior — prefer always bumping.
 
 Requires the `CI_GOLDSKY_TOKEN` repository secret.
 

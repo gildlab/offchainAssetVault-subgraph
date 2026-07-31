@@ -20,6 +20,10 @@ on:
           - sepolia
           - songbird
           - linea
+      version:
+        description: "Goldsky subgraph version (e.g. 1.0.13). Current base is 1.0.12 — bump when deploying."
+        required: true
+        type: string
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -38,5 +42,5 @@ jobs:
       # Check if the repo is clean before deploying.
       - run: git diff --exit-code -- . ":(exclude)subgraph.yaml"
       - run: >
-          nix develop -c goldsky subgraph deploy "sft-${{ inputs.network }}/$(git rev-parse --short HEAD)"
+          nix develop -c goldsky subgraph deploy "sft-${{ inputs.network }}/${{ inputs.version }}"
 
