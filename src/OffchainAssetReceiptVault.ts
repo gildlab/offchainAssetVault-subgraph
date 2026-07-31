@@ -35,6 +35,7 @@ import {
 } from "../generated/templates/OffchainAssetReceiptVaultTemplate/OffchainAssetReceiptVault";
 import {
   getAccount,
+  getOrCreateVaultDayStat,
   getReceipt,
   getReceiptBalance,
   getTransaction,
@@ -304,6 +305,14 @@ export function handleDeposit(event: Deposit): void {
       offchainAssetReceiptVault.depositVolume.plus(event.params.shares);
     offchainAssetReceiptVault.save();
 
+    let dayStat = getOrCreateVaultDayStat(
+      offchainAssetReceiptVault.id,
+      event.block.timestamp,
+    );
+    dayStat.depositCount = dayStat.depositCount.plus(ONE);
+    dayStat.depositVolume = dayStat.depositVolume.plus(event.params.shares);
+    dayStat.save();
+
     let account = getAccount(
       event.params.owner.toHex(),
       offchainAssetReceiptVault.id,
@@ -566,6 +575,14 @@ export function handleTransfer(event: Transfer): void {
 
   st.save();
   vault.shareTransferCount = vault.shareTransferCount.plus(ONE);
+
+  // Day-bucket wallet-to-wallet transfers only (exclude mint/burn from deposit/withdraw)
+  if (!isMint && !isBurn) {
+    let dayStat = getOrCreateVaultDayStat(vault.id, event.block.timestamp);
+    dayStat.transferCount = dayStat.transferCount.plus(ONE);
+    dayStat.save();
+  }
+
   vault.save();
 }
 
@@ -631,5 +648,13 @@ export function handleWithdraw(event: Withdraw): void {
     offchainAssetReceiptVault.withdrawVolume =
       offchainAssetReceiptVault.withdrawVolume.plus(event.params.shares);
     offchainAssetReceiptVault.save();
+
+    let dayStat = getOrCreateVaultDayStat(
+      offchainAssetReceiptVault.id,
+      event.block.timestamp,
+    );
+    dayStat.withdrawCount = dayStat.withdrawCount.plus(ONE);
+    dayStat.withdrawVolume = dayStat.withdrawVolume.plus(event.params.shares);
+    dayStat.save();
   }
 }

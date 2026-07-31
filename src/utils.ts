@@ -1,12 +1,4 @@
 import {
-  Address,
-  BigDecimal,
-  BigInt,
-  ByteArray,
-  Bytes,
-  ethereum,
-} from "@graphprotocol/graph-ts";
-import {
   Account,
   Authorizer,
   OffchainAssetReceiptVault,
@@ -16,13 +8,23 @@ import {
   TokenHolder,
   Transaction,
   User,
+  VaultDayStat,
 } from "../generated/schema";
+import {
+  Address,
+  BigDecimal,
+  BigInt,
+  ByteArray,
+  Bytes,
+  ethereum,
+} from "@graphprotocol/graph-ts";
 
 export const ZERO = BigInt.fromI32(0);
 export const ONE = BigInt.fromI32(1);
 export const ONE_18 = BigInt.fromString("1000000000000000000");
 export const ZERO_BD = BigDecimal.fromString("0");
 export const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+export const SECONDS_PER_DAY = BigInt.fromI32(86400);
 
 export function getAccount(
   address: string,
@@ -92,6 +94,30 @@ export function getTransaction(
     transaction.save();
   }
   return transaction as Transaction;
+}
+
+/**
+ * Get or create a UTC-day bucket for vault activity.
+ * Id: `{vaultId}-{dayStartUnix}` where dayStartUnix = floor(timestamp / 86400) * 86400.
+ */
+export function getOrCreateVaultDayStat(
+  vaultId: string,
+  timestamp: BigInt,
+): VaultDayStat {
+  let dayStart = timestamp.div(SECONDS_PER_DAY).times(SECONDS_PER_DAY);
+  let id = vaultId + "-" + dayStart.toString();
+  let dayStat = VaultDayStat.load(id);
+  if (!dayStat) {
+    dayStat = new VaultDayStat(id);
+    dayStat.offchainAssetReceiptVault = vaultId;
+    dayStat.day = dayStart;
+    dayStat.depositCount = ZERO;
+    dayStat.withdrawCount = ZERO;
+    dayStat.transferCount = ZERO;
+    dayStat.depositVolume = ZERO;
+    dayStat.withdrawVolume = ZERO;
+  }
+  return dayStat;
 }
 
 export function getRoleHolder(
