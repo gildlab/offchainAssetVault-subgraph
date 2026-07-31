@@ -323,8 +323,8 @@ type ConfiscateShares implements Event @entity {
   confiscatee: Account! # ConfiscateShares.confiscatee
   "The number of shares confiscated"
   confiscated: BigInt! # ConfiscateShares.confiscated
-  "data"
-  data: String!
+  "The justification / metadata submitted with the confiscation (Rain Metadata V1 bytes)"
+  data: Bytes! # ConfiscateShares.justification
 }
 
 # Get from event ConfiscateReceipt
@@ -346,8 +346,8 @@ type ConfiscateReceipt implements Event @entity {
   receipt: Receipt! # Link to Receipt for {OffchainAssetReceiptVault address}-{Confiscate.id}
   "The number of receipts confiscated"
   confiscated: BigInt! # ConfiscateReceipt.confiscated
-  "data"
-  data: String!
+  "The justification / metadata submitted with the confiscation (Rain Metadata V1 bytes)"
+  data: Bytes! # ConfiscateReceipt.justification
 }
 
 type SharesBalance @entity {

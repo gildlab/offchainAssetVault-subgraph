@@ -199,7 +199,8 @@ export function handleConfiscateReceipt(event: ConfiscateReceiptEvent): void {
 
     confiscateReceipts.confiscated = event.params.confiscated;
     confiscateReceipts.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-    confiscateReceipts.data = event.params.justification.toString();
+    // Store as Bytes (not .toString()) so Rain Metadata V1 binary survives indexing.
+    confiscateReceipts.data = event.params.justification;
     confiscateReceipts.save();
   }
 }
@@ -231,7 +232,8 @@ export function handleConfiscateShares(event: ConfiscateSharesEvent): void {
     ).id;
     confiscateShares.confiscated = event.params.confiscated;
     confiscateShares.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-    confiscateShares.data = event.params.justification.toString();
+    // Store as Bytes (not .toString()) so Rain Metadata V1 binary survives indexing.
+    confiscateShares.data = event.params.justification;
     confiscateShares.save();
   }
 }
