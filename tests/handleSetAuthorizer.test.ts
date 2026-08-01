@@ -1,20 +1,21 @@
 import {
-    test,
-    assert,
-    clearStore,
-    describe,
-    afterEach,
-    beforeAll,
-    clearInBlockStore,
-    dataSourceMock,
-    logStore
+  test,
+  assert,
+  clearStore,
+  describe,
+  afterEach,
+  beforeAll,
+  clearInBlockStore,
+  dataSourceMock,
+  logStore,
 } from "matchstick-as";
+import { Address, DataSourceContext, Value } from "@graphprotocol/graph-ts";
 import {
-    Address,
-    DataSourceContext,
-    Value
-} from "@graphprotocol/graph-ts";
-import { createNewCloneEvent, createSetAuthorizerEvent, createDeploymentEvent, createMockReceiptFunction } from "./mock.test";
+  createNewCloneEvent,
+  createSetAuthorizerEvent,
+  createDeploymentEvent,
+  createMockReceiptFunction,
+} from "./mock.test";
 import { handleNewClone } from "../src/CloneFactory";
 import { handleDeployment } from "../src/StoxUnifiedDeployer";
 import { AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS } from "../src/networkImplementation";
@@ -22,145 +23,264 @@ import { handleAuthorizerSet } from "../src/OffchainAssetReceiptVault";
 import { Authorizer } from "../generated/schema";
 
 describe("Set Authorizer Test", () => {
+  const dataSourceAddress = "0xA16081F360e3847006dB660bae1c6d1b2e17eC2A";
 
-    const dataSourceAddress = '0xA16081F360e3847006dB660bae1c6d1b2e17eC2A';
+  beforeAll(() => {
+    let context = new DataSourceContext();
+    context.set("contextVal", Value.fromI32(325));
+    dataSourceMock.setReturnValues(dataSourceAddress, "polygon-amoy", context);
+  });
 
-    beforeAll(() => {
-        let context = new DataSourceContext()
-        context.set('contextVal', Value.fromI32(325))
-        dataSourceMock.setReturnValues(dataSourceAddress, 'polygon-amoy', context)
-    });
+  afterEach(() => {
+    clearStore();
+    clearInBlockStore();
+  });
 
-    afterEach(() => {
-        clearStore();
-        clearInBlockStore();
-    });
+  test("handle set authorizer", () => {
+    const sender = Address.fromString(
+      "0x1234567890123456789012345678901234567890",
+    );
 
-    test("handle set authorizer", () => {
-        const sender = Address.fromString("0x1234567890123456789012345678901234567890");
+    // Authorizer Clone
+    const authorizerImplementation = Address.fromString(
+      AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS,
+    );
+    const authorizerClone = Address.fromString(
+      "0x0000000000000000000000000000000000000aaa",
+    );
+    let authorizerCloneEvent = createNewCloneEvent(
+      sender,
+      authorizerImplementation,
+      authorizerClone,
+    );
+    handleNewClone(authorizerCloneEvent);
 
-        // Authorizer Clone
-        const authorizerImplementation = Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS);
-        const authorizerClone = Address.fromString("0x0000000000000000000000000000000000000aaa");
-        let authorizerCloneEvent = createNewCloneEvent(sender, authorizerImplementation, authorizerClone);
-        handleNewClone(authorizerCloneEvent);
+    // Asset Vault Deployment (handled by StoxUnifiedDeployer)
+    const assetVaultClone = Address.fromString(
+      "0x0000000000000000000000000000000000000bbb",
+    );
+    const receipt = Address.fromString(
+      "0x0000000000000000000000000000000000000ccc",
+    );
+    const wrapper = Address.fromString(
+      "0x0000000000000000000000000000000000000ddd",
+    );
+    // Mock the receipt() RPC call
+    createMockReceiptFunction(assetVaultClone, receipt);
+    let deploymentEvent = createDeploymentEvent(
+      sender,
+      assetVaultClone,
+      wrapper,
+      Address.fromString(dataSourceAddress),
+    );
+    handleDeployment(deploymentEvent);
 
-        // Asset Vault Deployment (handled by StoxUnifiedDeployer)
-        const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000000bbb");
-        const receipt = Address.fromString("0x0000000000000000000000000000000000000ccc");
-        const wrapper = Address.fromString("0x0000000000000000000000000000000000000ddd");
-        // Mock the receipt() RPC call
-        createMockReceiptFunction(assetVaultClone, receipt);
-        let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
-        handleDeployment(deploymentEvent);
+    assert.entityCount("OffchainAssetReceiptVault", 1);
+    assert.entityCount("Authorizer", 2);
+    assert.fieldEquals(
+      "Authorizer",
+      assetVaultClone.toHexString(),
+      "isActive",
+      "true",
+    );
+    assert.fieldEquals(
+      "OffchainAssetReceiptVault",
+      assetVaultClone.toHexString(),
+      "activeAuthorizer",
+      assetVaultClone.toHexString(),
+    );
 
-        assert.entityCount("OffchainAssetReceiptVault", 1);
-        assert.entityCount("Authorizer", 2);
-        assert.fieldEquals(
-            "Authorizer",
-            assetVaultClone.toHexString(),
-            "isActive",
-            "true"
-        );
-        assert.fieldEquals(
-            "OffchainAssetReceiptVault",
-            assetVaultClone.toHexString(),
-            "activeAuthorizer",
-            assetVaultClone.toHexString()
-        );
+    // Set Authorizer
+    const authorizerSetEvent = createSetAuthorizerEvent(
+      sender,
+      authorizerClone,
+      assetVaultClone,
+    );
+    handleAuthorizerSet(authorizerSetEvent);
+    assert.fieldEquals(
+      "Authorizer",
+      authorizerClone.toHexString(),
+      "isActive",
+      "true",
+    );
+    assert.fieldEquals(
+      "OffchainAssetReceiptVault",
+      assetVaultClone.toHexString(),
+      "activeAuthorizer",
+      authorizerClone.toHexString(),
+    );
+    let assetVaultAuthorizer = Authorizer.load(assetVaultClone.toHexString());
+    assert.assertNotNull(assetVaultAuthorizer);
+    if (assetVaultAuthorizer == null) {
+      return;
+    }
+    assert.booleanEquals(assetVaultAuthorizer.isActive, false);
+  });
 
-        // Set Authorizer
-        const authorizerSetEvent = createSetAuthorizerEvent(sender, authorizerClone, assetVaultClone);
-        handleAuthorizerSet(authorizerSetEvent);
-        assert.fieldEquals(
-            "Authorizer",
-            authorizerClone.toHexString(),
-            "isActive",
-            "true"
-        );
-        assert.fieldEquals(
-            "OffchainAssetReceiptVault",
-            assetVaultClone.toHexString(),
-            "activeAuthorizer",
-            authorizerClone.toHexString()
-        );
-        let assetVaultAuthorizer = Authorizer.load(assetVaultClone.toHexString());
-        assert.assertNotNull(assetVaultAuthorizer);
-        if (assetVaultAuthorizer == null) {
-            return;
-        }
-        assert.booleanEquals(assetVaultAuthorizer.isActive, false);
-        
-    });
+  test("handle set authorizer with multiple authorizers", () => {
+    const sender = Address.fromString(
+      "0x1234567890123456789012345678901234567890",
+    );
 
-    test("handle set authorizer with multiple authorizers", () => {
-        const sender = Address.fromString("0x1234567890123456789012345678901234567890");
+    // Asset Vault Deployment (handled by StoxUnifiedDeployer)
+    const assetVaultClone = Address.fromString(
+      "0x0000000000000000000000000000000000aaaaaa",
+    );
+    const receipt = Address.fromString(
+      "0x0000000000000000000000000000000000cccccc",
+    );
+    const wrapper = Address.fromString(
+      "0x0000000000000000000000000000000000dddddd",
+    );
+    // Mock the receipt() RPC call
+    createMockReceiptFunction(assetVaultClone, receipt);
+    let deploymentEvent = createDeploymentEvent(
+      sender,
+      assetVaultClone,
+      wrapper,
+      Address.fromString(dataSourceAddress),
+    );
+    handleDeployment(deploymentEvent);
 
-        // Asset Vault Deployment (handled by StoxUnifiedDeployer)
-        const assetVaultClone = Address.fromString("0x0000000000000000000000000000000000aaaaaa");
-        const receipt = Address.fromString("0x0000000000000000000000000000000000cccccc");
-        const wrapper = Address.fromString("0x0000000000000000000000000000000000dddddd");
-        // Mock the receipt() RPC call
-        createMockReceiptFunction(assetVaultClone, receipt);
-        let deploymentEvent = createDeploymentEvent(sender, assetVaultClone, wrapper, Address.fromString(dataSourceAddress));
-        handleDeployment(deploymentEvent);
+    // Authorizer Clone
+    const authorizerImplementation = Address.fromString(
+      AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS,
+    );
+    const authorizerClone1 = Address.fromString(
+      "0x0000000000000000000000000000000000bbbbbb",
+    );
+    let authorizerCloneEvent1 = createNewCloneEvent(
+      sender,
+      authorizerImplementation,
+      authorizerClone1,
+    );
+    handleNewClone(authorizerCloneEvent1);
 
-        // Authorizer Clone
-        const authorizerImplementation = Address.fromString(AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS);
-        const authorizerClone1 = Address.fromString("0x0000000000000000000000000000000000bbbbbb");
-        let authorizerCloneEvent1 = createNewCloneEvent(sender, authorizerImplementation, authorizerClone1);
-        handleNewClone(authorizerCloneEvent1);
+    // Set Authorizer
+    const authorizerSetEvent1 = createSetAuthorizerEvent(
+      sender,
+      authorizerClone1,
+      assetVaultClone,
+    );
+    handleAuthorizerSet(authorizerSetEvent1);
 
-        // Set Authorizer
-        const authorizerSetEvent1 = createSetAuthorizerEvent(sender, authorizerClone1, assetVaultClone);
-        handleAuthorizerSet(authorizerSetEvent1);
+    // Assertions
+    assert.entityCount("OffchainAssetReceiptVault", 1);
+    assert.entityCount("Authorizer", 2);
+    assert.fieldEquals(
+      "Authorizer",
+      authorizerClone1.toHexString(),
+      "isActive",
+      "true",
+    );
+    assert.fieldEquals(
+      "OffchainAssetReceiptVault",
+      assetVaultClone.toHexString(),
+      "activeAuthorizer",
+      authorizerClone1.toHexString(),
+    );
 
-        // Assertions
-        assert.entityCount("OffchainAssetReceiptVault", 1);
-        assert.entityCount("Authorizer", 2);
-        assert.fieldEquals(
-            "Authorizer",
-            authorizerClone1.toHexString(),
-            "isActive",
-            "true"
-        );
-        assert.fieldEquals(
-            "OffchainAssetReceiptVault",
-            assetVaultClone.toHexString(),
-            "activeAuthorizer",
-            authorizerClone1.toHexString()
-        );
-        
-        const authorizerClone2 = Address.fromString("0x0000000000000000000000000000000000cccccc");
-        let authorizerCloneEvent2 = createNewCloneEvent(sender, authorizerImplementation, authorizerClone2);
-        handleNewClone(authorizerCloneEvent2);
+    const authorizerClone2 = Address.fromString(
+      "0x0000000000000000000000000000000000cccccc",
+    );
+    let authorizerCloneEvent2 = createNewCloneEvent(
+      sender,
+      authorizerImplementation,
+      authorizerClone2,
+    );
+    handleNewClone(authorizerCloneEvent2);
 
-        const authorizerSetEvent2 = createSetAuthorizerEvent(sender, authorizerClone2, assetVaultClone);
-        handleAuthorizerSet(authorizerSetEvent2);
+    const authorizerSetEvent2 = createSetAuthorizerEvent(
+      sender,
+      authorizerClone2,
+      assetVaultClone,
+    );
+    handleAuthorizerSet(authorizerSetEvent2);
 
-        // Assertions
-        assert.entityCount("OffchainAssetReceiptVault", 1);
-        assert.entityCount("Authorizer", 3);
+    // Assertions
+    assert.entityCount("OffchainAssetReceiptVault", 1);
+    assert.entityCount("Authorizer", 3);
 
-        assert.fieldEquals(
-            "Authorizer",
-            authorizerClone1.toHexString(),
-            "isActive",
-            "false"
-        );
-        assert.fieldEquals(
-            "Authorizer",
-            authorizerClone2.toHexString(),
-            "isActive",
-            "true"
-        );
-        assert.fieldEquals(
-            "OffchainAssetReceiptVault",
-            assetVaultClone.toHexString(),
-            "activeAuthorizer",
-            authorizerClone2.toHexString()
-        );
-        
-    });
-    
-})
+    assert.fieldEquals(
+      "Authorizer",
+      authorizerClone1.toHexString(),
+      "isActive",
+      "false",
+    );
+    assert.fieldEquals(
+      "Authorizer",
+      authorizerClone2.toHexString(),
+      "isActive",
+      "true",
+    );
+    assert.fieldEquals(
+      "OffchainAssetReceiptVault",
+      assetVaultClone.toHexString(),
+      "activeAuthorizer",
+      authorizerClone2.toHexString(),
+    );
+  });
+
+  test("handle set authorizer without prior NewClone creates authorizer", () => {
+    const sender = Address.fromString(
+      "0x1234567890123456789012345678901234567890",
+    );
+
+    const assetVaultClone = Address.fromString(
+      "0x0000000000000000000000000000000000eeeeee",
+    );
+    const receipt = Address.fromString(
+      "0x0000000000000000000000000000000000ffffff",
+    );
+    const wrapper = Address.fromString(
+      "0x0000000000000000000000000000000000111111",
+    );
+    createMockReceiptFunction(assetVaultClone, receipt);
+    let deploymentEvent = createDeploymentEvent(
+      sender,
+      assetVaultClone,
+      wrapper,
+      Address.fromString(dataSourceAddress),
+    );
+    handleDeployment(deploymentEvent);
+
+    // Shared / alternate-factory authorizer — never seen via NewClone
+    const sharedAuthorizer = Address.fromString(
+      "0x0000000000000000000000000000000000315b16",
+    );
+    const authorizerSetEvent = createSetAuthorizerEvent(
+      sender,
+      sharedAuthorizer,
+      assetVaultClone,
+    );
+    handleAuthorizerSet(authorizerSetEvent);
+
+    assert.entityCount("OffchainAssetReceiptVault", 1);
+    assert.entityCount("Authorizer", 2);
+    assert.fieldEquals(
+      "Authorizer",
+      sharedAuthorizer.toHexString(),
+      "isActive",
+      "true",
+    );
+    assert.fieldEquals(
+      "Authorizer",
+      sharedAuthorizer.toHexString(),
+      "offchainAssetReceiptVault",
+      assetVaultClone.toHexString(),
+    );
+    assert.fieldEquals(
+      "OffchainAssetReceiptVault",
+      assetVaultClone.toHexString(),
+      "activeAuthorizer",
+      sharedAuthorizer.toHexString(),
+    );
+
+    let stubAuthorizer = Authorizer.load(assetVaultClone.toHexString());
+    assert.assertNotNull(stubAuthorizer);
+    if (stubAuthorizer == null) {
+      return;
+    }
+    assert.booleanEquals(stubAuthorizer.isActive, false);
+  });
+});

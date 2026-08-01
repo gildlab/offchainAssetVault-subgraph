@@ -23,6 +23,28 @@ dataSources:
         - event: NewClone(address,address,address)
           handler: handleNewClone
       file: ./src/CloneFactory.ts
+  # Alternate Rain CloneFactory used by some Base authorizer deployments
+  # (e.g. shared authorizer 0x315b16… cloned via this factory).
+  - kind: ethereum/contract
+    name: CloneFactoryAlt
+    network: base
+    source:
+      abi: CloneFactory
+      address: "0x444acC29d63fa643E8adCC35FD9aa6DE111dCb39"
+      startBlock: 41974475
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Authorizer
+      abis:
+        - name: CloneFactory
+          file: ./lib/rain.factory/out/CloneFactory.sol/CloneFactory.json
+      eventHandlers:
+        - event: NewClone(address,address,address)
+          handler: handleNewClone
+      file: ./src/CloneFactory.ts
   - kind: ethereum/contract
     name: StoxUnifiedDeployer
     network: base

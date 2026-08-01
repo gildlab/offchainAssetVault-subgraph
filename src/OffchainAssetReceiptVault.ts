@@ -20,7 +20,10 @@ import {
   Account,
   Authorizer,
 } from "../generated/schema";
-import { ReceiptTemplate } from "../generated/templates";
+import {
+  ReceiptTemplate,
+  OffchainAssetReceiptVaultAuthorizerV1Template,
+} from "../generated/templates";
 import {
   Certify as CertifyEvent,
   ConfiscateShares as ConfiscateSharesEvent,
@@ -51,35 +54,53 @@ import { store, Entity, Value } from "@graphprotocol/graph-ts";
 import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { CBORDecoder } from "@rainprotocol/assemblyscript-cbor";
 
+/**
+ * Get or create an Authorizer entity. Shared / alternate-factory authorizers are
+ * often set on a vault without a prior NewClone from the indexed CloneFactory.
+ */
+function getOrCreateAuthorizer(authorizerAddress: Address): Authorizer {
+  let id = authorizerAddress.toHex();
+  let authorizer = Authorizer.load(id);
+  if (!authorizer) {
+    authorizer = new Authorizer(id);
+    authorizer.address = authorizerAddress;
+    authorizer.isActive = false;
+  }
+  return authorizer as Authorizer;
+}
+
 export function handleAuthorizerSet(event: AuthorizerSet): void {
   let offchainAssetReceiptVault = OffchainAssetReceiptVault.load(
     event.address.toHex(),
   );
-  if (offchainAssetReceiptVault) {
-    if (offchainAssetReceiptVault.activeAuthorizer != null) {
-      let previousAuthorizer = Authorizer.load(
-        offchainAssetReceiptVault.activeAuthorizer as string,
-      );
-      if (
-        previousAuthorizer &&
-        previousAuthorizer.id != event.params.authorizer.toHex()
-      ) {
-        previousAuthorizer.isActive = false;
-        previousAuthorizer.save();
-      }
-    }
+  if (!offchainAssetReceiptVault) {
+    return;
+  }
 
-    let authorizer = Authorizer.load(event.params.authorizer.toHex());
-    if (authorizer) {
-      authorizer.isActive = true;
-      authorizer.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
-      authorizer.save();
-
-      // Set Active Authorizer
-      offchainAssetReceiptVault.activeAuthorizer = authorizer.id;
-      offchainAssetReceiptVault.save();
+  if (offchainAssetReceiptVault.activeAuthorizer != null) {
+    let previousAuthorizer = Authorizer.load(
+      offchainAssetReceiptVault.activeAuthorizer as string,
+    );
+    if (
+      previousAuthorizer &&
+      previousAuthorizer.id != event.params.authorizer.toHex()
+    ) {
+      previousAuthorizer.isActive = false;
+      previousAuthorizer.save();
     }
   }
+
+  let authorizer = getOrCreateAuthorizer(event.params.authorizer);
+  authorizer.isActive = true;
+  authorizer.offchainAssetReceiptVault = offchainAssetReceiptVault.id;
+  authorizer.save();
+
+  // Ensure RoleGranted/RoleRevoked are indexed even when NewClone was missed
+  // (unknown factory / unknown implementation). Idempotent if already created.
+  OffchainAssetReceiptVaultAuthorizerV1Template.create(event.params.authorizer);
+
+  offchainAssetReceiptVault.activeAuthorizer = authorizer.id;
+  offchainAssetReceiptVault.save();
 }
 
 export function handleCertify(event: CertifyEvent): void {
