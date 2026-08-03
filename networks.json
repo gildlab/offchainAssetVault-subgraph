@@ -12,5 +12,19 @@
       "address": "0x821a71a313bdDDc94192CF0b5F6f5bC31Ac75853",
       "startBlock": 41197252
     }
+  },
+  "mainnet": {
+    "CloneFactory": {
+      "address": "0x444acC29d63fa643E8adCC35FD9aa6DE111dCb39",
+      "startBlock": 25587060
+    },
+    "CloneFactoryAlt": {
+      "address": "0x444acC29d63fa643E8adCC35FD9aa6DE111dCb39",
+      "startBlock": 99999999
+    },
+    "StoxUnifiedDeployer": {
+      "address": "0x81D0ecD58346bf2d484E7774f55EABc1AA3F4bcc",
+      "startBlock": 25546009
+    }
   }
 }
