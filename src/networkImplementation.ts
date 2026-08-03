@@ -16,7 +16,7 @@ export const BASE_SEPOLIA_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS =
 export const POLYGON_AUTHORIZER_IMPLEMENTATION_ADDRESS =
   "0xffffffffffffffffffffffffffffffffffffffff";
 export const MAINNET_AUTHORIZER_IMPLEMENTATION_ADDRESS =
-  "0xffffffffffffffffffffffffffffffffffffffff";
+  "0x2EA0d35d0B1F57C42e6130f298930228bCbFDe9b";
 
 // Vault Implementation Addresses
 // Disable all vault implementations, vault implementations handled by OffchainAssetReceiptVaultBeaconSetDeployer
