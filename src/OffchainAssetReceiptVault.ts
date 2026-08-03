@@ -17,7 +17,6 @@ import {
   TokenHolder,
   SharesTransfer,
   SharesBalance,
-  Account,
   Authorizer,
 } from "../generated/schema";
 import {
@@ -50,7 +49,6 @@ import {
   BigintToHexString,
   ZERO_ADDRESS,
 } from "./utils";
-import { store, Entity, Value } from "@graphprotocol/graph-ts";
 import { Address, BigInt } from "@graphprotocol/graph-ts";
 import { CBORDecoder } from "@rainprotocol/assemblyscript-cbor";
 
