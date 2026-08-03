@@ -17,6 +17,8 @@ export const POLYGON_AUTHORIZER_IMPLEMENTATION_ADDRESS =
   "0xffffffffffffffffffffffffffffffffffffffff";
 export const MAINNET_AUTHORIZER_IMPLEMENTATION_ADDRESS =
   "0x2EA0d35d0B1F57C42e6130f298930228bCbFDe9b";
+export const MAINNET_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS =
+  "0xeaD68E489Cb19453b294dc46a3A5710b0d46d17F";
 
 // Vault Implementation Addresses
 // Disable all vault implementations, vault implementations handled by OffchainAssetReceiptVaultBeaconSetDeployer
@@ -45,6 +47,7 @@ export class NetworkImplementation {
     if (network == "mainnet") {
       this.authorizerImplementations = [
         MAINNET_AUTHORIZER_IMPLEMENTATION_ADDRESS,
+        MAINNET_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS,
       ];
       this.vaultImplementations = [MAINNET_VAULT_IMPLEMENTATION_ADDRESS];
     } else if (network == "polygon") {
