@@ -20,65 +20,42 @@ export const MAINNET_AUTHORIZER_IMPLEMENTATION_ADDRESS =
 export const MAINNET_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS =
   "0xeaD68E489Cb19453b294dc46a3A5710b0d46d17F";
 
-// Vault Implementation Addresses
-// Disable all vault implementations, vault implementations handled by OffchainAssetReceiptVaultBeaconSetDeployer
-export const AMOY_VAULT_IMPLEMENTATION_ADDRESS =
-  "0xffffffffffffffffffffffffffffffffffffffff";
-export const ARBITRUM_ONE_VAULT_IMPLEMENTATION_ADDRESS =
-  "0xffffffffffffffffffffffffffffffffffffffff";
-export const BASE_VAULT_IMPLEMENTATION_ADDRESS =
-  "0xffffffffffffffffffffffffffffffffffffffff";
-export const POLYGON_VAULT_IMPLEMENTATION_ADDRESS =
-  "0xffffffffffffffffffffffffffffffffffffffff";
-export const MAINNET_VAULT_IMPLEMENTATION_ADDRESS =
-  "0xffffffffffffffffffffffffffffffffffffffff";
-
+/**
+ * Known authorizer implementation addresses per network.
+ * Vault clones are not created via CloneFactory — they come from StoxUnifiedDeployer.
+ */
 export class NetworkImplementation {
-  // Authorizer implementation addresses by network
   public authorizerImplementations: string[];
-
-  // Vault implementation addresses by network
-  public vaultImplementations: string[];
 
   constructor(network: string) {
     this.authorizerImplementations = [];
-    this.vaultImplementations = [];
 
     if (network == "mainnet") {
       this.authorizerImplementations = [
         MAINNET_AUTHORIZER_IMPLEMENTATION_ADDRESS,
         MAINNET_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS,
       ];
-      this.vaultImplementations = [MAINNET_VAULT_IMPLEMENTATION_ADDRESS];
     } else if (network == "polygon") {
       this.authorizerImplementations = [
         POLYGON_AUTHORIZER_IMPLEMENTATION_ADDRESS,
       ];
-      this.vaultImplementations = [POLYGON_VAULT_IMPLEMENTATION_ADDRESS];
     } else if (network == "arbitrum-one") {
       this.authorizerImplementations = [
         ARBITRUM_ONE_AUTHORIZER_IMPLEMENTATION_ADDRESS,
       ];
-      this.vaultImplementations = [ARBITRUM_ONE_VAULT_IMPLEMENTATION_ADDRESS];
     } else if (network == "polygon-amoy") {
       this.authorizerImplementations = [AMOY_AUTHORIZER_IMPLEMENTATION_ADDRESS];
-      this.vaultImplementations = [AMOY_VAULT_IMPLEMENTATION_ADDRESS];
     } else if (network == "base") {
       this.authorizerImplementations = [
         BASE_AUTHORIZER_IMPLEMENTATION_ADDRESS,
         BASE_AUTHORIZER_IMPLEMENTATION_ADDRESS_ALT,
         BASE_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS,
       ];
-      this.vaultImplementations = [BASE_VAULT_IMPLEMENTATION_ADDRESS];
     } else if (network == "base-sepolia") {
       this.authorizerImplementations = [
         BASE_SEPOLIA_AUTHORIZER_IMPLEMENTATION_ADDRESS,
         BASE_SEPOLIA_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS,
       ];
-      this.vaultImplementations = [BASE_VAULT_IMPLEMENTATION_ADDRESS];
-    } else {
-      this.authorizerImplementations = [];
-      this.vaultImplementations = [];
     }
   }
 
@@ -91,14 +68,5 @@ export class NetworkImplementation {
       }
     }
     return address.includes("Authorizer") || address.includes("authorizer");
-  }
-
-  public isVaultImplementation(address: string): boolean {
-    for (let i = 0; i < this.vaultImplementations.length; i++) {
-      if (address.toLowerCase() == this.vaultImplementations[i].toLowerCase()) {
-        return true;
-      }
-    }
-    return !this.isAuthorizerImplementation(address);
   }
 }
