@@ -106,7 +106,9 @@ export function handleCertify(event: CertifyEvent): void {
     event.address.toHex(),
   );
   if (offchainAssetReceiptVault) {
-    let certify = new Certify(`Certify-${event.transaction.hash.toHex()}`);
+    let certify = new Certify(
+      `Certify-${event.transaction.hash.toHex()}-${event.logIndex.toString()}`,
+    );
     certify.transaction = getTransaction(
       event.block,
       event.transaction.hash.toHex(),
@@ -150,6 +152,8 @@ export function handleCertify(event: CertifyEvent): void {
                 if (offchainAssetReceiptVault) {
                   let hash = new Hash(
                     event.transaction.hash.toHex().toString() +
+                      "-" +
+                      event.logIndex.toString() +
                       "-" +
                       i.toString(),
                   );
