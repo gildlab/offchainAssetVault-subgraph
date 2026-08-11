@@ -19,6 +19,11 @@ export const MAINNET_AUTHORIZER_IMPLEMENTATION_ADDRESS =
   "0x2EA0d35d0B1F57C42e6130f298930228bCbFDe9b";
 export const MAINNET_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS =
   "0xeaD68E489Cb19453b294dc46a3A5710b0d46d17F";
+// Same CREATE2 deployments as mainnet on HyperEVM.
+export const HYPEREVM_AUTHORIZER_IMPLEMENTATION_ADDRESS =
+  MAINNET_AUTHORIZER_IMPLEMENTATION_ADDRESS;
+export const HYPEREVM_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS =
+  MAINNET_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS;
 
 /**
  * Known authorizer implementation addresses per network.
@@ -34,6 +39,11 @@ export class NetworkImplementation {
       this.authorizerImplementations = [
         MAINNET_AUTHORIZER_IMPLEMENTATION_ADDRESS,
         MAINNET_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS,
+      ];
+    } else if (network == "hyperevm") {
+      this.authorizerImplementations = [
+        HYPEREVM_AUTHORIZER_IMPLEMENTATION_ADDRESS,
+        HYPEREVM_PAYMENT_AUTHORIZER_IMPLEMENTATION_ADDRESS,
       ];
     } else if (network == "polygon") {
       this.authorizerImplementations = [

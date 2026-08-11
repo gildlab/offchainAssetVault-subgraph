@@ -13,6 +13,7 @@ on:
           - base
           - bsc
           - mainnet
+          - hyperevm
           - flare
           - mumbai
           - oasis_sapphire

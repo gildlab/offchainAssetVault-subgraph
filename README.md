@@ -100,8 +100,8 @@ speeds up Nix restores via the public `rainlanguage` Cachix (deploy still works
 without it).
 
 Supported networks: `arbitrum-one`, `arbitrum_sepolia`, `avalanche`, `base`,
-`bsc`, `mainnet`, `flare`, `mumbai`, `oasis_sapphire`, `matic`, `sepolia`,
-`songbird`, `linea`.
+`bsc`, `mainnet`, `hyperevm`, `flare`, `mumbai`, `oasis_sapphire`, `matic`,
+`sepolia`, `songbird`, `linea`.
 
 ## Project layout
 
