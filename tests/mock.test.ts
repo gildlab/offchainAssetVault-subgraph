@@ -136,15 +136,20 @@ export function createCertifyEvent(
   force: boolean,
   data: Bytes,
   contractAddress: Address,
+  logIndex: BigInt | null = null,
+  transaction: ethereum.Transaction | null = null,
 ): CertifyEvent {
   let mockEvent = newMockEvent();
+  let eventLogIndex = logIndex !== null ? logIndex : mockEvent.logIndex;
+  let eventTransaction =
+    transaction !== null ? transaction : mockEvent.transaction;
   let certifyEvent = new CertifyEvent(
     contractAddress,
-    mockEvent.logIndex,
+    eventLogIndex,
     mockEvent.transactionLogIndex,
     mockEvent.logType,
     mockEvent.block,
-    mockEvent.transaction,
+    eventTransaction,
     mockEvent.parameters,
     null,
   );
