@@ -96,9 +96,9 @@ The workflow will:
 4. Report job status to Telegram when `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`
    are configured
 
-A daily **Goldsky version cap check** workflow also runs `--check-only` across
-every network in `networks.json` so forgotten migrations alert without waiting
-for the next deploy.
+A daily **Goldsky version cap check** workflow also verifies every network in
+`networks.json` so forgotten migrations alert without waiting for the next
+deploy.
 
 Requires the `CI_GOLDSKY_TOKEN` repository secret. Optional `CACHIX_AUTH_TOKEN`
 speeds up Nix restores via the public `rainlanguage` Cachix (deploy still works
