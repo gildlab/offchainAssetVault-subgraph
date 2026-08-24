@@ -1,0 +1,59 @@
+name: Goldsky version cap check
+# RAI-1962: catch forgotten migration overlaps (>2 versions, or 2 versions for >24h)
+# without waiting for the next deploy.
+on:
+  schedule:
+    # Daily 06:00 UTC
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+jobs:
+  check:
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    env:
+      GOLDSKY_TOKEN: ${{ secrets.CI_GOLDSKY_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nixbuild/nix-quick-install-action@v30
+        with:
+          nix_conf: |
+            keep-env-derivations = true
+            keep-outputs = true
+      - uses: cachix/cachix-action@v15
+        continue-on-error: true
+        with:
+          name: rainlanguage
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          useDaemon: false
+      - name: Restore and save Nix store
+        uses: nix-community/cache-nix-action@v6
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          gc-max-store-size-linux: 1G
+      - run: nix develop -c goldsky login --token ${{ secrets.CI_GOLDSKY_TOKEN }}
+      - name: Check version caps for configured networks
+        run: |
+          set -euo pipefail
+          networks="$(jq -r 'keys[]' networks.json)"
+          failed=0
+          for network in $networks; do
+            echo "::group::sft-${network}"
+            if ! nix develop -c bash scripts/goldsky-enforce-version-cap.sh \
+              "sft-${network}" \
+              --max 2 \
+              --check-only; then
+              failed=1
+            fi
+            echo "::endgroup::"
+          done
+          exit "$failed"
+      - name: Forward CI status to Telegram
+        if: always()
+        uses: rainlanguage/github-chore/.github/actions/telegram-status-report@main
+        with:
+          status: ${{ job.status }}
+          telegram-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          telegram-chat-id: ${{ secrets.TELEGRAM_CHAT_ID }}
+          message: "Goldsky version cap / 24h migration check"

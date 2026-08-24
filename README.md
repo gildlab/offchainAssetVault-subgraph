@@ -90,10 +90,20 @@ The workflow will:
 1. Build contract artifacts and the subgraph
 2. Deploy to Goldsky as `sft-<network>/<git-sha>` using the commit SHA of the
    workflow run
+3. Enforce a hard cap of **2** always-on Goldsky versions per network
+   (RAI-1962): delete older versions, fail the job if more than 2 remain, and
+   alert when a 2-version migration overlap exceeds 24 hours
+4. Report job status to Telegram when `TELEGRAM_BOT_TOKEN` / `TELEGRAM_CHAT_ID`
+   are configured
+
+A daily **Goldsky version cap check** workflow also runs `--check-only` across
+every network in `networks.json` so forgotten migrations alert without waiting
+for the next deploy.
 
 Requires the `CI_GOLDSKY_TOKEN` repository secret. Optional `CACHIX_AUTH_TOKEN`
 speeds up Nix restores via the public `rainlanguage` Cachix (deploy still works
-without it).
+without it). Optional `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` for visible
+alerts on deploy / cap-check failures.
 
 Supported networks: `arbitrum-one`, `arbitrum_sepolia`, `avalanche`, `base`,
 `bsc`, `mainnet`, `hyperevm`, `flare`, `mumbai`, `oasis_sapphire`, `matic`,
