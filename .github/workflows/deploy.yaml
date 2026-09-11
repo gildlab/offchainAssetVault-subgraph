@@ -14,6 +14,7 @@ on:
           - bsc
           - mainnet
           - hyperevm
+          - robinhood-mainnet
           - flare
           - mumbai
           - oasis_sapphire

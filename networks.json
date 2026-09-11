@@ -40,5 +40,19 @@
       "address": "0x81D0ecD58346bf2d484E7774f55EABc1AA3F4bcc",
       "startBlock": 41324902
     }
+  },
+  "robinhood-mainnet": {
+    "CloneFactory": {
+      "address": "0x444acC29d63fa643E8adCC35FD9aa6DE111dCb39",
+      "startBlock": 59606008
+    },
+    "CloneFactoryAlt": {
+      "address": "0x444acC29d63fa643E8adCC35FD9aa6DE111dCb39",
+      "startBlock": 99999999
+    },
+    "StoxUnifiedDeployer": {
+      "address": "0x81D0ecD58346bf2d484E7774f55EABc1AA3F4bcc",
+      "startBlock": 59713819
+    }
   }
 }
