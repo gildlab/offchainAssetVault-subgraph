@@ -1,0 +1,58 @@
+name: Deploy subgraph
+on:
+  workflow_dispatch:
+    inputs:
+      network:
+        description: "Network to deploy to"
+        required: true
+        type: choice
+        options:
+          - base
+jobs:
+  deploy:
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      # Align with raindex deploy-subgraph: avoid Determinate magic-nix-cache post
+      # uploads that can cancel the job after a successful Ormi deploy.
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@v1.3.1
+      - uses: nixbuild/nix-quick-install-action@v30
+        with:
+          nix_conf: |
+            keep-env-derivations = true
+            keep-outputs = true
+      - uses: cachix/cachix-action@v15
+        continue-on-error: true
+        with:
+          name: rainlanguage
+          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          useDaemon: false
+      - name: Restore and save Nix store
+        uses: nix-community/cache-nix-action@v6
+        with:
+          primary-key: nix-${{ runner.os }}-${{ hashFiles('**/*.nix', '**/flake.lock') }}
+          restore-prefixes-first-match: nix-${{ runner.os }}-
+          gc-max-store-size-linux: 1G
+      - name: This branch only deploys the Base 1.0.5 subgraph
+        run: test "${{ inputs.network }}" = "base"
+      - run: nix develop -c rainix-sol-prelude
+      - run: ./prep-ethgild.sh
+      - run: nix develop -c graph codegen
+      - run: nix develop -c graph build --network base
+      # Check if the repo is clean before deploying.
+      - run: git diff --exit-code -- . ":(exclude)subgraph.yaml"
+      - run: >
+          nix develop -c graph deploy
+          "sft-base"
+          --version-label "1.0.5-${{ github.sha }}"
+          --node https://subgraph.api.ormilabs.com/deploy
+          --ipfs https://subgraph.api.ormilabs.com/ipfs
+          --deploy-key "${{ secrets.CI_ORMI_DEPLOY_KEY }}"
+          --network base

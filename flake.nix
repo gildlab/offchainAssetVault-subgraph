@@ -58,6 +58,7 @@
 
         devShells.default = pkgs.mkShell {
           packages = [
+            packages.the-graph
             packages.offchain-assets-subgraph-build
             packages.offchain-assets-subgraph-test
           ];
