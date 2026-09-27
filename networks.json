@@ -41,7 +41,7 @@
       "startBlock": 41324902
     }
   },
-  "robinhood-mainnet": {
+  "robinhood": {
     "CloneFactory": {
       "address": "0x444acC29d63fa643E8adCC35FD9aa6DE111dCb39",
       "startBlock": 59606008
