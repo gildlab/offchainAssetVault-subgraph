@@ -14,7 +14,7 @@ on:
           - bsc
           - mainnet
           - hyperevm
-          - robinhood-mainnet
+          - robinhood
           - flare
           - mumbai
           - oasis_sapphire
@@ -56,22 +56,8 @@ jobs:
           gc-max-store-size-linux: 1G
       - run: nix develop -c rainix-sol-prelude
       - run: ./prep-ethgild.sh
-      # networks.json keys are Ormi network slugs, which `graph build --network`
-      # writes into the manifest. The workflow choice `robinhood-mainnet` stays
-      # so the deployed name remains `sft-robinhood-mainnet/<sha>`.
-      - name: Resolve Ormi network slug
-        id: ormi
-        run: |
-          case "${{ inputs.network }}" in
-            robinhood-mainnet)
-              echo "slug=robinhood" >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              echo "slug=${{ inputs.network }}" >> "$GITHUB_OUTPUT"
-              ;;
-          esac
       - run: nix develop -c graph codegen
-      - run: nix develop -c graph build --network ${{ steps.ormi.outputs.slug }}
+      - run: nix develop -c graph build --network ${{ inputs.network }}
       # Check if the repo is clean before deploying.
       - run: git diff --exit-code -- . ":(exclude)subgraph.yaml"
       - run: >
@@ -81,5 +67,5 @@ jobs:
           --node https://subgraph.api.ormilabs.com/deploy
           --ipfs https://subgraph.api.ormilabs.com/ipfs
           --deploy-key "${{ secrets.CI_ORMI_DEPLOY_KEY }}"
-          --network "${{ steps.ormi.outputs.slug }}"
+          --network "${{ inputs.network }}"
 

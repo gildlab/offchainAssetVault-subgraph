@@ -95,12 +95,8 @@ Requires the `CI_ORMI_DEPLOY_KEY` repository secret (the deploy API key from
 the Ormi dashboard). Optional `CACHIX_AUTH_TOKEN` speeds up Nix restores via
 the public `rainlanguage` Cachix (deploy still works without it).
 
-`graph build --network` writes the Ormi network slug into the manifest.
-`robinhood-mainnet` is the workflow choice and subgraph name; its manifest
-slug is `robinhood`.
-
 Supported networks: `arbitrum-one`, `arbitrum_sepolia`, `avalanche`, `base`,
-`bsc`, `mainnet`, `hyperevm`, `robinhood-mainnet`, `flare`, `mumbai`,
+`bsc`, `mainnet`, `hyperevm`, `robinhood`, `flare`, `mumbai`,
 `oasis_sapphire`, `matic`, `sepolia`, `songbird`, `linea`.
 
 ## Project layout
