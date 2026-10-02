@@ -28,6 +28,8 @@ jobs:
       id-token: write
       contents: read
     runs-on: ubuntu-latest
+    env:
+      GOLDSKY_TOKEN: ${{ secrets.CI_GOLDSKY_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -64,3 +66,16 @@ jobs:
       - run: >
           nix develop -c goldsky subgraph deploy "sft-${{ inputs.network }}/${{ github.sha }}"
 
+      # RAI-1962: keep at most 2 always-on versions per chain; fail loudly if not.
+      - name: Enforce Goldsky version cap
+        run: >
+          nix develop -c bash scripts/goldsky-enforce-version-cap.sh "sft-${{ inputs.network }}" --keep "${{ github.sha }}" --max 2
+
+      - name: Forward CI status to Telegram
+        if: always()
+        uses: rainlanguage/github-chore/.github/actions/telegram-status-report@main
+        with:
+          status: ${{ job.status }}
+          telegram-bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          telegram-chat-id: ${{ secrets.TELEGRAM_CHAT_ID }}
+          message: "sft-${{ inputs.network }}/${{ github.sha }}"
