@@ -88,16 +88,16 @@ workflow). Provide:
 The workflow will:
 
 1. Build contract artifacts and the subgraph
-2. Deploy to Goldsky as `sft-<network>/<git-sha>` using the commit SHA of the
-   workflow run
+2. Deploy to Ormi with the Graph CLI as `sft-<network>` versioned by the
+   commit SHA of the workflow run (`--version-label`)
 
-Requires the `CI_GOLDSKY_TOKEN` repository secret. Optional `CACHIX_AUTH_TOKEN`
-speeds up Nix restores via the public `rainlanguage` Cachix (deploy still works
-without it).
+Requires the `CI_ORMI_DEPLOY_KEY` repository secret (the deploy API key from
+the Ormi dashboard). Optional `CACHIX_AUTH_TOKEN` speeds up Nix restores via
+the public `rainlanguage` Cachix (deploy still works without it).
 
 Supported networks: `arbitrum-one`, `arbitrum_sepolia`, `avalanche`, `base`,
-`bsc`, `mainnet`, `hyperevm`, `flare`, `mumbai`, `oasis_sapphire`, `matic`,
-`sepolia`, `songbird`, `linea`.
+`bsc`, `mainnet`, `hyperevm`, `robinhood`, `flare`, `mumbai`,
+`oasis_sapphire`, `matic`, `sepolia`, `songbird`, `linea`.
 
 ## Project layout
 
@@ -114,4 +114,4 @@ flake.nix           Nix dev shell and build/test tasks
 ## CI
 
 - **Subgraph unit tests** — runs on push (`graph build` + Matchstick via Docker)
-- **Deploy subgraph** — manual `workflow_dispatch` to Goldsky
+- **Deploy subgraph** — manual `workflow_dispatch` to Ormi

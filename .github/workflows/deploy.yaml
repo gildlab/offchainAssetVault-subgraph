@@ -14,7 +14,7 @@ on:
           - bsc
           - mainnet
           - hyperevm
-          - robinhood-mainnet
+          - robinhood
           - flare
           - mumbai
           - oasis_sapphire
@@ -34,7 +34,7 @@ jobs:
           submodules: recursive
           fetch-depth: 0
       # Align with raindex deploy-subgraph: avoid Determinate magic-nix-cache post
-      # uploads that can cancel the job after a successful Goldsky deploy.
+      # uploads that can cancel the job after a successful Ormi deploy.
       - name: Free disk space
         uses: jlumbroso/free-disk-space@v1.3.1
       - uses: nixbuild/nix-quick-install-action@v30
@@ -58,9 +58,14 @@ jobs:
       - run: ./prep-ethgild.sh
       - run: nix develop -c graph codegen
       - run: nix develop -c graph build --network ${{ inputs.network }}
-      - run: nix develop -c goldsky login --token ${{ secrets.CI_GOLDSKY_TOKEN }}
       # Check if the repo is clean before deploying.
       - run: git diff --exit-code -- . ":(exclude)subgraph.yaml"
       - run: >
-          nix develop -c goldsky subgraph deploy "sft-${{ inputs.network }}/${{ github.sha }}"
+          nix develop -c graph deploy
+          "sft-${{ inputs.network }}"
+          --version-label "${{ github.sha }}"
+          --node https://subgraph.api.ormilabs.com/deploy
+          --ipfs https://subgraph.api.ormilabs.com/ipfs
+          --deploy-key "${{ secrets.CI_ORMI_DEPLOY_KEY }}"
+          --network "${{ inputs.network }}"
 
